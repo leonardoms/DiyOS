@@ -2,6 +2,7 @@ bits 32
 
 global kernel_stack
 global load_gdt
+global load_idt
 
 section .text
         ;multiboot spec for grub2
@@ -21,10 +22,9 @@ start:  ; for LD entrypoint
     jmp $
 
 load_gdt:
-    cli
     mov   eax, [esp + 4]
     lgdt  [eax]
-    
+
     jmp 0x08:reload_segment    ; 0x08 = kernel code segment
  reload_segment:               ; far jump make CS = 0x08
     mov  ax, 0x10              ; 0x10 = kernel data segment
@@ -33,6 +33,11 @@ load_gdt:
     mov  fs, ax
     mov  gs, ax
     mov  ss, ax
+    ret
+
+load_idt:
+    mov   eax, [esp + 4]
+    lidt  [eax]
     ret
 
 section .data

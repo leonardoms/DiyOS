@@ -44,4 +44,6 @@ void fb_newline();
 void fb_putchar(const char c);
 void fb_puts(const char* str);
 
+#define setup_fb fb_setup   // just for fashion
+
 #endif
