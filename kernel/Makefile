@@ -6,7 +6,7 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   start.o x86_tables.o fb.o do_it_yourself.o
+OBJECTS =   start.o x86_tables.o fb.o io.o do_it_yourself.o
 
 all: clean $(OBJECTS)
 		$(LD) $(LD_FLAGS) -o diyOS_x86 $(OBJECTS) -T x86.ld
@@ -20,6 +20,9 @@ x86_tables.o:
 
 fb.o:
 	$(CC) $(C_FLAGS) -c fb.c -o fb.o
+
+io.o:
+	$(CC) $(C_FLAGS) -c io.c -o io.o
 
 do_it_yourself.o:
 	$(CC) $(C_FLAGS) -c do_it_yourself.c -o do_it_yourself.o

@@ -7,6 +7,9 @@ uint32_t   offset;
 uint8_t   color;
 
 void fb_roll();
+void fb_update_offset();
+void fb_cursor_enable();
+void fb_cursor_update();
 
 void fb_setup() {
   fbmem = (uint8_t*)0xB8000;
@@ -17,16 +20,9 @@ void fb_setup() {
   cell_size = 2;                  // 2-bytes long
   line_size = width * cell_size;
   buff_size = line_size * height;
-  color = 0x27;
+  color = FC_GREEN | BC_BLACK;
+  fb_cursor_enable();   // make sure the cursor is enabled
   fb_clear();
-}
-
-void fb_cursor_update() {
- //TODO
-}
-
-void fb_update_offset() {
-  offset = y * line_size + x * cell_size;
 }
 
 void fb_gotoxy(uint32_t _x, uint32_t _y) {
@@ -66,13 +62,15 @@ void fb_newline() {
 
 void fb_roll() {
   uint32_t i = 0, j;
-  for(; i < height - 1; i++ )
-    for(j = 0; j < line_size; j+=2)
-      fbmem[i*line_size+j] = fbmem[(i+1)*line_size+j];
+  for(; i < height; i++ )
+    for(j = 0; j < line_size; j+=2) {
+      fbmem[i*line_size+j] = fbmem[(i+1)*line_size+j];      // copy the char
+      fbmem[i*line_size+j+1] = fbmem[(i+1)*line_size+j+1];  // copy the color
+    }
   // make last line blank
   for(j = 0; j < line_size; j+=2) {
-    fbmem[(height-1)*line_size+j] = ' ';
-    fbmem[(height-1)*line_size+j+1] = color;
+    fbmem[(height)*line_size+j] = ' ';
+    fbmem[(height)*line_size+j+1] = color;
   }
 }
 
@@ -98,4 +96,27 @@ void fb_puts(const char* str) {
   uint32_t i = 0;
   while(str[i])
     fb_putchar(str[i++]);
+}
+
+
+void fb_cursor_enable()
+{
+	outb(0x3D4, 0x0A);
+	outb(0x3D5, (inb(0x3D5) & 0xC0));
+
+	outb(0x3D4, 0x0B);
+	outb(0x3D5, (inb(0x3E0) & 0xE0) | 15); // 15 = scanline size of cursor
+}
+
+void fb_cursor_update() {
+  uint16_t pos = offset / cell_size;
+
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (uint8_t) (pos & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
+}
+
+void fb_update_offset() {
+  offset = y * line_size + x * cell_size;
 }
