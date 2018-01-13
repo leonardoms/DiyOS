@@ -1,2 +1,2 @@
-# DiyOS
-Small OS based on Services (exokernel)
+# DiyOS - do it yourself
+Small study Operating System based on a exokernel
