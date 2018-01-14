@@ -1,5 +1,5 @@
 
-C_FLAGS = -I. -Wall -nostdlib -nostdinc -nodefaultlibs -m64 -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow -m32
+C_FLAGS = -I. -Wall -nostdlib -nostdinc -nodefaultlibs -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow -m32
 CC = gcc
 ASM = nasm
 ASM_FLAGS = -f elf32

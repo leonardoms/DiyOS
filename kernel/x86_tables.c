@@ -34,6 +34,10 @@ void setup_gdt() {
 
 struct idt_entry idt_entries[256];
 struct idt idtr;
+/*struct idt_callback {
+    irq_callback_t  cb;
+    uint8_t         idx;
+} */
 uint32_t callbacks[256];
 
 void idt_entry_setup(uint8_t idx, uint32_t callback) {
@@ -48,8 +52,10 @@ void idt_entry_setup(uint8_t idx, uint32_t callback) {
 void setup_idt() {
   setup_pic();
   // make sure that all idt entries are zeroed
-  for(uint32_t i = 0; i < 0xFF; i++)
-      idt_entry_setup(i,0x00000000);
+  uint32_t* e;
+  e = (uint32_t*)idt_entries;
+  for(uint32_t i = 0; i < 512; i++)
+      e[i] = 0x00000000;
 
   idtr.size = 8 * 256;
   idtr.offset = (uint32_t)&idt_entries[0];
@@ -57,22 +63,23 @@ void setup_idt() {
   load_idt(&idtr);
 }
 
-INTERRUPT_CALLBACK
-void irq_handle(x86regs_t* regs) {
-  uint8_t intn = 1;
+//INTERRUPT_CALLBACK
+void irq_handle(uint32_t intn, x86regs_t* regs) {
+  intn = 0x21;
   irq_callback_t cb;
 
   cb = (irq_callback_t)callbacks[intn];
 
+BOCHS_BREAKPOINT
   if(cb)
     cb();
-
+BOCHS_BREAKPOINT
   pic_acknowledge(intn); // test keyboard
 }
 
 void irq_install(uint8_t irq, irq_callback_t callback) {
-  if(irq > 0xF) return;
-  idt_entry_setup(irq + 0x20, (uint32_t)irq_handle);
+  if((irq - 0x20) > 0xF) return;
+  idt_entry_setup(irq, (uint32_t)irq_handle);
   callbacks[irq] = (uint32_t)callback;
   irq_enable(irq);
 }

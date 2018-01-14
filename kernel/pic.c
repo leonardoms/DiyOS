@@ -1,3 +1,4 @@
+// Programable Interrupt Controler
 #include "pic.h"
 
 #define PIC_MASTER_CTRL 0x20
@@ -30,6 +31,8 @@ static uint16_t ocw1 = 0xFFFB;
 
 void irq_enable(int irq)
 {
+  irq -= 0x20;
+
 	ocw1 &= ~(1 << irq);
 
 	if (irq < 8)

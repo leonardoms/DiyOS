@@ -39,6 +39,6 @@ void setup_idt();
 typedef void (*irq_callback_t)();
 void irq_install(uint8_t irq, irq_callback_t callback);
 
-#define INTERRUPT_CALLBACK __attribute__ ((interrupt, nesting))
+#define INTERRUPT_CALLBACK  __attribute__ ((interrupt, nesting)) // not working for me =(
 
 #endif

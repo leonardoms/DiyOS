@@ -1,9 +1,9 @@
-
+// video built-in
 #include "fb.h"
 
 uint8_t*  fbmem;
 uint32_t  x, y, line_size, width, height, cell_size, buff_size;
-uint32_t   offset;
+uint32_t  offset;
 uint8_t   color;
 
 void fb_roll();

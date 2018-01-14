@@ -1,3 +1,4 @@
+// keyboard built-in
 #include "kb.h"
 
 void keyboard_handle() {
@@ -9,5 +10,5 @@ void keyboard_handle() {
 }
 
 void setup_kb() {
-    irq_install(0x1, keyboard_handle);
+    irq_install(0x21, keyboard_handle);
 }
