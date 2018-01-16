@@ -31,7 +31,7 @@ static uint16_t ocw1 = 0xFFFB;
 
 void irq_enable(int irq)
 {
-  irq -= 0x20;
+  irq -= IRQ_BASE;
 
 	ocw1 &= ~(1 << irq);
 
@@ -43,7 +43,7 @@ void irq_enable(int irq)
 
 void pic_acknowledge(uint8_t irq)
 {
-  if (irq < 8) {
+  if ( (irq - IRQ_BASE) < 8) {
     outb(PIC_MASTER_CTRL, 0x20);
   } else {
     outb(PIC_SLAVE_CTRL, 0x20);

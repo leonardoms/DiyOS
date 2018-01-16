@@ -52,7 +52,7 @@ void fb_clear() {
 void fb_newline() {
   y++;
   x = 0;
-  if( y > height) {
+  if( y >= height) {
     fb_roll();
     y--;
   }
@@ -87,8 +87,8 @@ void fb_putchar(const char c) {
   if( x > width ) {
     fb_newline();
   } else {
-    fb_cursor_update(x,y);
     fb_update_offset();
+    fb_cursor_update(x,y);
   }
 }
 

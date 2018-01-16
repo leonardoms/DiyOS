@@ -3,6 +3,8 @@
 
 #include "io.h"
 
+#define IRQ_BASE  0x20
+
 void setup_pic();
 void irq_enable(int irq);
 void pic_acknowledge(uint8_t irq);
