@@ -1,6 +1,5 @@
 bochsout.txt
 debuggerout.txt
-build/diyOS_x86-live.iso
 bin/diyOS_x86
 kernel/diyOS_x86
 kernel/*.o
