@@ -1,12 +1,12 @@
 
-C_FLAGS = -I. -Wall -nostdlib -nostdinc -nodefaultlibs -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow -m32
+C_FLAGS = -I. -Wall -nostdlib -nostdinc -nodefaultlibs -ffreestanding -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow -m32 # -fkeep-inline-functions
 CC = gcc
 ASM = nasm
 ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   start.o x86_tables.o fb.o kb.o io.o pic.o do_it_yourself.o
+OBJECTS =   start.o x86_tables.o fb.o kb.o pic.o io.o timer.o do_it_yourself.o
 
 all: clean $(OBJECTS)
 		$(LD) $(LD_FLAGS) -o diyOS_x86 $(OBJECTS) -T x86.ld
@@ -29,6 +29,9 @@ io.o:
 
 pic.o:
 	$(CC) $(C_FLAGS) -c pic.c -o pic.o
+
+timer.o:
+	$(CC) $(C_FLAGS) -c timer.c -o timer.o
 
 do_it_yourself.o:
 	$(CC) $(C_FLAGS) -c do_it_yourself.c -o do_it_yourself.o

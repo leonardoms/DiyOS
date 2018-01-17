@@ -9,7 +9,7 @@
 void setup_pic() {
 
     // ICW1
-    outb(PIC_MASTER_CTRL, 0x11);  // init master PIC
+    outportb(PIC_MASTER_CTRL, 0x11);  // init master PIC
     outb(PIC_SLAVE_CTRL, 0x11);   // init slave PIC
     // ICW2
     outb(PIC_MASTER_DATA, 0x20);  // IRQ 0..7 remaped to 0x20..0x27

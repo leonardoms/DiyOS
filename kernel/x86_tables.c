@@ -44,6 +44,13 @@ void idt_entry_setup(uint8_t idx, uint32_t callback) {
     e->offset_2 = (callback >> 16) & 0xFFFF;
 }
 
+void irq7_handle() {
+  // do nothing
+  pic_acknowledge(7);
+  __asm__ __volatile__("add $12, %esp\n");  \
+  __asm__ __volatile__("iret\n");
+}
+
 void setup_idt() {
   setup_pic();
   // make sure that all idt entries are zeroed
@@ -52,6 +59,8 @@ void setup_idt() {
   uint32_t i;
   for(i = 0; i < 512; i++)
       e[i] = 0x00000000;
+
+  irq_install(7,irq7_handle);
 
   idtr.size = 8 * 256;
   idtr.offset = (uint32_t)&idt_entries[0];

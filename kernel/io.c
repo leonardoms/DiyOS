@@ -1,21 +1,21 @@
 #include "ctypes.h"
 
 void enable() {
-    asm volatile ("sti");
+    __asm__ __volatile__("sti");
 }
 
 void disable() {
-    asm volatile ("cli");
+    __asm__ __volatile__("cli");
 }
 
 void outportb(uint32_t port, uint8_t value){
-	   asm volatile ("outb %%al,%%dx"::"d" (port), "a" (value));
-}
+	   __asm__ __volatile__("outb %%al,%%dx"::"d" (port), "a" (value));
+};
 
 unsigned char inportb(uint32_t port){
 	uint8_t ret;
 
-	asm volatile ("inb %%dx,%%al":"=a" (ret):"d"(port));
+	__asm__ __volatile__("inb %%dx,%%al":"=a" (ret):"d"(port));
 
 	return ret;
-}
+};

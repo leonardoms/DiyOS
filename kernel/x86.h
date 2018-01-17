@@ -2,6 +2,7 @@
 #define _X86_H_
 
 #include "ctypes.h"
+#include "pic.h"
 
 typedef struct {
   unsigned eax, ebx, ecx, edx, esi, edi, ebp, eflags;
