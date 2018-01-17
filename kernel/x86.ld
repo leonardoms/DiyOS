@@ -4,6 +4,11 @@ SECTIONS
  {
    . = 0x100000;
    .text : { *(.text) }
-   .data : { *(.data) }
-   .bss  : { *(.bss)  }
- } 
+   .data : {
+      . = ALIGN(4096);
+
+      *(.data)
+    }
+   .irq : { . += 64; }
+   .bss : { *(.bss)  }
+ }

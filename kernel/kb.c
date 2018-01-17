@@ -8,9 +8,10 @@ void keyboard_handle() {
       fb_putchar((uint8_t)code);
     }
 }
+IRQN(1,keyboard_handle); // create irq1 function
 
 void setup_kb() {
-    irq_install(0x21, keyboard_handle);
+    irq_install(1, irq1);
 }
 
 // adapted from Projeto-SOmBRA kbd.c

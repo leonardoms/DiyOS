@@ -39,6 +39,11 @@ void setup_idt();
 typedef void (*irq_callback_t)();
 void irq_install(uint8_t irq, irq_callback_t callback);
 
-#define INTERRUPT_CALLBACK  __attribute__ ((interrupt, nesting)) // not working for me =(
+#define IRQN(irqn,callback)     void irq##irqn () {         \
+                                    callback();             \
+                                    pic_acknowledge(irqn);  \
+                                    __asm__ __volatile__("add $12, %esp\n");  \
+                                    __asm__ __volatile__("iret\n");           \
+                                  } __attribute__ ((section (".irq")));                              \
 
 #endif

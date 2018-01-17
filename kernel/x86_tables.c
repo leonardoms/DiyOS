@@ -35,8 +35,6 @@ void setup_gdt() {
 struct idt_entry idt_entries[256];
 struct idt idtr;
 
-uint32_t callbacks[256];
-
 void idt_entry_setup(uint8_t idx, uint32_t callback) {
     struct idt_entry* e = &idt_entries[idx];
     e->offset_1 = callback & 0xFFFF;
@@ -61,25 +59,8 @@ void setup_idt() {
   load_idt(&idtr);
 }
 
-irq_callback_t cb;
-
-//INTERRUPT_CALLBACK
-void irq_handle() {
-
-  cb = (irq_callback_t)callbacks[0x21]; // just for testing
-
-  if(cb)
-    cb();
-
-  pic_acknowledge(0x21); // test keyboard
-
-  __asm__ __volatile__ ("add $12, %esp\n");
-  __asm__ __volatile__("iret\n");
-}
-
 void irq_install(uint8_t irq, irq_callback_t callback) {
-  if((irq - IRQ_BASE) > 0xF) return;
-  idt_entry_setup(irq, (uint32_t)irq_handle);
-  callbacks[irq] = (uint32_t)callback;
+  if(irq > 0xF) return;
+  idt_entry_setup(irq + IRQ_BASE, (uint32_t)callback);
   irq_enable(irq);
 }

@@ -29,10 +29,8 @@ void setup_pic() {
 
 static uint16_t ocw1 = 0xFFFB;
 
-void irq_enable(int irq)
+void irq_enable(uint8_t irq)
 {
-  irq -= IRQ_BASE;
-
 	ocw1 &= ~(1 << irq);
 
 	if (irq < 8)
@@ -43,7 +41,7 @@ void irq_enable(int irq)
 
 void pic_acknowledge(uint8_t irq)
 {
-  if ( (irq - IRQ_BASE) < 8) {
+  if ( irq < 8) {
     outb(PIC_MASTER_CTRL, 0x20);
   } else {
     outb(PIC_SLAVE_CTRL, 0x20);
