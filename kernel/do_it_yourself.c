@@ -1,8 +1,9 @@
 #include "x86.h"
-#include "fb.h"
-#include "kb.h"
-#include "timer.h"
-#include "bochs.h"
+#include "drivers/fb.h"
+#include "drivers/kb.h"
+#include "drivers/timer.h"
+#include "debug/bochs.h"
+#include "debug/assert.h"
 
 void do_it_yourself() {
   disable();      // "please, dont disturb". (no interrupts while setting up)
@@ -12,7 +13,7 @@ void do_it_yourself() {
   setup_kb();     // enables built-in keyboard
   setup_timer();  // enable timer
   fb_puts("DiyOS - do it yourself Operating System\n");
-  BOCHS_BREAKPOINT
+
   enable();       // crossing fingers... interrupts are enabled :O
   while(1);
 }

@@ -1,6 +1,4 @@
 bochsout.txt
 debuggerout.txt
 bin/diyOS_x86
-kernel/diyOS_x86
-kernel/*.o
 parport.out
