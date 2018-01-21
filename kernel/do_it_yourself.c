@@ -4,6 +4,7 @@
 #include "drivers/timer.h"
 #include "debug/bochs.h"
 #include "debug/assert.h"
+#include "libsmall/small.h" // stuffs like printf, str helpers... mem helpers, etc.
 
 void do_it_yourself() {
   disable();      // "please, dont disturb". (no interrupts while setting up)
@@ -12,8 +13,8 @@ void do_it_yourself() {
   setup_fb();     // enables built-in video
   setup_kb();     // enables built-in keyboard
   setup_timer();  // enable timer
-  fb_puts("DiyOS - do it yourself Operating System\n");
+  printf("DiyOS - do it yourself Operating System\n");
 
-  enable();       // crossing fingers... interrupts are enabled :O
+  enable();       // crossing fingers... wellcome to the jungle.
   while(1);
 }

@@ -4,9 +4,13 @@
 #include "ctypes.h"
 #include "pic.h"
 
-typedef struct {
-  unsigned eax, ebx, ecx, edx, esi, edi, ebp, eflags;
-} x86regs_t;
+typedef struct
+{
+    unsigned int gs, fs, es, ds;
+    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    unsigned int intn, err_code;                // Interrupt # and Error code (if applicable)
+    unsigned int eip, cs, eflags, useresp, ss;  // on Interrupts CPU push this
+} cpu_state_t;
 
 struct gdt {
   uint16_t size;
@@ -39,6 +43,17 @@ void setup_idt();
 
 typedef void (*irq_callback_t)();
 void irq_install(uint8_t irq, irq_callback_t callback);
+typedef void (*isr_callback_t)();
+
+#define ISRN(isrn,callback,error) void isr##isrn () {       \
+                                    __asm__ __volatile__("cli\n");
+#if error == 0
+                                    __asm__ __volatile__("pushb $0\n");
+#endif
+                                    __asm__ __volatile__("pushb $##isrn\n");
+                                    isr_handler()
+
+}
 
 #define IRQN(irqn,callback)     void irq##irqn () {         \
                                     callback();             \
