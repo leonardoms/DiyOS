@@ -12,9 +12,11 @@ void do_it_yourself() {
   setup_x86();    // enables x86 32-bits things
   setup_fb();     // enables built-in video
   setup_kb();     // enables built-in keyboard
-  setup_timer();  // enable timer
+//  setup_timer();  // enable timer
   printf("DiyOS - do it yourself Operating System\n");
   art_show();
+
+  pci_test();
 
   enable();       // crossing fingers... wellcome to the jungle.
   while(1);
