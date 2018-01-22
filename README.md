@@ -4,6 +4,8 @@ Small study Operating System based on a exokernel
 ---
 Latest built ISO @ [build/](build/)
 
+Latest boot screenshot
+![Boot Screenshot](build/screenshot.png)
 ---
 
 To  compile:
