@@ -16,7 +16,8 @@ void do_it_yourself() {
   printf("DiyOS - do it yourself Operating System\n");
   art_show();
 
-  pci_test();
+  setup_bochs_vbe();
+  //pci_test();
 
   enable();       // crossing fingers... wellcome to the jungle.
   while(1);

@@ -9,8 +9,16 @@
 # define false 0
 #endif
 
+#ifndef FALSE
+# define FALSE 0
+#endif
+
 #ifndef true
 # define true  1
+#endif
+
+#ifndef TRUE
+# define TRUE  1
 #endif
 
 typedef char __attribute__((__may_alias__))             int8_t;

@@ -739,6 +739,7 @@ i440fxsupport: enabled=1
 # PCI host device mapping
 #-------------------------
 #pcidev: vendor=0x1234, device=0x5678
+pci: enabled=1, chipset=i440fx, slot1=pcivga
 
 #=======================================================================
 # GDBSTUB:

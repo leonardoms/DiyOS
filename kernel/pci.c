@@ -1,16 +1,8 @@
-#include <small.h>
+#include <pci.h>
 
 
 #define PCI_CONFIG  0xCF8
 #define PCI_DATA    0xCFC
-
-#define PCI_VENDOR_DEVICE   0x00
-#define PCI_BAR0    0x10
-#define PCI_BAR1    PCI_BAR0 + 4
-#define PCI_BAR2    PCI_BAR1 + 4
-#define PCI_BAR3    PCI_BAR2 + 4
-#define PCI_BAR4    PCI_BAR3 + 4
-#define PCI_BAR5    PCI_BAR4 + 4
 
 uint32_t
 pci_read(uint32_t bus, uint32_t device, uint32_t function, uint32_t offset) {
@@ -37,6 +29,26 @@ pci_write(uint32_t bus, uint32_t device, uint32_t function, uint32_t offset, uin
 
     outl(PCI_CONFIG, reg );
     outl(PCI_DATA, data);
+}
+
+uint8_t
+pci_find(uint32_t vendor, uint32_t device, uint8_t* bus,  uint8_t* dev, uint8_t* function) {
+  uint32_t vend_dev, b, d, f, my_vend_dev;
+
+  my_vend_dev = ( vendor & 0xFFFF ) | (device << 16);
+
+  for(b = 0; b < 256; b++)
+    for(d = 0; d < 32; d++)
+      for(f = 0; f < 8; f++){
+        vend_dev = pci_read(b,d,f,PCI_VENDOR_DEVICE);
+        if(vend_dev == my_vend_dev) {
+          *bus = b;
+          *dev = d;
+          *function = f;
+          return TRUE;
+        }
+      }
+  return FALSE;
 }
 
 void

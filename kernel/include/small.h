@@ -2,6 +2,7 @@
 #define _LIB_SMALL_H_
 
 #include <drivers/fb.h>
+#include <ctypes.h>
 
 /* functions */
 void
