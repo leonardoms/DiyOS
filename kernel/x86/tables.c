@@ -1,6 +1,6 @@
-#include "x86.h"
-#include "pic.h"
-#include "debug/bochs.h"
+#include <x86/x86.h>
+#include <x86/pic.h>
+#include <debug/bochs.h>
 
 extern void load_gdt(struct gdt* addr);
 extern void load_idt(struct idt* addr);

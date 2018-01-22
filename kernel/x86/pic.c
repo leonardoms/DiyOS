@@ -1,5 +1,5 @@
 // Programable Interrupt Controler
-#include "pic.h"
+#include <x86/pic.h>
 
 #define PIC_MASTER_CTRL 0x20
 #define PIC_MASTER_DATA 0x21

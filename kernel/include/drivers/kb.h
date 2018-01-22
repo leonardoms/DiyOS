@@ -1,9 +1,9 @@
 #ifndef _KB_H_
 #define _KB_H_
 
-#include "x86.h"
-#include "io.h"
-#include "fb.h"
+#include <x86/x86.h>
+#include <io.h>
+#include <drivers/fb.h>
 
 void setup_kb();
 uint32_t convert(uint32_t code); // convert keycode to ascii

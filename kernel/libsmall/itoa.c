@@ -1,9 +1,11 @@
-static void
-itoa(char *buf, int base, int d) {
-   char *p = buf;
-   char *p1, *p2;
-   unsigned long ud = d;
-   int divisor = 10;
+#include <small.h>
+
+void
+itoa(uint8_t *buf, uint32_t base, uint32_t d) {
+   uint8_t *p = buf;
+   uint8_t *p1, *p2;
+   uint32_t ud = d;
+   uint32_t divisor = 10;
 
    if(base == 'd' && d < 0) {
        *p++ = '-';
@@ -14,7 +16,7 @@ itoa(char *buf, int base, int d) {
          divisor = 16;
 
    do{
-       int remainder = ud % divisor;
+       uint32_t remainder = ud % divisor;
        *p++ = (remainder < 10) ? remainder + '0' : remainder + 'a' - 10;
    } while (ud /= divisor);
 
@@ -22,7 +24,7 @@ itoa(char *buf, int base, int d) {
    p1 = buf;
    p2 = p - 1;
    while (p1 < p2) {
-     char tmp = *p1;
+     uint8_t tmp = *p1;
      *p1 = *p2;
      *p2 = tmp;
      p1++;

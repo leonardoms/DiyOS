@@ -1,5 +1,5 @@
 // keyboard built-in
-#include "kb.h"
+#include <drivers/kb.h>
 
 void keyboard_handle() {
     uint8_t scode = inb(0x60);

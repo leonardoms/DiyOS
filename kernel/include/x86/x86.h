@@ -44,17 +44,16 @@ void setup_idt();
 typedef void (*irq_callback_t)();
 void irq_install(uint8_t irq, irq_callback_t callback);
 typedef void (*isr_callback_t)();
-
-#define ISRN(isrn,callback,error) void isr##isrn () {       \
-                                    __asm__ __volatile__("cli\n");
-#if error == 0
-                                    __asm__ __volatile__("pushb $0\n");
-#endif
-                                    __asm__ __volatile__("pushb $##isrn\n");
-                                    isr_handler()
-
+#if 0
+#define ISRN(isrn,callback,error) void isr##isrn () { \
+                                    __asm__ __volatile__("cli\n"); \
+#if error == 0                      \
+                                    __asm__ __volatile__("pushb $0\n"); \
+#endif \
+                                    __asm__ __volatile__("pushb $##isrn\n"); \
+                                    isr_handler() \
 }
-
+#endif
 #define IRQN(irqn,callback)     void irq##irqn () {         \
                                     callback();             \
                                     pic_acknowledge(irqn);  \

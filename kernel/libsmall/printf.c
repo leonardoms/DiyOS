@@ -1,12 +1,12 @@
-#include "small.h"
+#include <small.h>
 
 #define putchar fb_putchar
 
 void
 printf (const char *format, ...) {
-   char **arg = (char **) &format;
-   int c;
-   char buf[20];
+   uint8_t **arg = (uint8_t **) &format;
+   uint8_t c;
+   uint8_t buf[20];
 
    arg++;
 
@@ -14,7 +14,7 @@ printf (const char *format, ...) {
        if (c != '%')
          putchar (c);
        else {
-         char *p, *p2;
+         uint8_t *p, *p2;
          int pad0 = 0, pad = 0;
 
          c = *format++;
@@ -39,7 +39,7 @@ printf (const char *format, ...) {
            case 's':
              p = *arg++;
              if (! p)
-               p = "(null)";
+               p = (uint8_t*)"(null)";
 string:
              for (p2 = p; *p2; p2++);
              for (; p2 < p + pad; p2++)

@@ -1,5 +1,5 @@
 
-#include "timer.h"
+#include <drivers/timer.h>
 
 void timer_handle() {
   static uint8_t state = 0;

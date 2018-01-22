@@ -1,8 +1,7 @@
 #ifndef _LIB_SMALL_H_
 #define _LIB_SMALL_H_
 
-#include <../drivers/fb.h>
-#include <../ctypes.h>
+#include <drivers/fb.h>
 
 /* functions */
 void

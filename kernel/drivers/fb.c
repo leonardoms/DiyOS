@@ -1,5 +1,5 @@
 // video built-in
-#include "fb.h"
+#include <drivers/fb.h>
 
 uint8_t*  fbmem;
 uint32_t  x, y, line_size, width, height, cell_size, buff_size;
@@ -16,7 +16,7 @@ void fb_setup() {
   x = y = 0;
   offset = 0;
   width = 80;
-  height = 25;
+  height = 24;
   cell_size = 2;                  // 2-bytes long
   line_size = width * cell_size;
   buff_size = line_size * height;
@@ -52,7 +52,7 @@ void fb_clear() {
 void fb_newline() {
   y++;
   x = 0;
-  if( y >= height) {
+  if( y > height) {
     fb_roll();
     y--;
   }
