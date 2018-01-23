@@ -23,6 +23,7 @@ void fb_setup() {
   color = FC_GREEN | BC_BLACK;
   fb_cursor_enable();   // make sure the cursor is enabled
   fb_clear();
+  putchar = fb_putchar; // from video.h
 }
 
 void fb_gotoxy(uint32_t _x, uint32_t _y) {

@@ -2,6 +2,7 @@
 #define _PCI_H_
 
 #include <small.h>
+#include <io.h>
 
 // config Offsets
 #define PCI_VENDOR_DEVICE   0x00

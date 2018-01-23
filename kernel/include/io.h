@@ -1,7 +1,7 @@
 #ifndef _IO_H_
 #define _IO_H_
 
-#include "ctypes.h"
+#include <ctypes.h>
 
 void outportb(uint32_t port, uint8_t value);
 uint8_t inportb(uint32_t port);

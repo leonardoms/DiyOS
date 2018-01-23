@@ -1,8 +1,9 @@
 #ifndef _FB_H_
 #define _FB_H_
 
-#include "ctypes.h"
-#include "io.h"
+#include <ctypes.h>
+#include <io.h>
+#include <drivers/video.h>
 
 #define FC_BLACK      0x0
 #define FC_BLUE       0x1

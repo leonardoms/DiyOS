@@ -1,7 +1,5 @@
 #include <small.h>
 
-#define putchar fb_putchar
-
 void
 printf (const char *format, ...) {
    uint8_t **arg = (uint8_t **) &format;
