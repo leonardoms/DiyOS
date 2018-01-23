@@ -1,5 +1,6 @@
 
 #include <drivers/timer.h>
+#include <small.h>
 
 void timer_handle() {
   static uint8_t state = 0;
@@ -7,9 +8,9 @@ void timer_handle() {
 
   if(count == 600) {
     if(!state)
-      fb_puts("tic...");
+       printf("tic...");
     else
-      fb_puts("tac!\n");
+       printf("tac!\n");
     count = 0;
     state = ~state;
   } else

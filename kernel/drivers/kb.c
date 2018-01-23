@@ -1,11 +1,12 @@
 // keyboard built-in
 #include <drivers/kb.h>
+#include <drivers/video.h>
 
 void keyboard_handle() {
     uint8_t scode = inb(0x60);
     uint32_t code = convert(scode);
     if(code) {
-      fb_putchar((uint8_t)code);
+      putchar((uint8_t)code);
     }
 }
 IRQN(1,keyboard_handle); // create irq1 function

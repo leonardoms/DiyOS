@@ -65,22 +65,19 @@ setup_bochs_vbe() {
     aux = pci_read(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0);
     bochs_vbe_fb = (uint8_t*)(aux & 0xFFFFFFF0);
 
-    bochs_vbe_text_copy_vga_buffer(); // must be before change video settings
-    bochs_vbe_display(640,480,24); // set default resolution 800x600 (24-bits)
-
     font_xsize = 8;
     font_ysize = 8;
     font_color = 0xFAFAFA;
     font_bgcolor = 0x050505;
-
     row = col = 0;
-    cols = w / font_xsize;
-    rows = h / font_ysize;
+
+    bochs_vbe_text_copy_vga_buffer(); // must be before change video settings
+    bochs_vbe_display(640,480,24); // set default resolution 800x600 (24-bits)
 
     // clear screen
     memset(bochs_vbe_fb, font_bgcolor, scanline*h);
 
-    bochs_vbe_text_puts(vga_text_buffer);
+    bochs_vbe_text_puts((uint8_t*)vga_text_buffer);
     bochs_vbe_text_puts("\n");
     bochs_vbe_text_puts("\nsay hello to graphic mode!\n");
 
@@ -111,10 +108,6 @@ bochs_vbe_enable() {
 
 void
 bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
-  bochs_vbe_disable();
-  bochs_vbe_write(VBE_DISPI_INDEX_XRES, width);
-  bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
-  bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
 
   switch(depth) {
     case 24:
@@ -130,6 +123,14 @@ bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
   w = width;
   h = height;
   d = depth;
+
+  cols = (w / font_xsize) - 1;
+  rows = (h / font_ysize) - 1;
+
+  bochs_vbe_disable();
+  bochs_vbe_write(VBE_DISPI_INDEX_XRES, width);
+  bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
+  bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
   bochs_vbe_enable();
 }
 
@@ -186,7 +187,6 @@ void bochs_vbe_text_newline() {
 // same of bochs_vbe_putchar but coordinates (row,col) are in textmode cursor emulated
 void
 bochs_vbe_text_putchar(uint8_t c) {
-  uint8_t i, j;
   uint32_t x, y;
 
   if(c == '\n') {
@@ -215,7 +215,7 @@ bochs_vbe_text_puts(uint8_t* str) {
 void
 bochs_vbe_text_copy_vga_buffer() {
   uint16_t* vga_fb = (uint16_t*)0xB8000;
-  uint32_t offset_max, offset;
+  uint32_t offset_max, offset, str_offset;
   uint8_t vga_row, vga_col, vga_rpos, vga_cpos;
 
   vga_rpos = vga_cpos = 0;
@@ -229,16 +229,20 @@ bochs_vbe_text_copy_vga_buffer() {
   }
 
   offset_max = vga_rpos * 80 + vga_cpos;
+  str_offset = 0;
 
   for( vga_row = 0; vga_row < 24; vga_row++) {
     for( vga_col = 0; vga_col < 80; vga_col++) {
       offset = 80*vga_row+vga_col;
       if(offset > offset_max) {
-        vga_text_buffer[offset_max+vga_row+1] = '\0';
+        str_offset++;
+        vga_text_buffer[str_offset] = '\0';
         return;
       }
-      vga_text_buffer[offset+vga_row] = vga_fb[offset]; // +vga_row -> '\n' at each row end
+      uint8_t c = (uint8_t)vga_fb[offset];
+      vga_text_buffer[str_offset] = (c < ' ') ? ' ' : c;
+      str_offset++;
     }
-    vga_text_buffer[offset+vga_row+1] = '\n';
+  //  vga_text_buffer[offset+vga_row+1] = '\n';
   }
 }
