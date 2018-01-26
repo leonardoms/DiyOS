@@ -11,10 +11,10 @@ SECTIONS
    . = VADDR_BASE;
    kernel_vaddr_start = .;
    _kernel_vaddr_start = .;
+   kernel_paddr_start = PADDR_BASE; _kernel_paddr_start = PADDR_BASE;
 
    .text ALIGN (0x1000) : AT(PADDR_BASE) /* load code at 0x200000 physical memory */
    {
-        kernel_paddr_start = .; _kernel_paddr_start = .;
        *(.text)
    }
 

@@ -6,7 +6,7 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS = art.o io.o pci.o do_it_yourself.o
+OBJECTS = test.o art.o bios.o io.o pci.o do_it_yourself.o
 
 all: clean x86.a built-in_drivers.a small.a $(OBJECTS)
 		$(LD) $(LD_FLAGS) -o diyOS_x86 $(OBJECTS) x86.a built-in_drivers.a small.a -T x86/x86.ld
@@ -23,6 +23,14 @@ x86.a:
 built-in_drivers.a:
 	@echo "[BUILD DRIVERS]"	$@
 	@make -C ./drivers/
+
+test.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c test.c -o test.o
+
+bios.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c bios.c -o bios.o
 
 io.o:
 	@echo "[BUILD]"	$@

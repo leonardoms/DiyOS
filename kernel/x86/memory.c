@@ -1,18 +1,19 @@
 #include <x86/memory.h>
+#include <debug/bochs.h>
 
 uint32_t frames_max;
-uint32_t kframes[1024]; // FIXME: max of 4MB for kernel
-uint32_t iframes[256]; // for low memory identity paging (0..1MB)
-extern uint32_t* page_directory;
+uint32_t kframes[1024];   // FIXME: max of 4MB for kernel
+uint32_t iframes[256];    // for low memory identity paging (0..1MB)
+extern uint32_t page_directory[1024];
 
 // from Linker script
-#define kernel_physaddr_start 0x100000
+extern uint32_t kernel_paddr_start;
 extern uint32_t kernel_vaddr_start;
 extern uint32_t kernel_vaddr_end;
 
-#define VADDRESS_TO_PAGEDIR(addr)   (( addr >> 12 ) & 0x3FF )
-#define VADDRESS_TO_PAGETABLE(addr) ( addr >> 22 )
-#define VADDRES_TO_PHYSICAL(addr)   ( addr - &kernel_vaddr_start )
+#define VADDRESS_TO_PAGEDIR(addr)   (( (uint32_t)addr >> 12 ) & 0x3FF )
+#define VADDRESS_TO_PAGETABLE(addr) ( (uint32_t)addr >> 22 )
+#define VADDRES_TO_PHYSICAL(addr)   ( (uint32_t)addr - (uint32_t)&kernel_vaddr_start + (uint32_t)&kernel_paddr_start)
 #define BYTES_TO_FRAMES
 
 #define PAGE_FLAG_PRESENT    (1 << 0)
@@ -64,7 +65,14 @@ setup_memory(uint32_t mem_size) {
 #endif
 }
 
+// alloc 4KB frame
 void
-memory_alloc_virtual(uint32_t virt_addr, uint32_t phys_addr, uint32_t size) {
-    
+memory_alloc_frame(uint32_t virt_addr, uint32_t phys_addr) {
+
+}
+
+// alloc a page table (4MB) for a Virtual Address (4MB aligned)
+void
+memory_alloc_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
+   page_directory[virt_addr >> 22] = VADDRES_TO_PHYSICAL(pg_table) | flags;
 }

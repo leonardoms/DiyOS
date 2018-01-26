@@ -1,8 +1,7 @@
 
-#include <pci.h>
-#include <small.h>
-#include <io.h>
+#include <drivers/bochs_vbe.h>
 #include "font8x8_basic.h"
+
 
 #define BOCHS_VBE_VENDOR  0x1234
 #define BOCHS_VBE_DEVICE  0x1111
@@ -27,12 +26,11 @@
 #define VBE_DISPI_LFB_ENABLED       0x40
 #define VBE_DISPI_NOCLEARMEM        0x80
 
-void (*bochs_vbe_putpixel)(uint16_t x, uint16_t y, uint32_t color);
 void bochs_vbe_putpixel_24(uint16_t x, uint16_t y, uint32_t color);
 uint16_t bochs_vbe_version();
 void bochs_vbe_text_copy_vga_buffer();
-void bochs_vbe_text_putchar(uint8_t c);
-void bochs_vbe_text_puts(uint8_t* str);
+void bochs_vbe_text_putchar(const char c);
+void bochs_vbe_text_puts(const char* str);
 
 uint8_t bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function;
 uint8_t* bochs_vbe_fb;
@@ -42,8 +40,11 @@ uint8_t font_xsize, font_ysize;
 uint32_t font_color, font_bgcolor;
 
 // text-mode emulated
-uint8_t vga_text_buffer[80*(24+1)]; // +1 -> '\n' at end of rows
+char vga_text_buffer[80*(24+1)]; // +1 -> '\n' at end of rows
 uint8_t row, col, rows, cols;
+
+//FIXME: testing only (pre-"kmalloc")
+uint32_t page_table[2048] __attribute__((aligned (4096)));   // 8MB
 
 void
 setup_bochs_vbe() {
@@ -62,22 +63,36 @@ setup_bochs_vbe() {
       return;
     }
 
-    aux = pci_read(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0);
-    bochs_vbe_fb = (uint8_t*)(aux & 0xFFFFFFF0);
-
     font_xsize = 8;
     font_ysize = 8;
     font_color = 0xFAFAFA;
-    font_bgcolor = 0x050505;
+    font_bgcolor = 0xF50505;
     row = col = 0;
 
+
+    aux = pci_read(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0);
+    aux = aux & 0xF; // save the BAR0 flags
+    bochs_vbe_fb = (uint8_t*)(0xFD000000);
+    // set frame buffer at 00xFD000000 (last 8MB of linear memory)
+    pci_write(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0, (uint32_t)bochs_vbe_fb | aux);
+// pre-kmalloc testing
+#if 1
+    uint32_t i;
+    for(i = 0; i < 2048; i++) {
+      page_table[i] = 0xA00000 + 0x1000 * i;   // put video at 10~18MB linear address
+      page_table[i] |= 3;
+    }
+    memory_alloc_table(0xFD000000,&page_table[0],0x3);
+    memory_alloc_table(0xFE000000,&page_table[1024],0x3);
+#endif
+
     bochs_vbe_text_copy_vga_buffer(); // must be before change video settings
-    bochs_vbe_display(640,480,24); // set default resolution 800x600 (24-bits)
+    bochs_vbe_display(640,480,24); // set default resolution 640x480 (24-bits)
 
     // clear screen
     memset(bochs_vbe_fb, font_bgcolor, scanline*h);
 
-    bochs_vbe_text_puts((uint8_t*)vga_text_buffer);
+    bochs_vbe_text_puts(vga_text_buffer);
     bochs_vbe_text_puts("\n");
     bochs_vbe_text_puts("\nsay hello to graphic mode!\n");
 
@@ -145,7 +160,7 @@ bochs_vbe_putpixel_24(uint16_t x, uint16_t y, uint32_t color) {
 }
 
 void
-bochs_vbe_putchar(uint16_t x, uint16_t y, uint8_t c) {
+bochs_vbe_putchar(uint16_t x, uint16_t y, const char c) {
   uint8_t i, j;
   for(i = 0; i < font_xsize; i++)
     for(j = 0; j < font_ysize; j++) {
@@ -186,7 +201,7 @@ void bochs_vbe_text_newline() {
 
 // same of bochs_vbe_putchar but coordinates (row,col) are in textmode cursor emulated
 void
-bochs_vbe_text_putchar(uint8_t c) {
+bochs_vbe_text_putchar(const char c) {
   uint32_t x, y;
 
   if(c == '\n') {
@@ -206,7 +221,7 @@ bochs_vbe_text_putchar(uint8_t c) {
 }
 
 void
-bochs_vbe_text_puts(uint8_t* str) {
+bochs_vbe_text_puts(const char* str) {
   uint32_t i = 0;
   while(str[i])
     bochs_vbe_text_putchar(str[i++]);

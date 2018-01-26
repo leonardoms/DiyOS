@@ -9,6 +9,9 @@ extern do_it_yourself   ; void do_it_yourself(); from main.c
 ;extern kernel_paddr_start   ; physical address base
 ;extern kernel_vaddr_start   ; virtual address base
 
+; kernel_virt2phys = -kernel_vaddr_start+kernel_paddr_start
+%define kernel_virt2phys -0xBFE00000
+
 
 section .text
         ;multiboot spec for grub2
@@ -30,7 +33,7 @@ start:  ; for LD entrypoint
     .fill_table0:
          mov    ecx, ebx
          or     ecx, 3              ; Present; Supervisor;
-         mov    [page_table0-0xC0000000+0x200000+eax*4], ecx
+         mov    [page_table0+kernel_virt2phys+eax*4], ecx
          add    ebx, 4096
          inc    eax
          cmp    eax, 1024            ; 1024 frames = 4MB
@@ -44,7 +47,7 @@ start:  ; for LD entrypoint
     .fill_table:
          mov    ecx, ebx
          or     ecx, 3              ; Present; Supervisor; R/W;
-         mov    [page_table768-0xC0000000+0x200000+eax*4], ecx
+         mov    [page_table768+kernel_virt2phys+eax*4], ecx
          add    ebx, 4096
          inc    eax
          cmp    eax, 1024

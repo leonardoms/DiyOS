@@ -3,6 +3,6 @@
 
 #include <ctypes.h>
 
-void (*putchar)(uint8_t c);
+void (*putchar)(const char c);
 
 #endif
