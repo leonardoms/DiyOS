@@ -1,7 +1,7 @@
 #ifndef _ASSERT_H_
 #define _ASSERT_H_
 
-#include <drivers/fb.h>
+#include <small.h>
 
-#define assert(x) //TODO
+#define assert(x)
 #endif

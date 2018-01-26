@@ -64,6 +64,7 @@
 #display_library: win32, options="windebug" # use experimental debugger gui
 #display_library: wx
 #display_library: svga
+display_library: x, options = "gui_debug"
 
 #=======================================================================
 # ROMIMAGE:

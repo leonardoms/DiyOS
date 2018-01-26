@@ -1,5 +1,6 @@
 global load_gdt
 global load_idt
+global load_pagedir
 
 load_gdt:
     mov   eax, [esp + 4]
@@ -18,4 +19,15 @@ load_gdt:
 load_idt:
     mov   eax, [esp + 4]
     lidt  [eax]
+    ret
+
+load_pagedir:
+    mov   eax, [esp + 4]
+    mov   cr3, eax
+    mov   eax, cr0
+    or    eax, 0x80000001
+    mov   cr0, eax
+    lea   ebx, [reload_mem]
+    jmp   ebx
+reload_mem:
     ret

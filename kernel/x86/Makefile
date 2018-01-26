@@ -6,10 +6,14 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   tables.o memory.o pic.o helper.o
+OBJECTS =   tables.o memory.o pic.o helper.o start.o
 
 all: clean $(OBJECTS)
 	@ar rcs -o ../x86.a $(OBJECTS)
+
+start.o:
+	@echo "[BUILD]"	$@
+	@$(ASM) $(ASM_FLAGS) start.asm -o start.o
 
 tables.o:
 	@echo "[BUILD]"	$@
