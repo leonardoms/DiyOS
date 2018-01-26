@@ -65,32 +65,32 @@ setup_bochs_vbe() {
 
     font_xsize = 8;
     font_ysize = 8;
-    font_color = 0xFAFAFA;
-    font_bgcolor = 0xF50505;
+    font_color = 0xF0FAF0;
+    font_bgcolor = 0;
     row = col = 0;
 
 
     aux = pci_read(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0);
-    aux = aux & 0xF; // save the BAR0 flags
-    bochs_vbe_fb = (uint8_t*)(0xFD000000);
-    // set frame buffer at 00xFD000000 (last 8MB of linear memory)
+    aux = aux & 0xF;
+    bochs_vbe_fb = (uint8_t*)0xE0000000; // force 0xE0000000 address
     pci_write(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0, (uint32_t)bochs_vbe_fb | aux);
 // pre-kmalloc testing
 #if 1
     uint32_t i;
     for(i = 0; i < 2048; i++) {
-      page_table[i] = 0xA00000 + 0x1000 * i;   // put video at 10~18MB linear address
+      page_table[i] = (uint32_t)bochs_vbe_fb + 0x1000 * i;   // put video at same address. BOCHS VBE internal address!
       page_table[i] |= 3;
     }
-    memory_alloc_table(0xFD000000,&page_table[0],0x3);
-    memory_alloc_table(0xFE000000,&page_table[1024],0x3);
+    // alloc 8MB Video RAM
+    memory_alloc_table((uint32_t)bochs_vbe_fb,&page_table[0],0x3);      // first 4MB VRAM
+    memory_alloc_table((uint32_t)(bochs_vbe_fb+0x01000000),&page_table[1024],0x3); // last 4MB VRAM.
 #endif
 
     bochs_vbe_text_copy_vga_buffer(); // must be before change video settings
     bochs_vbe_display(640,480,24); // set default resolution 640x480 (24-bits)
 
     // clear screen
-    memset(bochs_vbe_fb, font_bgcolor, scanline*h);
+    memset(bochs_vbe_fb, 0, scanline*h);
 
     bochs_vbe_text_puts(vga_text_buffer);
     bochs_vbe_text_puts("\n");
@@ -127,7 +127,7 @@ bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
   switch(depth) {
     case 24:
       bochs_vbe_putpixel = bochs_vbe_putpixel_24;
-      pixel_size = 3; // 24-bit colors but 32-bits aligned
+      pixel_size = 3; // 24-bit colors
       scanline = width * pixel_size;
       break;
     default:
