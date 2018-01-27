@@ -61,6 +61,6 @@ pci_test() {
         for(f = 0; f < 8; f++){
           vend_dev = pci_read(b,d,f,PCI_VENDOR_DEVICE);
           if(vend_dev != 0xFFFFFFFF)
-            printf("[%d:%d.%d] %x:%x\n", b, d, f, vend_dev & 0xFFFF, vend_dev >> 16);
+            printf("\t[%d:%d.%d] %x:%x\n", b, d, f, vend_dev & 0xFFFF, vend_dev >> 16);
         }
 }

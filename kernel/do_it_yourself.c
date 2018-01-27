@@ -24,7 +24,6 @@ void do_it_yourself() {
   //setup_timer();  // enable timer
 
   setup_bochs_vbe();
-  //pci_test();
 
   test();
 

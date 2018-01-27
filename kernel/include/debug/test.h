@@ -4,6 +4,7 @@
 #include <small.h>
 
 #include <bios.h>
+#include <pci.h>
 
 void
 test();

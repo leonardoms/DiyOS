@@ -81,6 +81,11 @@ void fb_putchar(const char c) {
     return;
   }
 
+  if(c == '\t') {
+    fb_puts("   ");
+    return;
+  }
+
   fbmem[offset] = c;
   fbmem[offset+1] = color;
   x++;

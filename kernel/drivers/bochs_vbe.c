@@ -209,6 +209,11 @@ bochs_vbe_text_putchar(const char c) {
     return;
   }
 
+  if(c == '\t') {
+    bochs_vbe_text_puts("   ");
+    return;
+  }
+
   x = col * font_xsize;
   y = row * font_ysize;
   bochs_vbe_putchar(x,y,c);
