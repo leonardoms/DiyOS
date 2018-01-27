@@ -8,6 +8,7 @@ extern uint32_t page_directory[1024];
 
 // from Linker script
 extern uint32_t kernel_paddr_start;
+extern uint32_t kernel_paddr_end;
 extern uint32_t kernel_vaddr_start;
 extern uint32_t kernel_vaddr_end;
 
@@ -20,6 +21,9 @@ extern uint32_t kernel_vaddr_end;
 #define PAGE_FLAG_RW         (1 << 1)
 #define PAGE_FLAG_USER       (1 << 2)
 
+void
+memory_alloc_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
+
 uint32_t
 memory_bytes_to_frames(uint32_t size) {
   uint32_t f;
@@ -29,9 +33,39 @@ memory_bytes_to_frames(uint32_t size) {
   return f;
 }
 
+#define PAGE_TABLE_ADDR   0xFFC00000    // page tables at end of linear address
+#define PAGE_TABLE_ENTRY  (PAGE_TABLE_ADDR >> 22)
+uint32_t   page_table_paddr;
+uint32_t*  page_table;
+
+uint32_t   page_table_temp[1024] __attribute__((aligned (4096))); // onde page table in kernel space (with access!)
+
 void
 setup_memory(uint32_t mem_size) {
+  uint32_t i;
+
   printf("Paging enabled: kernel @ 0x%x (%dKB)\n", (uint32_t)&kernel_vaddr_start, ((uint32_t)&kernel_vaddr_end-(uint32_t)&kernel_vaddr_start)/1024);
+
+  // alloc one directory for page tables itself
+  // get a physical address after kernel (4MB aligned)!
+
+  page_table_paddr = (kernel_paddr_end & 0xFFC00000) + 0x400000;
+
+  // initialize page_table for PAGE_TABLE_ADDR entry
+  for(i = 0; i < 1024; i++) {
+      page_table_temp[i] = ((uint32_t)page_table_paddr + 0x1000 * i);
+      page_table_temp[i] |= PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
+  }
+
+  // allow access for page_table_paddr area ...
+  memory_alloc_table(PAGE_TABLE_ENTRY,&page_table_temp,PAGE_FLAG_RW | PAGE_FLAG_PRESENT);
+
+  page_table = (uint32_t*)PAGE_TABLE_ADDR;
+  printf("page_table @ 0x%x\n", page_table);
+BOCHS_BREAKPOINT
+  page_table[0x10] = 0xDEADBEEF;
+BOCHS_BREAKPOINT
+
 
 #if 0
   uint32_t f;
@@ -75,4 +109,11 @@ memory_alloc_frame(uint32_t virt_addr, uint32_t phys_addr) {
 void
 memory_alloc_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
    page_directory[virt_addr >> 22] = VADDRES_TO_PHYSICAL(pg_table) | flags;
+}
+
+uint32_t m_bitmap[0];
+
+void
+memory_bitmap_init() {
+
 }

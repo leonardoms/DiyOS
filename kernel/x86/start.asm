@@ -10,7 +10,7 @@ extern do_it_yourself   ; void do_it_yourself(); from main.c
 ;extern kernel_vaddr_start   ; virtual address base
 
 ; kernel_virt2phys = -kernel_vaddr_start+kernel_paddr_start
-%define kernel_virt2phys -0xBFE00000
+%define kernel_virt2phys -0xBFF00000
 
 
 section .text
@@ -43,7 +43,7 @@ start:  ; for LD entrypoint
 
     ; maps 0xC0000000 virtual to 0x100000 physical
     mov     eax, 0x0
-    mov     ebx, 0x200000
+    mov     ebx, 0x100000
     .fill_table:
          mov    ecx, ebx
          or     ecx, 3              ; Present; Supervisor; R/W;
@@ -56,29 +56,24 @@ start:  ; for LD entrypoint
     .end:
 
     mov     eax, page_table0
-    sub     eax, 0xC0000000              ; translate to
-    add     eax, 0x200000                ; physical
+    add     eax, kernel_virt2phys
     and     eax, 0xFFFFF000
     or      eax, 3
     mov     ebx, page_directory
-    sub     ebx, 0xC0000000              ; translate to
-    add     ebx, 0x200000              ; physical
+    add     ebx, kernel_virt2phys
     mov     [ebx], eax
 
     mov     eax, page_table768
-    sub     eax, 0xC0000000
-    add     eax, 0x200000
+    add     eax, kernel_virt2phys
     and     eax, 0xFFFFF000
     or      eax, 3
     mov     ebx, page_directory
-    sub     ebx, 0xC0000000              ; translate to
-    add     ebx, 0x200000              ; physical
+    add     ebx, kernel_virt2phys
     mov     [ebx+768*4], eax             ; 768º Dir = 0xC0000000 TODO: calculate index
 
     mov     eax, page_directory
     and     eax, 0xFFFFF000
-    sub     eax, 0xC0000000
-    add     eax, 0x200000
+    add     eax, kernel_virt2phys
     or      eax, 3
     mov     cr3, eax
     mov     eax, cr0

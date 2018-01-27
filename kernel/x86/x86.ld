@@ -1,9 +1,8 @@
 OUTPUT_FORMAT(elf32-i386)
 ENTRY(start)
 
-/* 0x000000 ~ 0x100000 = reserved area for BIOS, multiboot, etc.
-/* 0x100000 ~ 0x200000 = reserved area for page tables */
-PADDR_BASE = 0x200000;
+/* 0x000000 ~ 0x100000 = reserved area for BIOS, multiboot, etc. */
+PADDR_BASE = 0x100000;
 VADDR_BASE = 0xC0000000; /* "high-half" kernel */
 
 SECTIONS
@@ -32,6 +31,7 @@ SECTIONS
    {
        *(.bss)
        *(COMMON)
+       kernel_paddr_end = .; _kernel_paddr_end = .;
    }
    kernel_vaddr_end = .;
    _kernel_vaddr_end = .;

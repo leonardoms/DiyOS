@@ -7,5 +7,8 @@ iso:
 run:
 	bochs -f bochsrc.bxrc
 
+run-debug:
+	bochs -f bochsrc_debug.bxrc	
+
 run-qemu:
 	qemu-system-i386 -boot d -cdrom build/diyOS_x86-live.iso -vga std -m 32

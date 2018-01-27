@@ -1,7 +1,7 @@
 # You may now use double quotes around pathnames, in case
 # your pathname includes spaces.
 
- magic_break: enabled=0
+ magic_break: enabled=1
 
 #=======================================================================
 # CONFIG_INTERFACE
@@ -64,7 +64,7 @@
 #display_library: win32, options="windebug" # use experimental debugger gui
 #display_library: wx
 #display_library: svga
-#display_library: x, options = "gui_debug"
+display_library: x, options = "gui_debug"
 
 #=======================================================================
 # ROMIMAGE:
