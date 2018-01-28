@@ -21,7 +21,7 @@ void do_it_yourself() {
   setup_memory(0);
 
   setup_kb();     // enables built-in keyboard
-  //setup_timer();  // enable timer
+  setup_timer();  // enable timer
 
   setup_bochs_vbe();
 

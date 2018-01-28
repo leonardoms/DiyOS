@@ -25,6 +25,10 @@ uint32_t   page_table_paddr;
 uint32_t*  page_table;
 uint32_t   page_table_temp[1024] __attribute__((aligned (4096))); // onde page table in kernel space (with access!)
 
+#define    PHYSICAL_TO_BITMAP(addr)       ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) >> 3)
+#define    PHYSICAL_TO_BITMAP_BIT(addr)   ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) % 8)
+#define    BITMAP_SIZE     0x20000
+uint8_t    m_bitmap[BITMAP_SIZE];
 
 void
 memory_alloc_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
@@ -94,11 +98,4 @@ memory_alloc_frame(uint32_t virt_addr, uint32_t phys_addr) {
 void
 memory_alloc_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
    page_directory[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
-}
-
-uint32_t m_bitmap[0];
-
-void
-memory_bitmap_init() {
-
 }
