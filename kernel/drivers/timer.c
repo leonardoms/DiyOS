@@ -8,13 +8,15 @@ void timer_handle() {
   static uint8_t state = 0;
   static uint32_t count = 0;
 
-  if(count == HZ_FREQUENCY) {
+  if(count == HZ_FREQUENCY) { // 1-second
+#if 0
     if(!state)
        printf("tic...");
     else
        printf("tac!\n");
-    count = 0;
     state = ~state;
+#endif
+    count = 0;
   } else
   count++;
 }

@@ -31,7 +31,7 @@ uint32_t   page_table_temp[1024] __attribute__((aligned (4096))); // onde page t
 uint8_t    m_bitmap[BITMAP_SIZE];
 
 void
-memory_alloc_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
+memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
 
 uint32_t
 memory_bytes_to_frames(uint32_t size) {
@@ -58,7 +58,7 @@ setup_memory(uint32_t mem_size) {
       page_table_temp[i] |= PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
   }
   // finally allow access for PAGE_TABLE_ADDR area ...
-  memory_alloc_table(PAGE_TABLE_ADDR,&page_table_temp,PAGE_FLAG_RW | PAGE_FLAG_PRESENT);
+  memory_set_table(PAGE_TABLE_ADDR,&page_table_temp,PAGE_FLAG_RW | PAGE_FLAG_PRESENT);
 
   // populate the new page tables area!
   page_table = (uint32_t*)PAGE_TABLE_ADDR;
@@ -90,12 +90,12 @@ setup_memory(uint32_t mem_size) {
 
 // alloc 4KB frame
 void
-memory_alloc_frame(uint32_t virt_addr, uint32_t phys_addr) {
+memory_set_frame(uint32_t virt_addr, uint32_t phys_addr) {
 
 }
 
 // alloc a page table (4MB) for a Virtual Address (4MB aligned)
 void
-memory_alloc_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
-   page_directory[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
+memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
+    page_directory[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
 }

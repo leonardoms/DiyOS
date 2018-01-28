@@ -2,3 +2,5 @@ bochsout.txt
 debuggerout.txt
 bin/diyOS_x86
 parport.out
+ne2k-tx.log
+ne2k-txdump.txt

@@ -630,7 +630,7 @@ private_colormap: enabled=0
 #=======================================================================
 # ne2k: ioaddr=0x300, irq=9, mac=fe:fd:00:00:00:01, ethmod=fbsd, ethdev=en0 #macosx
 # ne2k: ioaddr=0x300, irq=9, mac=b0:c4:20:00:00:00, ethmod=fbsd, ethdev=xl0
-# ne2k: ioaddr=0x300, irq=9, mac=b0:c4:20:00:00:00, ethmod=linux, ethdev=eth0
+ne2k: ioaddr=0x300, irq=10, mac=b0:c4:20:10:42:11, ethdev=enp2s0
 # ne2k: ioaddr=0x300, irq=9, mac=b0:c4:20:00:00:01, ethmod=win32, ethdev=MYCARD
 # ne2k: ioaddr=0x300, irq=9, mac=fe:fd:00:00:00:01, ethmod=tap, ethdev=tap0
 # ne2k: ioaddr=0x300, irq=9, mac=fe:fd:00:00:00:01, ethmod=tuntap, ethdev=/dev/net/tun0, script=./tunconfig
@@ -689,7 +689,8 @@ keyboard_mapping: enabled=0, map=
 # Example:
 #   i440fxsupport: enabled=1, slot1=pcivga, slot2=ne2k
 #=======================================================================
-i440fxsupport: enabled=1
+#i440fxsupport: enabled=1
+i440fxsupport: enabled=1,  slot1=pcivga, slot2=ne2k
 
 #=======================================================================
 # USB1:

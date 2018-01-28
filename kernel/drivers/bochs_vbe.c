@@ -59,7 +59,7 @@ setup_bochs_vbe() {
     printf("found @ pci/%d:%d.%d\n", bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function);
 
     if( bochs_vbe_version() < 0xB0C5) {
-      printf("VBE version is too old (0x%x)! aborted.\n", bochs_vbe_version());
+      printf("\tVBE version is too old (0x%x)! aborted.\n", bochs_vbe_version());
       return;
     }
 
@@ -82,8 +82,8 @@ setup_bochs_vbe() {
       page_table[i] |= 3;
     }
     // alloc 8MB Video RAM
-    memory_alloc_table((uint32_t)bochs_vbe_fb,&page_table[0],0x3);      // first 4MB VRAM
-    memory_alloc_table((uint32_t)(bochs_vbe_fb+0x01000000),&page_table[1024],0x3); // last 4MB VRAM.
+    memory_set_table((uint32_t)bochs_vbe_fb,&page_table[0],0x3);      // first 4MB VRAM
+    memory_set_table((uint32_t)(bochs_vbe_fb+0x01000000),&page_table[1024],0x3); // last 4MB VRAM.
 #endif
 
     bochs_vbe_text_copy_vga_buffer(); // must be before change video settings
@@ -113,64 +113,64 @@ bochs_vbe_read(uint16_t index) {
 
 void
 bochs_vbe_disable() {
-  bochs_vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
+    bochs_vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
 }
 
 void
 bochs_vbe_enable() {
-  bochs_vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
+    bochs_vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
 }
 
 void
 bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
 
-  switch(depth) {
-    case 24:
-      bochs_vbe_putpixel = bochs_vbe_putpixel_24;
-      pixel_size = 3; // 24-bit colors
-      scanline = width * pixel_size;
-      break;
-    default:
-      printf("bochs_vbe_display: %d-bits depth not suported!\n", depth);
-      return;
+    switch(depth) {
+      case 24:
+        bochs_vbe_putpixel = bochs_vbe_putpixel_24;
+        pixel_size = 3; // 24-bit colors
+        scanline = width * pixel_size;
+        break;
+      default:
+        printf("bochs_vbe_display: %d-bits depth not suported!\n", depth);
+        return;
+    }
+
+    w = width;
+    h = height;
+    d = depth;
+
+    cols = (w / font_xsize) - 1;
+    rows = (h / font_ysize) - 1;
+
+    bochs_vbe_disable();
+    bochs_vbe_write(VBE_DISPI_INDEX_XRES, width);
+    bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
+    bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
+    bochs_vbe_enable();
   }
-
-  w = width;
-  h = height;
-  d = depth;
-
-  cols = (w / font_xsize) - 1;
-  rows = (h / font_ysize) - 1;
-
-  bochs_vbe_disable();
-  bochs_vbe_write(VBE_DISPI_INDEX_XRES, width);
-  bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
-  bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
-  bochs_vbe_enable();
-}
 
 void
 bochs_vbe_putpixel_24(uint16_t x, uint16_t y, uint32_t color) {
-  uint32_t offset;
-  if( x > w || y > h)
-      return;
-  offset = y * scanline + x * pixel_size;
-  bochs_vbe_fb[offset] = (uint8_t)( color & 0xFF );   // set RR
-  *((uint16_t*)&(bochs_vbe_fb[offset+1])) = (uint16_t)(color >> 8); // set BBGG
+    uint32_t offset;
+    if( x > w || y > h)
+        return;
+    offset = y * scanline + x * pixel_size;
+    bochs_vbe_fb[offset] = (uint8_t)( color & 0xFF );   // set RR
+    *((uint16_t*)&(bochs_vbe_fb[offset+1])) = (uint16_t)(color >> 8); // set BBGG
 }
 
 void
 bochs_vbe_putchar(uint16_t x, uint16_t y, const char c) {
-  uint8_t i, j;
-  for(i = 0; i < font_xsize; i++)
-    for(j = 0; j < font_ysize; j++) {
-      bochs_vbe_putpixel(x+i, y+j, ((font8x8_basic[c & 0x7F][j] >> i ) & 1) ? font_color : font_bgcolor );
-    }
+    uint8_t i, j;
+    for(i = 0; i < font_xsize; i++)
+      for(j = 0; j < font_ysize; j++) {
+        bochs_vbe_putpixel(x+i, y+j, ((font8x8_basic[c & 0x7F][j] >> i ) & 1) ? font_color : font_bgcolor );
+      }
 }
 
 uint16_t
 bochs_vbe_version() {
-  return bochs_vbe_read(VBE_DISPI_INDEX_ID);
+    return bochs_vbe_read(VBE_DISPI_INDEX_ID);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,6 +179,7 @@ bochs_vbe_version() {
 void
 bochs_vbe_text_cursor_update() {
   // set emulated text cursor to col-row position
+
 }
 
 void
