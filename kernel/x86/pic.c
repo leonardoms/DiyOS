@@ -41,9 +41,8 @@ void irq_enable(uint8_t irq)
 
 void pic_acknowledge(uint8_t irq)
 {
-  if ( irq < 8) {
-    outb(PIC_MASTER_CTRL, 0x20);
-  } else {
+  if ( irq > 7)
     outb(PIC_SLAVE_CTRL, 0x20);
-  }
+
+  outb(PIC_MASTER_CTRL, 0x20);
 }
