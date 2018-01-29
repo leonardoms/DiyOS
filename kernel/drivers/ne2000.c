@@ -61,27 +61,43 @@ setup_ne2000() {
   ne2000_io_base = pci_read(ne2000_bus, ne2000_dev, ne2000_function, PCI_BAR0);
   ne2000_io_base = ne2000_io_base & 0xFFFC; // 4-byte aligned
 
+  pci_write(ne2000_bus, ne2000_dev, ne2000_function, 0x3c, 0x10A);
+
+  outb(ne2000_io_base + 0x1F, 0xFF); // reset
+  while(inb(ne2000_io_base + 0x7) == 0);
+
   ne2000_stop();
 
   printf("\n\tio_base=0x%x, ", ne2000_io_base);
 
-  ne2000_page(1);
-  outb(ne2000_io_base + 0xE, 0x89); // DMA word mode; Loopback Normal.
-
   ne2000_page(0);
+  outb(ne2000_io_base + 0xE, 0x89); // DMA word mode; Loopback Normal.
   outb(ne2000_io_base + 0x7, 0xFF); // datasheet: "must be cleared after power up" ... "are cleared by writing a '1'"
+  outb(ne2000_io_base + 0xC, 0xFF); // accept any packet (for test!)
 
   for(i = 0; i < 6; i++)
-    ne2000_MAC[i] = inb(ne2000_io_base + 0x10) & 0xFF;
+    ne2000_MAC[i] = inb(ne2000_io_base + 0x10);
 
   printf("MAC=%x:%x:%x:%x:%x:%x\n", ne2000_MAC[0],ne2000_MAC[1],ne2000_MAC[2],
                         ne2000_MAC[3],ne2000_MAC[4],ne2000_MAC[5]);  // MAC[0]
 
+  ne2000_set_MAC(ne2000_MAC);
   outb(ne2000_io_base, 0x8);  // allow receive remote packets!
 
   irq_install(10,irq10);
 
   ne2000_start();
+}
+
+void
+ne2000_set_MAC(char mac[6]) {
+  ne2000_page(1);
+  outb(ne2000_io_base + 0x1, mac[0]);
+  outb(ne2000_io_base + 0x2, mac[1]);
+  outb(ne2000_io_base + 0x3, mac[2]);
+  outb(ne2000_io_base + 0x4, mac[3]);
+  outb(ne2000_io_base + 0x5, mac[4]);
+  outb(ne2000_io_base + 0x6, mac[5]);
 }
 
 // change to configuration 'page' number

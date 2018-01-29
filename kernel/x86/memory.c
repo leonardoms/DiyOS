@@ -3,14 +3,6 @@
 
 extern uint32_t page_directory[1024];
 
-// from Linker script
-extern uint32_t kernel_paddr_start;
-extern uint32_t kernel_paddr_end;
-extern uint32_t kernel_vaddr_start;
-extern uint32_t kernel_vaddr_end;
-
-#define VIRTUAL_TO_PHYSICAL(addr)   ( (uint32_t)addr - (uint32_t)&kernel_vaddr_start + (uint32_t)&kernel_paddr_start)
-#define PHYSICAL_TO_VIRTUAL(addr)   ( (uint32_t)addr + (uint32_t)&kernel_vaddr_start - (uint32_t)&kernel_paddr_start )
 #define BYTES_TO_FRAMES //TODO: replace memory_bytes_to_frames(uint32_t size)
 
 #define PAGE_FLAG_PRESENT    (1 << 0)

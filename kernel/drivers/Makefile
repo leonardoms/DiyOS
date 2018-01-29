@@ -6,7 +6,7 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   kb.o fb.o timer.o bochs_vbe.o ne2000.o
+OBJECTS =   kb.o fb.o timer.o bochs_vbe.o ne2000.o rtl81xx.o
 
 all: clean $(OBJECTS)
 	@ar rcs -o ../built-in_drivers.a $(OBJECTS)
@@ -30,6 +30,10 @@ bochs_vbe.o:
 ne2000.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c ne2000.c -o ne2000.o
+
+rtl81xx.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c rtl81xx.c -o rtl81xx.o
 
 clean:
 	@-rm *.o > /dev/null

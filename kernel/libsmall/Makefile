@@ -9,7 +9,7 @@ LD_FLAGS =  -m elf_i386
 C_FILES = itoa.c atoi.c memcpy.c memset.c printf.c strcpy.c strlen.c
 OBJECTS = $(C_FILES:.c=.o)
 
-.PHONY: all
+.PHONY: all clean
 
 all: clean $(OBJECTS)
 	@ar rcs -o ../small.a $(OBJECTS)
@@ -17,8 +17,6 @@ all: clean $(OBJECTS)
 .c.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c $< -o $@
-
-.PHONY: clean
 
 clean:
 	@-rm *.o > /dev/null

@@ -21,10 +21,13 @@ void do_it_yourself() {
   setup_memory(0);
 
   setup_kb();     // enables built-in keyboard
-  setup_ne2000();
   setup_timer();  // enable timer
 
   setup_bochs_vbe();
+
+  // network drivers
+  setup_ne2000();
+  setup_rtl81xx();
 
   //test();
 
