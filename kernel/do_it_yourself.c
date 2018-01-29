@@ -3,6 +3,7 @@
 #include <drivers/kb.h>
 #include <drivers/timer.h>
 #include <drivers/bochs_vbe.h>
+#include <drivers/rtl81xx.h>
 #include <debug/bochs.h>
 #include <debug/assert.h>
 #include <debug/test.h>
