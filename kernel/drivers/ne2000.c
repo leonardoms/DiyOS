@@ -20,17 +20,36 @@ const struct _ne2000_id {
   { 0, 0}
 };
 
+#define NE2000_RX_OK    0x01
+#define NE2000_TX_OK    0x02
+
 // reference: http://www.ethernut.de/pdf/8019asds.pdf
 
 uint16_t  ne2000_io_base;
 uint8_t   ne2000_MAC[6];
 uint8_t   ne2000_bus, ne2000_dev, ne2000_function;
+uint8_t   ne2000_irq;
 
 void
 ne2000_handler() {
-  printf(".");
+  uint8_t status;
+
+  ne2000_page(0);
+  status = inb(ne2000_io_base + 0x07);
+
+  if(status && NE2000_RX_OK) {
+      printf("Rx");
+  } else
+  if(status && NE2000_TX_OK) {
+      printf("Tx");
+  } else {
+      printf("NE2000: unknown reason interrupt (status=0x%x)\n", status);
+  }
+
+  pic_acknowledge(ne2000_irq);
+  __asm__ __volatile__("add $12, %esp\n");
+  __asm__ __volatile__("iret\n");
 }
-IRQN(10,ne2000_handler);
 
 void
 setup_ne2000() {
@@ -53,7 +72,7 @@ setup_ne2000() {
   if(ne2000_present == 0) {
     printf("not found\n");
     return;
-  }
+  } else printf("found!\n");
 
   // okay, device was found
 
@@ -61,14 +80,9 @@ setup_ne2000() {
   ne2000_io_base = pci_read(ne2000_bus, ne2000_dev, ne2000_function, PCI_BAR0);
   ne2000_io_base = ne2000_io_base & 0xFFFC; // 4-byte aligned
 
-  pci_write(ne2000_bus, ne2000_dev, ne2000_function, 0x3c, 0x10A);
+  ne2000_irq = pci_read(ne2000_bus, ne2000_dev, ne2000_function, 0x3C) & 0xFF;
 
-  outb(ne2000_io_base + 0x1F, 0xFF); // reset
-  while(inb(ne2000_io_base + 0x7) == 0);
-
-  ne2000_stop();
-
-  printf("\n\tio_base=0x%x, ", ne2000_io_base);
+  ne2000_reset();
 
   ne2000_page(0);
   outb(ne2000_io_base + 0xE, 0x89); // DMA word mode; Loopback Normal.
@@ -78,13 +92,15 @@ setup_ne2000() {
   for(i = 0; i < 6; i++)
     ne2000_MAC[i] = inb(ne2000_io_base + 0x10);
 
-  printf("MAC=%x:%x:%x:%x:%x:%x\n", ne2000_MAC[0],ne2000_MAC[1],ne2000_MAC[2],
-                        ne2000_MAC[3],ne2000_MAC[4],ne2000_MAC[5]);  // MAC[0]
-
   ne2000_set_MAC(ne2000_MAC);
-  outb(ne2000_io_base, 0x8);  // allow receive remote packets!
+  outb(ne2000_io_base, 0x00);//0x8);  // allow receive remote packets!
 
-  irq_install(10,irq10);
+  irq_install(ne2000_irq,ne2000_handler);
+
+  printf("\tio_base=0x%x, irq=%d,", ne2000_io_base, ne2000_irq);
+  printf(" MAC=%x:%x:%x:%x:%x:%x\n", ne2000_MAC[0],ne2000_MAC[1],
+                                     ne2000_MAC[2],ne2000_MAC[3],
+                                     ne2000_MAC[4],ne2000_MAC[5]);
 
   ne2000_start();
 }
@@ -106,6 +122,12 @@ ne2000_page(uint8_t page) {
   uint8_t flags;
   flags = inb(ne2000_io_base + 0);
   outb(ne2000_io_base + 0, ((page & 0x3) << 5) | (flags & 0x3F));
+}
+
+void
+ne2000_reset() {
+  outb(ne2000_io_base + 0x1F, inb(ne2000_io_base + 0x1F)); // reset
+  while(inb(ne2000_io_base + 0x7) == 0);
 }
 
 void

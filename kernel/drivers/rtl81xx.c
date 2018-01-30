@@ -16,11 +16,11 @@ uint8_t               rx_buffer[RX_BUFFER_SIZE];
 uint16_t  rtl81xx_io_base;
 uint8_t   rtl81xx_MAC[6];
 uint8_t   rtl81xx_bus, rtl81xx_dev, rtl81xx_function;
-uint8_t   rtl81xx_irq;
+uint8_t   rtl81xx_irq, rtl81xx_link_up;
 
 void
 rtl81xx_handler() {
-  printf("rx/tx"); // debug only
+
   uint16_t status;
 
   status = inw( rtl81xx_io_base + 0x3E);
@@ -38,7 +38,12 @@ rtl81xx_handler() {
       printf("RTL81xx: RX descriptors unavailable (%d packet loss)\n", inw(rtl81xx_io_base + 0x4C) && 0xFFF); // 24-bits packet loss count
   } else
   if( status && RTL81XX_LINK_CHG) {
-      printf("RTL81xx: link was changed.\n");
+      rtl81xx_link_up = inb(rtl81xx_io_base + 0x54) && 0x10;
+      printf("RTL81xx: link ");
+      if(rtl81xx_link_up)
+        printf("up!\n");
+      else
+        printf("down!\n");
   } else
   if( status && RTL81XX_RX_OVERFLOW) {
       printf("RTL81xx: RX overflow (%d packet loss)\n", inw(rtl81xx_io_base + 0x4C) && 0xFFF); // 24-bits packet loss count
@@ -180,4 +185,19 @@ rtl81xx_unlock() {
 void
 rtl81xx_lock() {
     outb(rtl81xx_io_base + 0x50, 0x0);
+}
+
+uint8_t
+rtl81xx_link_is_up() {
+    return inb(rtl81xx_io_base + 0x54) && 0x10;
+}
+
+void
+rtl81xx_read_packet(uint8_t* payload, uint32_t* payload_size) {
+
+}
+
+void
+rtl81xx_write_packet(uint8_t* payload, uint32_t payload_size) {
+
 }

@@ -86,6 +86,7 @@ setup_bochs_vbe() {
     memory_set_table((uint32_t)(bochs_vbe_fb+0x01000000),&page_table[1024],0x3); // last 4MB VRAM.
 #endif
 
+    printf("\tEntering on mode 640x480 (24-bits)\n" );
     bochs_vbe_text_copy_vga_buffer(); // must be before change video settings
     bochs_vbe_display(640,480,24); // set default resolution 640x480 (24-bits)
 
@@ -94,7 +95,7 @@ setup_bochs_vbe() {
 
     bochs_vbe_text_puts(vga_text_buffer);
     bochs_vbe_text_puts("\n");
-    bochs_vbe_text_puts("\nsay hello to graphic mode!\n");
+  //  bochs_vbe_text_puts("\nsay hello to graphic mode!\n");
 
     putchar = bochs_vbe_text_putchar;
 }
