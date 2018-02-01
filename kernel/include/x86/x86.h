@@ -35,16 +35,18 @@ struct idt_entry {
     uint8_t   ist;        // bits 0..2 holds Interrupt Stack Table offset, rest of bits zero.
     uint8_t   type_attr;  // type and attributes
     uint16_t  offset_2;   // offset bits 16..31
-} __attribute__ ((aligned (8)));
+} __attribute__ ((aligned (8), __packed__));
 
 void setup_gdt();
 void setup_idt();
+void isr_install();
 
-#define setup_x86() {setup_gdt(); setup_idt();}
+#define setup_x86() {setup_gdt(); setup_idt(); isr_install(); }
 
 typedef void (*irq_callback_t)();
 void irq_install(uint8_t irq, irq_callback_t callback);
 typedef void (*isr_callback_t)();
+void idt_entry_setup(uint8_t idx, uint32_t callback);
 
 #define ISRN_no_error(isrn,callback) void \
                                   isr##isrn () { \
@@ -59,6 +61,6 @@ typedef void (*isr_callback_t)();
                                     pic_acknowledge(irqn);  \
                                     __asm__ __volatile__("add $12, %esp\n");  \
                                     __asm__ __volatile__("iret\n");           \
-                                  } __attribute__ ((section (".irq")));                              \
+                                  };                              \
 
 #endif

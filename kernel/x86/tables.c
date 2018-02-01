@@ -32,7 +32,7 @@ void setup_gdt() {
   load_gdt(&gdtr);
 }
 
-struct idt_entry idt_entries[256];
+struct idt_entry idt_entries[256] __attribute__ ((aligned (8)));
 struct idt idtr;
 
 void idt_entry_setup(uint8_t idx, uint32_t callback) {

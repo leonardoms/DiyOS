@@ -1,6 +1,10 @@
 #include <drivers/rtl81xx.h>
 
-struct _rtl81xx_id rtl81xx_id[] = {
+
+struct _rtl81xx_id {
+  uint16_t  vendor;
+  uint16_t  device;
+} rtl81xx_id[] = {
   { 0x10EC, 0x8168 }, // RTL-8029
   { 0, 0}
 };
@@ -18,27 +22,30 @@ uint8_t   rtl81xx_MAC[6];
 uint8_t   rtl81xx_bus, rtl81xx_dev, rtl81xx_function;
 uint8_t   rtl81xx_irq, rtl81xx_link_up;
 
-void
+static void
 rtl81xx_handler() {
 
   uint16_t status;
 
-  status = inw( rtl81xx_io_base + 0x3E);
+  status = inw(rtl81xx_io_base + 0x3E);
 
   if( status && RTL81XX_RX_OK) {
-      printf("rx");
+      // packet received
   } else
   if( status && RTL81XX_RX_ERR) {
       // Error on Recv Packet
   } else
   if( status && RTL81XX_TX_OK) {
-      printf("tx");
+    // packet trasmited
+  } else
+  if( status && RTL81XX_TX_ERR) {
+    // packet trasmit error
   } else
   if( status && RTL81XX_RX_UNAVLB) {
       printf("RTL81xx: RX descriptors unavailable (%d packet loss)\n", inw(rtl81xx_io_base + 0x4C) && 0xFFF); // 24-bits packet loss count
   } else
   if( status && RTL81XX_LINK_CHG) {
-      rtl81xx_link_up = inb(rtl81xx_io_base + 0x54) && 0x10;
+      rtl81xx_link_up = rtl81xx_link_status() && RTL81XX_LINK_OK;
       printf("RTL81xx: link ");
       if(rtl81xx_link_up)
         printf("up!\n");
@@ -68,6 +75,7 @@ rtl81xx_handler() {
   // TODO: work with packages in buffer!
   pic_acknowledge(rtl81xx_irq);
   __asm__ __volatile__("add $12, %esp\n");
+  __asm__ __volatile__("leave\n");
   __asm__ __volatile__("iret\n");
 }
 
@@ -95,12 +103,15 @@ setup_rtl81xx() {
   }
 
   // okay, device was found
+  printf("found!\n");
 
   //get IO base addr
   rtl81xx_io_base = pci_read(rtl81xx_bus, rtl81xx_dev, rtl81xx_function, PCI_BAR0);
   rtl81xx_io_base = rtl81xx_io_base & 0xFFFC; // 4-byte aligned
 
   rtl81xx_irq = pci_read(rtl81xx_bus, rtl81xx_dev, rtl81xx_function, 0x3C) & 0xFF;
+  irq_install(rtl81xx_irq, rtl81xx_handler);
+
   rtl81xx_reset();
 
   for(i = 0; i < 6; i++)
@@ -133,28 +144,27 @@ setup_rtl81xx() {
   outb(rtl81xx_io_base + 0x3D, 0xFF);
 
   // about RX packets
-  outw(rtl81xx_io_base + 0xDA, 0xC);   // max  tx packet size
+  outw(rtl81xx_io_base + 0xDA, 8192);   // max  tx packet size
   outl(rtl81xx_io_base + 0x44, 0xE70F); // accept anything (test)
 
   // about TX packets
-  outw(rtl81xx_io_base + 0xEC, 0xC);   // max  tx packet size  in 32-bytes unit
+  outw(rtl81xx_io_base + 0xEC, 0x00);   // max  tx packet size  in 32-bytes unit
   outl(rtl81xx_io_base + 0x41, 0x7);   // DMA size Unlimited
 
   // setup LED mode
   outb(rtl81xx_io_base + 0x52, 0xC0); // configure LED mode 4 (rx/tx activity)
 
   outw(rtl81xx_io_base + 0xE4, (uint32_t)VIRTUAL_TO_PHYSICAL(&rx_descriptor));
+  outw(rtl81xx_io_base + 0x20, (uint32_t)VIRTUAL_TO_PHYSICAL(&tx_descriptor));
 
   outb(rtl81xx_io_base + 0x37, 0x0C);  // configure Command. enable RX/TX
   rtl81xx_lock();
 
-  irq_install(rtl81xx_irq, rtl81xx_handler);
 
-
-  printf("\n\tio_base=0x%x, irq=%d", rtl81xx_io_base, rtl81xx_irq);
-  printf("\n\tMAC=%x:%x:%x:%x:%x:%x\n", rtl81xx_MAC[0],rtl81xx_MAC[1],
-                                        rtl81xx_MAC[2],rtl81xx_MAC[3],
-                                        rtl81xx_MAC[4],rtl81xx_MAC[5]);
+  printf("\tio_base=0x%x, irq=%d\n", rtl81xx_io_base, rtl81xx_irq);
+  printf("\tMAC=%x:%x:%x:%x:%x:%x\n", rtl81xx_MAC[0],rtl81xx_MAC[1],
+                                      rtl81xx_MAC[2],rtl81xx_MAC[3],
+                                      rtl81xx_MAC[4],rtl81xx_MAC[5]);
 }
 
 void
@@ -189,7 +199,12 @@ rtl81xx_lock() {
 
 uint8_t
 rtl81xx_link_is_up() {
-    return inb(rtl81xx_io_base + 0x54) && 0x10;
+    return rtl81xx_link_status() && RTL81XX_LINK_OK;
+}
+
+uint8_t
+rtl81xx_link_status() {
+    return inb(rtl81xx_io_base + 0x6C);
 }
 
 void
