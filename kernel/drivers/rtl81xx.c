@@ -14,8 +14,8 @@ void rtl81xx_unlock();
 
 struct x_descriptor   tx_descriptor[TX_DESCRIPTORS] __attribute__ ((aligned (256)));
 struct x_descriptor   rx_descriptor[RX_DESCRIPTORS] __attribute__ ((aligned (256)));
-uint8_t               tx_buffer[TX_BUFFER_SIZE];
-uint8_t               rx_buffer[RX_BUFFER_SIZE];
+uint8_t               tx_buffer[TX_DESCRIPTORS][TX_BUFFER_SIZE];
+uint8_t               rx_buffer[RX_DESCRIPTORS][RX_BUFFER_SIZE];
 
 uint16_t  rtl81xx_io_base;
 uint8_t   rtl81xx_MAC[6];
@@ -126,7 +126,7 @@ setup_rtl81xx() {
   for( i = 0; i < RX_DESCRIPTORS; i++) {
       rx_descriptor[i].cmd_status = 0x80000000 | (RX_BUFFER_SIZE & 0x3FFF);
       rx_descriptor[i].hi_mem = 0;
-      rx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL(&rx_buffer);
+      rx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL(&rx_buffer[i]);
   }
   rx_descriptor[i-1].cmd_status |= 0x40000000; // set End Of Ring flag on last entry
 
@@ -134,7 +134,7 @@ setup_rtl81xx() {
   for( i = 0; i < TX_DESCRIPTORS; i++) {
       tx_descriptor[i].cmd_status = 0x80000000 | (TX_BUFFER_SIZE & 0x3FFF);
       tx_descriptor[i].hi_mem = 0;
-      tx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL(&tx_buffer);
+      tx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL(&tx_buffer[i]);
   }
   tx_descriptor[i-1].cmd_status |= 0x40000000; // set End Of Ring flag on last entry
 
