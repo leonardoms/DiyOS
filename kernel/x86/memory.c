@@ -16,13 +16,18 @@ extern uint32_t page_directory[1024];
 uint32_t   page_table_paddr;
 uint32_t*  page_table;
 uint32_t   page_table_temp[1024] __attribute__((aligned (4096))); // onde page table in kernel space (with access!)
+// TODO: use multiboot memory info
+#define memory_frames_count 8192  // 32MB (test)
+uint32_t   frames_free;
 
 #define    ADDR_TO_BITMAP(addr)       ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) >> 3)
 #define    ADDR_TO_BITMAP_BIT(addr)   ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) % 8)
+
+#define    TABLE_TO_BITMAP(dir,page)  ((dir * 1024) + page) / 8
+#define    TABLE_TO_BITMAP_BIT(dir,page)  ((dir * 1024) + page) % 8
+
 #define    BITMAP_SIZE     0x20000
 static uint8_t    physical_bitmap[BITMAP_SIZE];  // bitmap for physical memory
-static uint8_t    virtual_bitmap[BITMAP_SIZE];   // bitmap for virtual memory
-
 void
 memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
 
@@ -41,6 +46,7 @@ setup_memory(uint32_t mem_size) {
 
   printf("Paging enabled: kernel @ 0x%x (%dKB)\n", (uint32_t)&kernel_vaddr_start, ((uint32_t)&kernel_vaddr_end-(uint32_t)&kernel_vaddr_start)/1024);
 
+  memory_frames_free = memory_frames_count;
   // alloc one directory for page tables itself
   // get a physical address after kernel (4MB aligned)!
   page_table_paddr = (kernel_paddr_end & 0xFFC00000) + 0x400000;
@@ -67,8 +73,7 @@ setup_memory(uint32_t mem_size) {
       table_addr = (uint32_t*)PHYSICAL_TO_VIRTUAL((uint32_t*)(page_directory[i] & 0xFFFFF000));
       for(j = 0; j < 1024; j++) {
           if(table_addr[j] && PAGE_FLAG_PRESENT) { // find initialized frames
-              //physical_bitmap[ADDR_TO_BITMAP((uint32_t)table_addr[j])] |= (1 << ADDR_TO_BITMAP((uint32_t)table_addr[j]));
-              //virtual_bitmap[ADDR_TO_BITMAP((1024*i+j)*4096)] |= (1 << ADDR_TO_BITMAP((uint32_t)(1024*i+j)*4096));
+              memory_bitmap_set(table_addr[j] * 0xFFFFF000);  // set bitmap as  dirt
               page_table[1024*i+j] = table_addr[j]; // copy the content
           }
       }
@@ -94,14 +99,33 @@ memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
     page_directory[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
 }
 
-// set memory frame (4KB) as dirty in high-half virtual memory
+// set memory frame (4KB) as dirty
 void
-memory_bitmap_set(uint8_t bitmap, uint32_t address) {
+memory_bitmap_set(uint32_t address) {
 
 }
 
-// set memory frame (4KB) as clear in high-half virtual memory
+// set memory frame (4KB) as free
 void
-memory_bitmap_unset(uint8_t bitmap, uint32_t address) {
+memory_bitmap_unset(uint32_t address) {
 
+}
+
+void kmalloc(uint32_t size) {
+   uint32_t frames, cur_frame;
+   uint32_t*  page_table;
+   uint32_t i, j;
+
+   frames = memory_bytes_to_frames(size);
+
+   //
+   cur_frame = 1024; // skip fist 4MB of physical memory
+   for(i = 1; i < 1024; i++ ) {
+     if( ((page_directory[i] && 0x1) == 0) || ((page_directory[i] && 0x4) == 0) ) {// search in page tables free or supervisor access
+        page_table = (uint32_t*)(page_directory[i] & 0xFFFFF000);
+        for(j = 0; j < 1024; j++ ) { // search frames
+            
+        }
+     }
+   }
 }

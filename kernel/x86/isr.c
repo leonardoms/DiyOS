@@ -120,7 +120,7 @@ isr_install() {
   idt_entry_setup(6, (uint32_t)isr6);
   idt_entry_setup(7, (uint32_t)isr7);
   idt_entry_setup(8, (uint32_t)isr8);
-#if 0
+#if 1
   idt_entry_setup(9, (uint32_t)isr9);
   idt_entry_setup(10, (uint32_t)isr10);
   idt_entry_setup(11, (uint32_t)isr11);
