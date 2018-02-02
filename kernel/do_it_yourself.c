@@ -34,8 +34,5 @@ void do_it_yourself() {
 
   enable();       // crossing fingers... wellcome to the jungle.
 
-  uint8_t tester = 1;
-  //tester = tester / 0;
-
   while(1);
 }

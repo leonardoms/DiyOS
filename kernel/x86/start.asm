@@ -13,12 +13,14 @@ extern do_it_yourself   ; void do_it_yourself(); from main.c
 %define kernel_virt2phys -0xBFF00000
 
 
-section .text
+section .multiboot  ; section defined in x86.ld
         ;multiboot spec for grub2
         align 4
         dd 0x1BADB002
         dd 0x00
         dd - (0x1BADB002 + 0x00)
+
+section .text
 
 start:  ; for LD entrypoint
     cli
@@ -106,5 +108,5 @@ page_table768:
     resb  0x1000
 
 kernel_stack_end:
-    resb    8192
+    resb    16384
 kernel_stack:

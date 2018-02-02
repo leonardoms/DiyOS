@@ -14,8 +14,8 @@ void rtl81xx_unlock();
 
 struct x_descriptor   tx_descriptor[TX_DESCRIPTORS] __attribute__ ((aligned (256)));
 struct x_descriptor   rx_descriptor[RX_DESCRIPTORS] __attribute__ ((aligned (256)));
-uint8_t               tx_buffer[TX_DESCRIPTORS][TX_BUFFER_SIZE];
-uint8_t               rx_buffer[RX_DESCRIPTORS][RX_BUFFER_SIZE];
+uint8_t               tx_buffer[TX_DESCRIPTORS][TX_BUFFER_SIZE] __attribute__ ((aligned (8)));
+uint8_t               rx_buffer[RX_DESCRIPTORS][RX_BUFFER_SIZE] __attribute__ ((aligned (8)));;
 
 uint16_t  rtl81xx_io_base;
 uint8_t   rtl81xx_MAC[6];
@@ -26,11 +26,35 @@ static void
 rtl81xx_handler() {
 
   uint16_t status;
+  uint32_t i;
 
   status = inw(rtl81xx_io_base + 0x3E);
 
+  printf("rtl81xx_handler(): status 0x%x\n", status);
+
   if( status && RTL81XX_RX_OK) {
       // packet received
+      for( i = 0; i < RX_DESCRIPTORS; i++ ) { // check for descriptors with packets
+        if(rx_descriptor[i].cmd_status && 0x80000000) // check Owner bit
+          continue; // skip descriptor OWNed by NIC
+        printf("Rx size(%d)\n", rx_descriptor[i].cmd_status & 0x3FFF);
+
+        if(rx_descriptor[i].cmd_status && 0x60000) { // is TCP/IP ?
+            printf("Rx from %d.%d.%d.%d to %d.%d.%d.%d - %d bytes\n", // eg.: Rx from 192.168.0.255 to 192.168.0.5 - 96 bytes
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[0], // read
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[1], // data
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[2], // from
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[3], // TCP/IP
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[4], // header
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[5], // on
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[6], // descriptor's
+                        ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[7]  // buffer!
+                      );
+        }
+
+        // set this descriptor free to use again
+        rx_descriptor[i].cmd_status = 0x80000000 | (RX_BUFFER_SIZE & 0x3FFF);
+      }
   } else
   if( status && RTL81XX_RX_ERR) {
       // Error on Recv Packet
@@ -72,7 +96,10 @@ rtl81xx_handler() {
       printf("RTL81xx: unknown reason Interrupt.\n");
   }
 
-  // TODO: work with packages in buffer!
+  // clear the Interrupt Bit Flag (writing itself!)
+  // [datasheet note: "Writing 1 to any bit in the ISR will reset that bit." ]
+  outw(rtl81xx_io_base + 0x3E, status);
+
   pic_acknowledge(rtl81xx_irq);
   __asm__ __volatile__("add $12, %esp\n");
   __asm__ __volatile__("leave\n");
@@ -126,7 +153,7 @@ setup_rtl81xx() {
   for( i = 0; i < RX_DESCRIPTORS; i++) {
       rx_descriptor[i].cmd_status = 0x80000000 | (RX_BUFFER_SIZE & 0x3FFF);
       rx_descriptor[i].hi_mem = 0;
-      rx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL(&rx_buffer[i]);
+      rx_descriptor[i].low_mem = (uint32_t)&rx_buffer[i];//VIRTUAL_TO_PHYSICAL(&rx_buffer[i]);
   }
   rx_descriptor[i-1].cmd_status |= 0x40000000; // set End Of Ring flag on last entry
 
@@ -134,7 +161,7 @@ setup_rtl81xx() {
   for( i = 0; i < TX_DESCRIPTORS; i++) {
       tx_descriptor[i].cmd_status = 0x80000000 | (TX_BUFFER_SIZE & 0x3FFF);
       tx_descriptor[i].hi_mem = 0;
-      tx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL(&tx_buffer[i]);
+      tx_descriptor[i].low_mem = (uint32_t)&tx_buffer[i];//VIRTUAL_TO_PHYSICAL(&tx_buffer[i]);
   }
   tx_descriptor[i-1].cmd_status |= 0x40000000; // set End Of Ring flag on last entry
 
@@ -154,8 +181,8 @@ setup_rtl81xx() {
   // setup LED mode
   outb(rtl81xx_io_base + 0x52, 0xC0); // configure LED mode 4 (rx/tx activity)
 
-  outw(rtl81xx_io_base + 0xE4, (uint32_t)VIRTUAL_TO_PHYSICAL(&rx_descriptor));
-  outw(rtl81xx_io_base + 0x20, (uint32_t)VIRTUAL_TO_PHYSICAL(&tx_descriptor));
+  outw(rtl81xx_io_base + 0xE4, &rx_descriptor);//(uint32_t)VIRTUAL_TO_PHYSICAL(&rx_descriptor));
+  outw(rtl81xx_io_base + 0x20, &tx_descriptor);//(uint32_t)VIRTUAL_TO_PHYSICAL(&tx_descriptor));
 
   outb(rtl81xx_io_base + 0x37, 0x0C);  // configure Command. enable RX/TX
   rtl81xx_lock();

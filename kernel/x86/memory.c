@@ -17,10 +17,11 @@ uint32_t   page_table_paddr;
 uint32_t*  page_table;
 uint32_t   page_table_temp[1024] __attribute__((aligned (4096))); // onde page table in kernel space (with access!)
 
-#define    PHYSICAL_TO_BITMAP(addr)       ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) >> 3)
-#define    PHYSICAL_TO_BITMAP_BIT(addr)   ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) % 8)
+#define    ADDR_TO_BITMAP(addr)       ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) >> 3)
+#define    ADDR_TO_BITMAP_BIT(addr)   ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) % 8)
 #define    BITMAP_SIZE     0x20000
-uint8_t    m_bitmap[BITMAP_SIZE];
+static uint8_t    physical_bitmap[BITMAP_SIZE];  // bitmap for physical memory
+static uint8_t    virtual_bitmap[BITMAP_SIZE];   // bitmap for virtual memory
 
 void
 memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
@@ -66,7 +67,8 @@ setup_memory(uint32_t mem_size) {
       table_addr = (uint32_t*)PHYSICAL_TO_VIRTUAL((uint32_t*)(page_directory[i] & 0xFFFFF000));
       for(j = 0; j < 1024; j++) {
           if(table_addr[j] && PAGE_FLAG_PRESENT) { // find initialized frames
-              //TODO: initialize Bitmap
+              //physical_bitmap[ADDR_TO_BITMAP((uint32_t)table_addr[j])] |= (1 << ADDR_TO_BITMAP((uint32_t)table_addr[j]));
+              //virtual_bitmap[ADDR_TO_BITMAP((1024*i+j)*4096)] |= (1 << ADDR_TO_BITMAP((uint32_t)(1024*i+j)*4096));
               page_table[1024*i+j] = table_addr[j]; // copy the content
           }
       }
@@ -90,4 +92,16 @@ memory_set_frame(uint32_t virt_addr, uint32_t phys_addr) {
 void
 memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
     page_directory[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
+}
+
+// set memory frame (4KB) as dirty in high-half virtual memory
+void
+memory_bitmap_set(uint8_t bitmap, uint32_t address) {
+
+}
+
+// set memory frame (4KB) as clear in high-half virtual memory
+void
+memory_bitmap_unset(uint8_t bitmap, uint32_t address) {
+
 }

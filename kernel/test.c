@@ -18,5 +18,10 @@ test() {
 #if 1
     pci_test();
 #endif
+
+#if 0
+    uint8_t tester = 1;
+    tester = tester / 0;
+#endif
     printf("--------------- end of test --------------\n");
 }
