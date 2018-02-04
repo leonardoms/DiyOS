@@ -10,14 +10,14 @@ Latest boot screenshot
 
 What is done:
 * Global Descriptor Table (GDT)
- * Flat memory
+  * Flat memory
 * Interrupt Descriptor Table (IDT)
- * Basic ISR (only print a message and halt)
+  * Basic ISR (only print a message and halt)
 * Paging enabled
- * Low Memory (0 ~ 1MB) identity paging
- * High-Half Kernel (kernel above 0xC0000000)
- * 4MB at 0xFFC00000 fixed for Page Tables (physical memory after kernel location)
- * kmalloc() and kfree() (bitmap manager with flags on 3-bit unused on each Page Table entry)
+  * Low Memory (0 ~ 1MB) identity paging
+  * High-Half Kernel (kernel above 0xC0000000)
+  * 4MB at 0xFFC00000 fixed for Page Tables (physical memory after kernel location)
+  * kmalloc() and kfree() (bitmap manager with flags on 3-bit unused on each Page Table entry)
 * Drivers
   * keyboard, Timer, Basic Video
   * Bochs VBE video
