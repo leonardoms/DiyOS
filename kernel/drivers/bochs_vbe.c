@@ -65,7 +65,7 @@ setup_bochs_vbe() {
 
     font_xsize = 8;
     font_ysize = 8;
-    font_color = 0xF0FAF0;
+    font_color = 0xA0AAA0;
     font_bgcolor = 0;
     row = col = 0;
 

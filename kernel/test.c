@@ -33,12 +33,19 @@ test() {
     printf("0x%x = kmalloc(15000)\n", (uint32_t)my_dynamic_data);
     printf("0x%x = kmalloc(8192)\n", (uint32_t)kmalloc(9000));
 
-BOCHS_BREAKPOINT
-
     memory_debug_addr((uint32_t)kmalloc(10000));
     memory_debug_addr(0xDEADBEEF);
-    for(i=0; i < 15000; i++)
+
+    for(i=0; i < 15000; i++) // access test
        my_dynamic_data[0] = 0xDA;
+
+    printf("kfree(0x%x)\n", (uint32_t)my_dynamic_data);
+    kfree(my_dynamic_data);
+    printf("0x%x = kmalloc(1)\n", (uint32_t)kmalloc(1));
+    my_dynamic_data = (uint8_t*)kmalloc(8000);
+    printf("0x%x = kmalloc(8000)\n", (uint32_t)my_dynamic_data);
+    memory_debug_addr(my_dynamic_data);
+
 #endif
     printf("--------------- end of test --------------\n");
 }

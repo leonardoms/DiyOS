@@ -206,6 +206,60 @@ _alloc_frames:
 }
 
 void
+kfree(void* addr) {
+
+    uint32_t* page_table;
+    uint32_t  page_table_idx, i, p_addr;
+    uint32_t  bmp_byte, bmp_bit, flag_end;
+
+    if( (uint32_t)addr < kernel_vaddr_start ) {
+        printf("kfree(): invalid address!\n");
+        return;
+    }
+
+    page_table = (uint32_t*)( PAGE_TABLE_ADDR + ((uint32_t)addr >> 22) * 0x1000 );
+    page_table_idx = ((uint32_t)addr >> 12) & 0x3FF;
+
+    if( (page_table[page_table_idx] & PAGE_FLAG_PRESENT) == 0 ) {
+      printf("kfree(): invalid address!\n");
+      return;
+    }
+
+    if( (page_table[page_table_idx] & PAGE_FLAG_BITMAP_START) == 0 ) {
+      printf("kfree(): invalid address! (bitmap flag error)\n");
+      return;
+    }
+
+    // free the frames!
+    i = 0;
+    do {
+
+        // get physical address for current frame
+        p_addr = page_table[page_table_idx+i] & 0xFFFFF000;
+
+        // get bitmap
+        bmp_byte = (((p_addr >> 22) * 1024) + ((p_addr >> 12) & 0x3FF) ) / 8;
+        bmp_bit = (((p_addr >> 22) * 1024) + ((p_addr >> 12) & 0x3FF) ) % 8;
+
+        // clear the bit
+        physical_bitmap[bmp_byte] &= ~(1 << bmp_bit);
+        // printf("%d.%d 0x%x\n", bmp_byte, bmp_bit, physical_bitmap[bmp_byte]);
+
+        // save the "end of block" flag
+        flag_end = page_table[page_table_idx+i] & PAGE_FLAG_BITMAP_END;
+
+        // free the frame!
+        page_table[page_table_idx+i] = 0;
+
+        // invalidate TLB cache
+        memory_flush((uint32_t)addr + i * 0x1000);
+
+        i++;
+    } while ( flag_end == 0);
+
+}
+
+void
 memory_debug_addr(uint32_t addr) {
     uint32_t* page_table;
     uint32_t  frame_base, i;

@@ -20,4 +20,11 @@ setup_memory(uint32_t mem_size);
 void
 memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
 
+void*
+kmalloc(uint32_t size);
+
+void
+kfree(void* addr);
+
+
 #endif
