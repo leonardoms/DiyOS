@@ -5,6 +5,11 @@
 #include <x86/memory.h>
 #include <x86/pic.h>
 
+#define KERNEL_CODE   0x08
+#define KERNEL_DATA   0x10
+#define USER_CODE     0x18
+#define USER_DATA     0x20
+
 typedef struct
 {
     unsigned int gs, fs, es, ds;

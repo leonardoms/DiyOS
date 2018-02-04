@@ -88,7 +88,7 @@ setup_memory(uint32_t mem_size) {
         page_directory[i] = (uint32_t)(page_table_paddr+PAGE_TABLE_SIZE*i) | (page_directory[i] & 0xFFF);
   }
 
-  memory_flush();
+  memory_flush_all();
 }
 
 // alloc 4KB frame
@@ -185,7 +185,7 @@ _alloc_frames:
         page_table[(addr >> 12) & 0x3FF] |= PAGE_FLAG_BITMAP_END; // last frame signature, used in kfree
 
 
-     //memory_flush(addr); // force reload in TLB when requested
+     memory_flush(addr); // force reload in TLB when requested
 
      // printf("\ttable 0x%x[%d] [0x%x], vaddr 0x%x, paddr 0x%x\n", (uint32_t)page_table, (addr >> 12) & 0x3FF, page_table[(addr >> 12) & 0x3FF], (uint32_t)addr, (( i_byte * 8 + i_bit ) * 0x200 ) );
 
@@ -199,8 +199,8 @@ _alloc_frames:
 
    memory_frames_free -= frames;
 
-   memory_flush();
-   BOCHS_BREAKPOINT
+   // memory_flush_all();
+   // BOCHS_BREAKPOINT
 
    return (void *)addr;
 }

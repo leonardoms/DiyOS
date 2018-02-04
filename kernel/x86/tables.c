@@ -18,15 +18,17 @@ void gdt_entry_setup(struct gdt_entry* gdte, uint32_t base, uint32_t limit,
 
 }
 
-struct gdt_entry gdt_entries[3];
+struct gdt_entry gdt_entries[5];
 struct gdt gdtr;
 
 void setup_gdt() {
   gdt_entry_setup(&(gdt_entries[0]), 0x00000000, 0x00000000, 0x00, 0x0);  // null descriptor
   gdt_entry_setup(&(gdt_entries[1]), 0x00000000, 0xFFFFFFFF, 0x9A, 0xC);  // kernel code
   gdt_entry_setup(&(gdt_entries[2]), 0x00000000, 0xFFFFFFFF, 0x92, 0xC);  // kernel data
+  gdt_entry_setup(&(gdt_entries[3]), 0x00000000, 0xFFFFFFFF, 0xFA, 0xC);  // kernel code
+  gdt_entry_setup(&(gdt_entries[4]), 0x00000000, 0xFFFFFFFF, 0xF2, 0xC);  // kernel data
 
-  gdtr.size = 8 * 3;
+  gdtr.size = 8 * 5;
   gdtr.offset = (uint32_t)&gdt_entries[0];
 
   load_gdt(&gdtr);
