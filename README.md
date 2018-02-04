@@ -1,4 +1,5 @@
-# DiyOS - do it yourself - [![Build Status](https://travis-ci.org/leonardoms/DiyOS.svg?branch=master)](https://travis-ci.org/leonardoms/DiyOS)
+[![Build Status](https://travis-ci.org/leonardoms/DiyOS.svg?branch=master)](https://travis-ci.org/leonardoms/DiyOS)
+# DiyOS - do it yourself
 Small study Operating System based on a exokernel
 
 ---
