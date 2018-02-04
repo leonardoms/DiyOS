@@ -135,7 +135,7 @@ kmalloc(uint32_t size) {
    for(i = 768; i < 1024; i++ ) {
         for(j = 0; j < 1024; j++ ) { // search frames
             page_table = (uint32_t*)(PAGE_TABLE_ADDR + i * 0x1000);
-            if((page_table[j] && PAGE_FLAG_PRESENT) == 0) {
+            if((page_table[j] & PAGE_FLAG_PRESENT) == 0) {
                 if( frames_left == frames ) { // mark first frame
                   start_dir = i;
                   start_frame = j;
@@ -164,7 +164,7 @@ _alloc_frames:
      // printf("#%d: %d\n", i_byte, (uint8_t)physical_bitmap[i_byte] );
      // printf("%d.%d ", i_byte, i_bit );
 
-     if(physical_bitmap[i_byte] && ( 1 << i_bit) ) { // is it a free bit?
+     if(physical_bitmap[i_byte] & ( 1 << i_bit) ) { // is it a free bit?
         continue; // dirty bit
      }
 
@@ -175,7 +175,7 @@ _alloc_frames:
 
      page_table = (uint32_t*)( PAGE_TABLE_ADDR + (addr >> 22) * 0x1000 );
 
-     if( !(page_directory[addr >> 22] && PAGE_FLAG_PRESENT) ) // if is a free directory set as Supervisor; R/W; Present.
+     if( !(page_directory[addr >> 22] & PAGE_FLAG_PRESENT) ) // if is a free directory set as Supervisor; R/W; Present.
         page_directory[addr >> 22] |= PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
 
      // finally the frames!

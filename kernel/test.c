@@ -36,8 +36,8 @@ test() {
 BOCHS_BREAKPOINT
 
     memory_debug_addr((uint32_t)kmalloc(10000));
-    //for(i=0; i < 15000; i++)
-      // my_dynamic_data[0] = 0xDA;
+    for(i=0; i < 15000; i++)
+       my_dynamic_data[0] = 0xDA;
 #endif
     printf("--------------- end of test --------------\n");
 }
