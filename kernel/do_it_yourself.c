@@ -30,7 +30,7 @@ void do_it_yourself() {
   setup_ne2000();
   setup_rtl81xx();
 
-  //test();
+  test();
 
   enable();       // crossing fingers... wellcome to the jungle.
 
