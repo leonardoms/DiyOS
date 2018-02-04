@@ -225,13 +225,13 @@ memory_debug_addr(uint32_t addr) {
     do {
         printf("\n\tframe#%d virt:0x%x phys:0x%x start:%c end:%c present:%c rw:%c", i, addr + i * 0x1000,
                 page_table[frame_base+i] & 0xFFFFF000,
-                (page_table[frame_base+i] && PAGE_FLAG_BITMAP_START) ? 'y' : 'n',
-                (page_table[frame_base+i] && PAGE_FLAG_BITMAP_END) ? 'y' : 'n',
-                (page_table[frame_base+i] && PAGE_FLAG_PRESENT) ? 'y' : 'n',
-                (page_table[frame_base+i] && PAGE_FLAG_RW) ? 'y' : 'n'
+                (page_table[frame_base+i] & PAGE_FLAG_BITMAP_START) ? 'y' : 'n',
+                (page_table[frame_base+i] & PAGE_FLAG_BITMAP_END) ? 'y' : 'n',
+                (page_table[frame_base+i] & PAGE_FLAG_PRESENT) ? 'y' : 'n',
+                (page_table[frame_base+i] & PAGE_FLAG_RW) ? 'y' : 'n'
                 );
         // printf("\n\tframe#%d 0x%x\n", i, page_table[frame_base+i]);
-    } while ((page_table[frame_base+i++] && PAGE_FLAG_BITMAP_END) == 0);
+    } while ((page_table[frame_base+i++] & PAGE_FLAG_BITMAP_END) == 0);
 
     printf("\nend of blocks (%d frames)\n", i);
 
