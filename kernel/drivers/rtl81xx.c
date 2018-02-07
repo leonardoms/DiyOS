@@ -12,8 +12,8 @@ struct _rtl81xx_id {
 void rtl81xx_lock();
 void rtl81xx_unlock();
 
-struct x_descriptor   tx_descriptor[TX_DESCRIPTORS] __attribute__ ((aligned (256)));
-struct x_descriptor   rx_descriptor[RX_DESCRIPTORS] __attribute__ ((aligned (256)));
+struct x_descriptor   tx_descriptor[TX_DESCRIPTORS];
+struct x_descriptor   rx_descriptor[RX_DESCRIPTORS];
 uint8_t               tx_buffer[TX_DESCRIPTORS][TX_BUFFER_SIZE] __attribute__ ((aligned (8)));
 uint8_t               rx_buffer[RX_DESCRIPTORS][RX_BUFFER_SIZE] __attribute__ ((aligned (8)));;
 
@@ -30,16 +30,17 @@ rtl81xx_handler() {
 
   status = inw(rtl81xx_io_base + 0x3E);
 
-  printf("rtl81xx_handler(): status 0x%x\n", status);
+  // printf("rtl81xx_handler(): status 0x%x\n", status);
 
-  if( status && RTL81XX_RX_OK) {
+  if( status != 0xFFFF )  // ignore weird status
+  if( status & RTL81XX_RX_OK) {
       // packet received
       for( i = 0; i < RX_DESCRIPTORS; i++ ) { // check for descriptors with packets
-        if(rx_descriptor[i].cmd_status && 0x80000000) // check Owner bit
+        if(rx_descriptor[i].cmd_status & 0x80000000) // check Owner bit
           continue; // skip descriptor OWNed by NIC
         printf("Rx size(%d)\n", rx_descriptor[i].cmd_status & 0x3FFF);
 
-        if(rx_descriptor[i].cmd_status && 0x60000) { // is TCP/IP ?
+        if(rx_descriptor[i].cmd_status & 0x60000) { // is TCP/IP ?
             printf("Rx from %d.%d.%d.%d to %d.%d.%d.%d - %d bytes\n", // eg.: Rx from 192.168.0.255 to 192.168.0.5 - 96 bytes
                         ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[0], // read
                         ((uint8_t*)PHYSICAL_TO_VIRTUAL(rx_descriptor[i].low_mem))[1], // data
@@ -56,40 +57,48 @@ rtl81xx_handler() {
         rx_descriptor[i].cmd_status = 0x80000000 | (RX_BUFFER_SIZE & 0x3FFF);
       }
   } else
-  if( status && RTL81XX_RX_ERR) {
+  if( status & RTL81XX_RX_ERR) {
       // Error on Recv Packet
   } else
-  if( status && RTL81XX_TX_OK) {
+  if( status & RTL81XX_TX_OK) {
     // packet trasmited
   } else
-  if( status && RTL81XX_TX_ERR) {
+  if( status & RTL81XX_TX_ERR) {
     // packet trasmit error
   } else
-  if( status && RTL81XX_RX_UNAVLB) {
-      printf("RTL81xx: RX descriptors unavailable (%d packet loss)\n", inw(rtl81xx_io_base + 0x4C) && 0xFFF); // 24-bits packet loss count
+  if( status & RTL81XX_RX_UNAVLB) {
+      printf("RTL81xx: RX descriptors unavailable (%d packet loss)\n", inw(rtl81xx_io_base + 0x4C) & 0xFFF); // 24-bits packet loss count
+      printf("0x%x%x\n", inl(rtl81xx_io_base + 0xE8), inl(rtl81xx_io_base + 0xE4));
+      rtl81xx_stop();
   } else
-  if( status && RTL81XX_LINK_CHG) {
-      rtl81xx_link_up = rtl81xx_link_status() && RTL81XX_LINK_OK;
+  if( status & RTL81XX_LINK_CHG) {
+      rtl81xx_link_up = rtl81xx_link_is_up();
       printf("RTL81xx: link ");
-      if(rtl81xx_link_up)
+      if(rtl81xx_link_up) {
+        rtl81xx_start();
         printf("up!\n");
-      else
+      }
+      else {
+        rtl81xx_stop();
         printf("down!\n");
+      }
+
   } else
-  if( status && RTL81XX_RX_OVERFLOW) {
-      printf("RTL81xx: RX overflow (%d packet loss)\n", inw(rtl81xx_io_base + 0x4C) && 0xFFF); // 24-bits packet loss count
+  if( status & RTL81XX_RX_OVERFLOW) {
+      printf("RTL81xx: RX overflow (%d packet loss)\n", inw(rtl81xx_io_base + 0x4C) & 0xFFF); // 24-bits packet loss count
   } else
-  if( status && RTL81XX_TX_UNAVLB) {
+  if( status & RTL81XX_TX_UNAVLB) {
       printf("RTL81xx: TX descriptors unavailable\n"); // 24-bits packet loss count
+      rtl81xx_stop();
   } else
-  if( status && RTL81XX_SOFT_INT) {
+  if( status & RTL81XX_SOFT_INT) {
       // software interrupt
   } else
-  if( status && RTL81XX_TIMEOUT) {
+  if( status & RTL81XX_TIMEOUT) {
       printf("RTL81xx: timeout.\n");
       rtl81xx_stop();
   } else
-  if( status && RTL81XX_SYS_ERR) {
+  if( status & RTL81XX_SYS_ERR) {
       printf("RTL81xx: has a hardware error. (stoping Rx/Tx)\n");
       rtl81xx_stop();
   } else {
@@ -153,7 +162,7 @@ setup_rtl81xx() {
   for( i = 0; i < RX_DESCRIPTORS; i++) {
       rx_descriptor[i].cmd_status = 0x80000000 | (RX_BUFFER_SIZE & 0x3FFF);
       rx_descriptor[i].hi_mem = 0;
-      rx_descriptor[i].low_mem = (uint32_t)&rx_buffer[i];//VIRTUAL_TO_PHYSICAL(&rx_buffer[i]);
+      rx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL((uint32_t)&rx_buffer[i]);
   }
   rx_descriptor[i-1].cmd_status |= 0x40000000; // set End Of Ring flag on last entry
 
@@ -161,7 +170,7 @@ setup_rtl81xx() {
   for( i = 0; i < TX_DESCRIPTORS; i++) {
       tx_descriptor[i].cmd_status = 0x80000000 | (TX_BUFFER_SIZE & 0x3FFF);
       tx_descriptor[i].hi_mem = 0;
-      tx_descriptor[i].low_mem = (uint32_t)&tx_buffer[i];//VIRTUAL_TO_PHYSICAL(&tx_buffer[i]);
+      tx_descriptor[i].low_mem = (uint32_t)VIRTUAL_TO_PHYSICAL((uint32_t)&tx_buffer[i]);
   }
   tx_descriptor[i-1].cmd_status |= 0x40000000; // set End Of Ring flag on last entry
 
@@ -181,8 +190,10 @@ setup_rtl81xx() {
   // setup LED mode
   outb(rtl81xx_io_base + 0x52, 0xC0); // configure LED mode 4 (rx/tx activity)
 
-  outw(rtl81xx_io_base + 0xE4, &rx_descriptor);//(uint32_t)VIRTUAL_TO_PHYSICAL(&rx_descriptor));
-  outw(rtl81xx_io_base + 0x20, &tx_descriptor);//(uint32_t)VIRTUAL_TO_PHYSICAL(&tx_descriptor));
+  outl(rtl81xx_io_base + 0xE4, (uint32_t)VIRTUAL_TO_PHYSICAL(rx_descriptor));
+  outl(rtl81xx_io_base + 0xE8, 0x00000000);
+  outl(rtl81xx_io_base + 0x20, (uint32_t)VIRTUAL_TO_PHYSICAL(tx_descriptor));
+  outl(rtl81xx_io_base + 0x24, 0x00000000);
 
   outb(rtl81xx_io_base + 0x37, 0x0C);  // configure Command. enable RX/TX
   rtl81xx_lock();
@@ -197,7 +208,7 @@ setup_rtl81xx() {
 void
 rtl81xx_reset() {
     outb(rtl81xx_io_base + 0x37, 0x10);
-    while(inb(rtl81xx_io_base + 0x37) && 0x10);
+    while(inb(rtl81xx_io_base + 0x37) & 0x10);
 }
 
 void
@@ -226,7 +237,7 @@ rtl81xx_lock() {
 
 uint8_t
 rtl81xx_link_is_up() {
-    return rtl81xx_link_status() && RTL81XX_LINK_OK;
+    return rtl81xx_link_status() & RTL81XX_LINK_OK;
 }
 
 uint8_t
