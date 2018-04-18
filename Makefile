@@ -11,4 +11,4 @@ run-debug:
 	bochs -f bochsrc_debug.bxrc
 
 run-qemu:
-	qemu-system-i386 -boot d -cdrom build/diyOS_x86-live.iso -vga std -m 32 -net nic,model=ne2k_pci
+	qemu-system-i386 -d ioport -D qemu.log -boot d -cdrom build/diyOS_x86-live.iso -vga std -m 32 -netdev bridge,id=hn0 -net nic,model=rtl8139,netdev=hn0,id=nic1 -net dump -no-kvm-irqchip #ne2k_pci
