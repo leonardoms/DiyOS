@@ -28,7 +28,7 @@ pkt_process(uint8_t* pkt, uint16_t size) {
 
   if(eth->type == 0x0608) { // ARP 0x0806
       _arp = (struct arp*)pkt;
-      printf("ARP from %d.%d.%d.%d (%x:%x:%x:%x:%x:%x) who has %d.%d.%d.%d ?\n",
+      printf("ARP from %d.%d.%d.%d (%x:%x:%x:%x:%x:%x): who has %d.%d.%d.%d ?\n",
               _arp->src_proto[0], _arp->src_proto[1], _arp->src_proto[2], _arp->src_proto[3],
               _arp->src_hw[0], _arp->src_hw[1], _arp->src_hw[2], _arp->src_hw[3], _arp->src_hw[4], _arp->src_hw[5],
               _arp->dst_proto[0], _arp->dst_proto[1], _arp->dst_proto[2], _arp->dst_proto[3]);
@@ -58,18 +58,20 @@ struct _rtl8139_id {
   { 0, 0}
 };
 
-// (1).  Initialization procedure
-//       1. Enable Transmit/Receive(RE/TE in CommandRegister)
-//       2. configure TCR/RCR.
-//       3. Enable IMR.
-// (2).  Transmit reset and Receive reset can be done individually.
+#define RTL8139_TX_LEN    0x600
+#define RTL8139_TX_COUNT  4
+#define RTL8139_TX_TOTAL_LEN               (RTL8139_TX_LEN * RTL8139_TX_COUNT)
+#define RTL8139_TX_BUFFER(base,i)          (base+i*RTL8139_TX_LEN)
+#define RTL8139_TX_BUFFER_PHYS(base,i)     VIRTUAL_TO_PHYSICAL(base+i*RTL8139_TX_LEN)
 
 uint16_t  rtl8139_io_base;
 uint8_t   rtl8139_MAC[6];
 uint8_t   rtl8139_bus, rtl8139_dev, rtl8139_function;
-uint8_t   rtl8139_irq, rtl8139_link_up;
-uint8_t   rtl8139_rx_buffer[65536];
+uint8_t   rtl8139_irq, rtl8139_link_up, rtl8139_tx_in_use;
+uint8_t   rtl8139_rx_buffer[65536], rtl8139_tx_buffer[RTL8139_TX_TOTAL_LEN];
 uint32_t  rtl8139_rx_buffer_size, rtl8139_rx_cur;
+
+
 
 uint8_t   arp_test[42] = {  0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                             0xde, 0xad, 0xbe, 0xef, 0xaa, 0xbb,
@@ -77,7 +79,7 @@ uint8_t   arp_test[42] = {  0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                             0x06, 0x04, 0x00, 0x01, 0xfe, 0xb0,
                             0xe8, 0x99, 0x0f, 0xd2, 0x2a, 0x2a, // sender: 42.42.0.15  (fe:b0:e8:99:0f:d2)
                             0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, // target: 192.168.0.1 (00:00:00:00:00:00)
-                            0x00, 0x00, 0xc0, 0xa8, 0x00, 0x01 };
+                            0x00, 0x00, 0xc0, 0xa7, 0x00, 0x01 };
 
 uint32_t tx_arp_desc[4];
 
@@ -93,43 +95,32 @@ rtl8139_handler() {
   outw(rtl8139_io_base + RTL8139_ISR, status);
 
   if(status & 0x0001) {
-
-      // printf("%x ", status);
       while( (inb(rtl8139_io_base + RTL8139_CMD) & 0x01) == 0 ) // is the buffer empty?
-      // if( (inb(rtl8139_io_base + RTL8139_CMD) & 0x01) == 0)
-#if 1
       {
         if(rtl8139_rx_cur > rtl8139_rx_buffer_size)
           rtl8139_rx_cur = rtl8139_rx_cur % rtl8139_rx_buffer_size;
-          // baddr = inw(rtl8139_io_base + 0x3A);
-          // bptr = inw(rtl8139_io_base + RTL8139_CAPR);
+
           rx = (uint32_t*)rtl8139_rx_buffer + rtl8139_rx_cur;
           pkt_content = (uint8_t*)(rtl8139_rx_buffer + rtl8139_rx_cur + 4);
 
-          // printf("\naddr: 0x%x, ptr: 0x%x ", baddr, bptr);
-          // pkt_status = *pkt & 0xFFFF;
-          // pkt = (uint32_t*)(pkt + 2); // skip Rtl pkt status
           rx_size = *rx >> 16;
 
           pkt_size = rx_size - 4;
 
-          // pkt[0] |= 0x80000000; // set owned by the NIC
 
           if(pkt_size > 0 && pkt_size < 1500 /* && (pkt_status == 1) */) {
              pkt_process(pkt_content, pkt_size);
-            // printf("\nstatus 0x%x\tsize %d (0x%x)\n", pkt_status, pkt_size, baddr);
-            // printf("\n-----------------------------------------------------\n");
-            // for(i=0; i<pkt_size && i < 64;i++) {
-            //   printf("%x ", pkt_content[i]);
-            //   // if((i%16) == 0) printf("\n");
-            // }
           }
           rtl8139_rx_cur = ( rtl8139_rx_cur + rx_size + 4 + 3 ) & ~3;
           outw(rtl8139_io_base + RTL8139_CAPR, rtl8139_rx_cur - 16);
 
       }
-#endif
-} else printf("rtl8139: 0x%x\n", status);
+  } else
+  if(status & 0x0004) { // TxOK
+      printf("TxOK ");
+      if(rtl8139_tx_in_use > 0)
+        rtl8139_tx_in_use--;
+  } else printf("rtl8139: 0x%x\n", status);
 
   pic_acknowledge(rtl8139_irq);
   __asm__ __volatile__("add $12, %esp\n");
@@ -171,14 +162,9 @@ void setup_rtl8139() {
   pci_cmd = pci_read(rtl8139_bus, rtl8139_dev, rtl8139_function, 0x04); // read Command Register from PCI
   pci_write(rtl8139_bus, rtl8139_dev, rtl8139_function, 0x04, pci_cmd | 4); // Busmastering is ON!
 
-//  rtl8139_rx_buffer = kmalloc(0xFFFF); // 64KB
   rtl8139_rx_buffer_size = 0xFFFF;
-  // rtl8139_rx_buffer = (uint8_t*)( 0x100000 - (0xFFFF + 16 + 1500) );
   rtl8139_rx_cur = 0;
-//  if( !rtl8139_rx_buffer ) {
-//    printf("RTL8139: failed to alloc resources!\n");
-//    return;
-//  }
+
 
   // power on
   outb(rtl8139_io_base + RTL8139_CONFIG1, 0x0);
@@ -194,6 +180,12 @@ void setup_rtl8139() {
 
   outw(rtl8139_io_base + RTL8139_CAPR, 0xFFF0 ); //CAPR
 
+  for(i = 0; i < RTL8139_TX_COUNT; i++) {
+    outl(rtl8139_io_base + RTL8139_TSAD0 + i*4, RTL8139_TX_BUFFER_PHYS(rtl8139_tx_buffer,i));
+  }
+  rtl8139_tx_in_use = 0;
+  outl(rtl8139_io_base + RTL8139_TCR, 1024);
+
   for(i = 0; i < 6; i++)
     rtl8139_MAC[i] = inb(rtl8139_io_base + RTL8139_MAC + i);
 
@@ -202,7 +194,7 @@ void setup_rtl8139() {
                                       rtl8139_MAC[2],rtl8139_MAC[3],
                                       rtl8139_MAC[4],rtl8139_MAC[5]);
 
-  outl(rtl8139_io_base + RTL8139_RCR, 0x9 | (1 << 7));//0xFCBF); // receive ALL packets
+  outl(rtl8139_io_base + RTL8139_RCR, 0xF | (1 << 7));//0xFCBF); // receive ALL packets
 
   irq_install(rtl8139_irq, rtl8139_handler);
 
@@ -210,13 +202,23 @@ void setup_rtl8139() {
   outb(rtl8139_io_base + RTL8139_CMD, 0x0C);
   outw(rtl8139_io_base + RTL8139_IMR, 0x7F);
 
-  // tx_arp_desc[0] = 0x8001002A;
-  // tx_arp_desc[1] = 0;
-  // tx_arp_desc[2] = (uint32_t)VIRTUAL_TO_PHYSICAL(arp_test);
-  // tx_arp_desc[3] = 0;
-  //
-  // //while(1)
-  //   outw(rtl8139_io_base + 0x20, (uint32_t)VIRTUAL_TO_PHYSICAL(tx_arp_desc));
+  rtl8139_tx(arp_test,42);
+
 }
 
-//FF + 700 + E000 + 1000 +
+
+uint8_t
+rtl8139_tx(uint8_t* data, uint16_t size) {
+  static int d = 0;
+
+  if(rtl8139_tx_in_use > RTL8139_TX_COUNT) {
+    return 0;
+  }
+
+  rtl8139_tx_in_use++;
+  memcpy(data,RTL8139_TX_BUFFER(rtl8139_tx_buffer,d),size);
+
+  outl(rtl8139_io_base + RTL8139_TSD0 + d*4, size);
+
+  d++;
+}
