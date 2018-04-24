@@ -5,10 +5,6 @@ extern uint32_t page_directory[1024];
 
 #define BYTES_TO_FRAMES //TODO: replace memory_bytes_to_frames(uint32_t size)
 
-#define PAGE_FLAG_PRESENT    (1 << 0)
-#define PAGE_FLAG_RW         (1 << 1)
-#define PAGE_FLAG_USER       (1 << 2)
-
 #define PAGE_FLAG_BITMAP_END    (0x5 << 9)  // use the 3-bit unused in PageTable entry as flag
 #define PAGE_FLAG_BITMAP_START  (0x2 << 9)
 
@@ -20,7 +16,7 @@ uint32_t   page_table_paddr;
 uint32_t*  page_table;
 uint32_t   page_table_temp[1024] __attribute__((aligned (4096))); // onde page table in kernel space (with access!)
 // TODO: use multiboot memory info
-#define    memory_frames_count 8192  // 32MB (test)
+#define    memory_frames_count 16384  // 64MB (test)
 uint32_t   memory_frames_free;
 
 #define    ADDR_TO_BITMAP(addr)       ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) >> 3)
@@ -116,7 +112,7 @@ memory_bitmap_unset(uint32_t address) {
 }
 
 void*
-kmalloc(uint32_t size) {
+_kmalloc(uint32_t size, uint16_t base, uint16_t limit, uint32_t uflag) { // base: starting dir; limit: limit dir
    uint32_t frames, frames_left;
    uint32_t*  page_table;
    uint32_t i, j, i_byte, i_bit, addr;
@@ -132,7 +128,7 @@ kmalloc(uint32_t size) {
    frames_left = frames;
 
    // find continguous block of linear memory in high-half 3GB~4GB
-   for(i = 768; i < 1024; i++ ) {
+   for(i = base; i < limit; i++ ) {
         for(j = 0; j < 1024; j++ ) { // search frames
             page_table = (uint32_t*)(PAGE_TABLE_ADDR + i * 0x1000);
             if((page_table[j] & PAGE_FLAG_PRESENT) == 0) {
@@ -176,10 +172,10 @@ _alloc_frames:
      page_table = (uint32_t*)( PAGE_TABLE_ADDR + (addr >> 22) * 0x1000 );
 
      if( !(page_directory[addr >> 22] & PAGE_FLAG_PRESENT) ) // if is a free directory set as Supervisor; R/W; Present.
-        page_directory[addr >> 22] |= PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
+        page_directory[addr >> 22] |= PAGE_FLAG_RW | PAGE_FLAG_PRESENT | uflag;
 
      // finally the frames!
-     page_table[(addr >> 12) & 0x3FF] = (( i_byte * 8 + i_bit ) * 0x1000 ) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT;  // * 0x200
+     page_table[(addr >> 12) & 0x3FF] = (( i_byte * 8 + i_bit ) * 0x1000 ) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | uflag;  // * 0x200
 
      if( frames_left == frames )
         page_table[(addr >> 12) & 0x3FF] |= PAGE_FLAG_BITMAP_END; // last frame signature, used in kfree

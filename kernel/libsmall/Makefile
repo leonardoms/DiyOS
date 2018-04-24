@@ -6,7 +6,7 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-C_FILES = itoa.c atoi.c memcpy.c memset.c printf.c strcpy.c strlen.c
+C_FILES = itoa.c atoi.c memcpy.c memset.c printf.c strcpy.c strlen.c strcmp.c
 OBJECTS = $(C_FILES:.c=.o)
 
 .PHONY: all clean

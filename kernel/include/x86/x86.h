@@ -10,13 +10,27 @@
 #define USER_CODE     0x18
 #define USER_DATA     0x20
 
+uint32_t k_eip;
+extern uint32_t kernel_eip();
+extern  uint32_t* kernel_stack;
+
 typedef struct
 {
-    unsigned int gs, fs, es, ds;
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    unsigned int intn, err_code;                // Interrupt # and Error code (if applicable)
-    unsigned int eip, cs, eflags, useresp, ss;  // on Interrupts CPU push this
-} cpu_state_t;
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    uint32_t gs, fs, es, ds;
+    uint32_t intn, err_code;
+    uint32_t eip, cs, eflags, useresp, ss;
+} isr_regs_t;
+
+typedef struct
+{
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    uint32_t gs, fs, es, ds;
+    uint32_t eip, cs, eflags, useresp, ss;
+} irq_regs_t;
+
+typedef void (*isr_callback_t)(isr_regs_t);
+typedef void (*irq_callback_t)(irq_regs_t);
 
 struct gdt {
   uint16_t size;
@@ -34,38 +48,59 @@ struct gdt_entry {
 } __attribute__ ((aligned (8)));
 
 // "nothing is created, everything is copied"! Thanks OSDev.org
-struct idt_entry {
+typedef struct idt_entry {
     uint16_t  offset_1;   // offset bits 0..15
     uint16_t  selector;   // a code segment selector in GDT or LDT
     uint8_t   ist;        // bits 0..2 holds Interrupt Stack Table offset, rest of bits zero.
     uint8_t   type_attr;  // type and attributes
     uint16_t  offset_2;   // offset bits 16..31
-} __attribute__ ((aligned (8), __packed__));
+} __attribute__ ((aligned (8), __packed__)) idt_entry_t;
+
+
+struct tss_entry_struct
+{
+   uint32_t prev_tss;
+   uint32_t esp0;
+   uint32_t ss0;
+   uint32_t esp1;
+   uint32_t ss1;
+   uint32_t esp2;
+   uint32_t ss2;
+   uint32_t cr3;
+   uint32_t eip;
+   uint32_t eflags;
+   uint32_t eax;
+   uint32_t ecx;
+   uint32_t edx;
+   uint32_t ebx;
+   uint32_t esp;
+   uint32_t ebp;
+   uint32_t esi;
+   uint32_t edi;
+   uint32_t es;
+   uint32_t cs;
+   uint32_t ss;
+   uint32_t ds;
+   uint32_t fs;
+   uint32_t gs;
+   uint32_t ldt;
+   uint16_t trap;
+   uint16_t iomap_base;
+} __attribute__ ((__packed__));
 
 void setup_gdt();
 void setup_idt();
-void isr_install();
 
-#define setup_x86() {setup_gdt(); setup_idt(); isr_install(); }
+extern void to_user(uint32_t user_eip);
+void to_kernel_stack();
 
-typedef void (*irq_callback_t)();
-void irq_install(uint8_t irq, irq_callback_t callback);
-typedef void (*isr_callback_t)();
-void idt_entry_setup(uint8_t idx, uint32_t callback);
 
-#define ISRN_no_error(isrn,callback) void \
-                                  isr##isrn () { \
-                                    __asm__ __volatile__("cli\n"); \
-                                    __asm__ __volatile__("pushb $0\n"); \
-                                    __asm__ __volatile__("pushb $##isrn\n"); \
-                                    isr_handler(); \
-}
+void
+syscall_setup();
 
-#define IRQN(irqn,callback)     void irq##irqn () {         \
-                                    callback();             \
-                                    pic_acknowledge(irqn);  \
-                                    __asm__ __volatile__("add $12, %esp\n");  \
-                                    __asm__ __volatile__("iret\n");           \
-                                  };                              \
+void
+irq_install_callback(uint8_t irq, isr_callback_t callback);
+
+#define setup_x86() {setup_gdt(); setup_idt(); isr_install(); syscall_setup();}
 
 #endif

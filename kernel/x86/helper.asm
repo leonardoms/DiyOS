@@ -1,6 +1,25 @@
 global load_gdt
 global load_idt
+global load_tss
 global load_pagedir
+global to_user
+global user_sti
+global to_kernel
+
+extern user_test
+global kernel_eip
+
+user_sti:
+    pushf
+    pop   eax
+    or    eax, 0x200
+    push  eax
+    popf
+    ret
+
+kernel_eip:
+    mov eax, [esp]
+    ret
 
 load_gdt:
     mov   eax, [esp + 4]
@@ -20,3 +39,57 @@ load_idt:
     mov   eax, [esp + 4]
     lidt  [eax]
     ret
+
+load_tss:
+    mov   ax, 0x2B
+    ltr   ax
+    ret
+
+to_user:
+    cli
+
+    pushf
+    pop   ebx
+    or    ebx, 0x200  ; IF = 1
+
+    mov   ax, 0x23
+    mov   ds, ax
+    mov   es, ax
+    mov   fs, ax
+    mov   gs, ax
+
+    mov   eax, [esp + 4]
+    push  0x23         ; SS
+    push  0xBF8FFFFB   ; ESP
+    push  ebx          ; EFLAGS
+    push  0x1B        ; CS
+    push  eax         ; EIP
+    ;xchg  bx, bx      ; Kernel Stack with User values ---^
+    iret              ; force load User segments/registers
+
+to_kernel:
+    cli
+    mov   ax, 0x10
+    mov   ds, ax
+    mov   es, ax
+    mov   fs, ax
+    mov   gs, ax
+
+    push   0x10         ; SS
+    push   dword [esp + 8]   ; ESP
+    pushf              ; EFLAGS
+    push   0x08        ; CS
+    push   dword [esp + 4]         ; EIP
+    xchg  bx, bx      ; Kernel Stack with User values ---^
+    iret
+
+kernel_get_state:
+    push    gs
+    push    fs
+    push    es
+    push    ds
+    pushad
+    push    ss
+    pushf
+    push    cs
+    push    dword [ebp]

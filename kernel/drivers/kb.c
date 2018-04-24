@@ -2,17 +2,16 @@
 #include <drivers/kb.h>
 #include <drivers/video.h>
 
-void keyboard_handle() {
+void keyboard_handle(irq_regs_t regs) {
     uint8_t scode = inb(0x60);
     uint32_t code = convert(scode);
     if(code) {
       putchar((uint8_t)code);
     }
 }
-IRQN(1,keyboard_handle); // create irq1 function
 
 void setup_kb() {
-    irq_install(1, irq1);
+    irq_install_callback(1, keyboard_handle);
 }
 
 // adapted from Projeto-SOmBRA kbd.c

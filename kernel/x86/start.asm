@@ -17,14 +17,15 @@ section .multiboot  ; section defined in x86.ld
         ;multiboot spec for grub2
         align 4
         dd 0x1BADB002
-        dd 0x00
-        dd - (0x1BADB002 + 0x00)
+        dd 0x00000001
+        dd -(0x1BADB002 + 0x00000001)
 
 section .text
 
 start:  ; for LD entrypoint
     cli
 
+    mov     edx, ebx
     mov     esp, kernel_stack
 
     ; temporary paging
@@ -89,6 +90,7 @@ start:  ; for LD entrypoint
 go_to_virtual:
 
     ; go to C code
+    push    edx             ; multiboot
     call    do_it_yourself
 
     hlt

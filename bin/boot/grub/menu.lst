@@ -2,4 +2,5 @@ timeout	5
 title	diyOS (x86)
 root	(cd)
 kernel	/diyOS_x86
+module	/gpf.elf
 boot

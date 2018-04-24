@@ -11,6 +11,9 @@ itoa(uint8_t *buf, uint32_t base, uint32_t d);
 uint32_t
 strlen(uint8_t* str);
 
+int
+strcmp(char *s1, char *s2);
+
 void
 memset(void* src, uint8_t value, uint32_t size);
 
