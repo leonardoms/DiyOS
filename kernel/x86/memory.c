@@ -287,6 +287,11 @@ memory_debug_addr(uint32_t addr) {
 
 }
 
+uint32_t*
+alloc_physical_block() {
+    
+}
+
 void
 memory_flush_all() {
    __asm__ __volatile__ ("movl	%cr3,%eax\n");

@@ -27,7 +27,7 @@ void do_it_yourself(uint32_t multiboot_info) {
 
   multiboot_info_t *mbinfo = (multiboot_info_t *) multiboot_info;
   multiboot_module_t *module = (multiboot_module_t *) mbinfo->mods_addr;
-  printf("%s: 0x%x\n", module[0].cmdline, module[0].mod_start);
+  // printf("%s: 0x%x\n", module[0].cmdline, module[0].mod_start);
 
   setup_memory(0);
 
@@ -35,7 +35,6 @@ void do_it_yourself(uint32_t multiboot_info) {
   // setup_timer();  // enable timer
 
   setup_bochs_vbe();
-  syscall_setup();
   // network drivers
   // setup_ne2000();
   // setup_rtl81xx();
@@ -45,18 +44,15 @@ void do_it_yourself(uint32_t multiboot_info) {
   user_setup();
   uint32_t* u = (uint32_t*)0x800000;
   uint32_t i;
-  elf_sect_t  sect[1];
-  if(elf32_get_section_by_name(module[0].mod_start, ".text", &sect))
-    printf("%s .text @ 0x%x\n", module[0].cmdline, sect[0].offset);
+  elf_sect_t*  sect[1];
+  if(elf32_get_section_by_name(module[0].mod_start, ".text", &sect[0]))
+    printf("Running %s: .text @ 0x%x\n\tUser entry point @ 0x800000\n\n", module[0].cmdline, sect[0]->offset);
   else
     printf("failed to find .text\n");
 
   for(i=0;i<(module[0].mod_end-module[0].mod_start);i++)
-    u[i] = ((uint32_t*)(module[0].mod_start+0x1000))[i];
+    u[i] = ((uint32_t*)(module[0].mod_start+sect[0]->offset))[i];
 
-  // user_sti();
-  k_eip = kernel_eip();
-  BOCHS_BREAKPOINT
   to_user((uint32_t)u); // ELF entrypoint
 
   enable();       // crossing fingers... wellcome to the jungle.
