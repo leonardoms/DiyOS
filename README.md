@@ -1,7 +1,8 @@
 [![Build Status](https://travis-ci.org/leonardoms/DiyOS.svg?branch=master)](https://travis-ci.org/leonardoms/DiyOS)
 # DiyOS - do it yourself
-Small study Operating System based on a exokernel
+Small study Operating System
 
+This is a very very very experimental code, no warranties, it's for own study.
 ---
 Latest built ISO @ [build/](build/)
 
@@ -10,6 +11,7 @@ Latest boot screenshot
 ---
 
 What is done:
+* Multitasking  
 * Global Descriptor Table (GDT)
   * Flat memory
 * Interrupt Descriptor Table (IDT)
@@ -23,6 +25,7 @@ What is done:
 * Drivers
   * keyboard, Timer, Basic Video, PIC
   * Bochs VBE video
+  * Basic VGA
   * Network Realtek RTL81xx
   * Network NE2000 (n2k) [working on]
 
