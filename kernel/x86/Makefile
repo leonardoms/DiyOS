@@ -6,10 +6,11 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   tables.o memory.o pic.o helper.o idt.o isr.o start.o
+OBJECTS =   tables.o memory.o pic.o helper.o idt.o isr.o context_switch.o paging_helper.o start.o
 
 all: clean $(OBJECTS)
-	@ar rcs -o ../x86.a $(OBJECTS)
+	make -C mem/
+	ar rcs -o ../x86.a $(OBJECTS) mem/frame.o mem/kmalloc.o
 
 start.o:
 	@echo "[BUILD]"	$@
@@ -18,6 +19,14 @@ start.o:
 isr.o:
 	@echo "[BUILD]"	$@
 	@$(ASM) $(ASM_FLAGS) isr.asm -o isr.o
+
+context_switch.o:
+	@echo "[BUILD]"	$@
+	@$(ASM) $(ASM_FLAGS) context_switch.asm -o context_switch.o
+
+paging_helper.o:
+	@echo "[BUILD]"	$@
+	@$(ASM) $(ASM_FLAGS) paging_helper.asm -o paging_helper.o
 
 tables.o:
 	@echo "[BUILD]"	$@
@@ -34,6 +43,10 @@ idt.o:
 pic.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c pic.c -o pic.o
+
+mem/page.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c mem/page.c -o mem/page.o
 
 helper.o:
 	@echo "[BUILD]"	$@

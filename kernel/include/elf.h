@@ -4,6 +4,7 @@
 #include <ctypes.h>
 #include <debug/bochs.h>
 #include <small.h>
+#include <aspace.h>
 
 #define	ELF_SIGNATURE	0x464C457F	// Assinatura ELF
 #define	ELF_CLASS32	1	// 32 bits
@@ -108,7 +109,7 @@ typedef struct
 	unsigned binding : 4;
 	uint8_t zero;
 	uint16_t section;
-} elf_sym_t;
+} elf_sym_t __attribute__ ((packed));
 
 #pragma pack(1)
 typedef struct
@@ -123,7 +124,7 @@ typedef struct
 	uint32_t align;
 } elf_seg_t; /* 32 bytes */
 
-int32_t load_elf_exec(char *image, unsigned *entry/*, aspace_t *as*/);
+int32_t load_elf_exec(char *image, unsigned *entry, aspace_t *as);
 uint8_t	elf32_check(void* image, uint8_t type);
 uint8_t	elf32_get_section_by_name(void* image, char* sect_name, elf_sect_t** sect);
 int32_t	elf32_get_sections(void* image, uint32_t type, int32_t flags);

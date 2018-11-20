@@ -20,7 +20,7 @@ void fb_setup() {
   cell_size = 2;                  // 2-bytes long
   line_size = width * cell_size;
   buff_size = line_size * height;
-  color = FC_GREEN | BC_BLACK;
+  color = FC_LGRAY | BC_BLACK;
   fb_cursor_enable();   // make sure the cursor is enabled
   fb_clear();
   putchar = fb_putchar; // from video.h
@@ -32,8 +32,9 @@ void fb_gotoxy(uint32_t _x, uint32_t _y) {
   if( y < height )
     y = _y;
 
-  offset = y * line_size + x * cell_size;
-  //TODO: move cursor
+  // offset = y * line_size + x * cell_size;
+  fb_update_offset();
+  fb_cursor_update();
 }
 
 void fb_color(uint8_t _color) {
@@ -58,7 +59,7 @@ void fb_newline() {
     y--;
   }
   fb_update_offset();
-  fb_cursor_update(x,y);
+  fb_cursor_update();
 }
 
 void fb_roll() {

@@ -11,6 +11,9 @@
 #include <small.h> // stuffs like printf, str helpers... mem helpers, etc.
 #include <multiboot.h>
 #include <elf.h>
+#include <task.h>
+#include <panic.h>
+#include <x86/memory.h>
 
 extern void user_sti();
 
@@ -19,43 +22,43 @@ extern void art_show();
 void do_it_yourself(uint32_t multiboot_info) {
   disable();      // "please, dont disturb". (no interrupts while setting up)
 
+  multiboot_info_t *mbinfo = (multiboot_info_t *) multiboot_info;
+
   setup_fb();     // enables built-in video
   printf("DiyOS - do it yourself Operating System\n");
-  art_show();
 
   setup_x86();    // enables x86 32-bits things
 
-  multiboot_info_t *mbinfo = (multiboot_info_t *) multiboot_info;
-  multiboot_module_t *module = (multiboot_module_t *) mbinfo->mods_addr;
-  // printf("%s: 0x%x\n", module[0].cmdline, module[0].mod_start);
 
-  setup_memory(0);
+  // TODO: use multiboot_mmap_entry
+  setup_memory(mbinfo->mem_upper * 1024); // in bytes
 
-  setup_kb();     // enables built-in keyboard
-  // setup_timer();  // enable timer
-
-  setup_bochs_vbe();
+  // setup_bochs_vbe();
+  // vga_set_graphic();
   // network drivers
   // setup_ne2000();
   // setup_rtl81xx();
   // setup_rtl8139();
+  acpi_setup();
+  task_setup();
 
-  // test();
-  user_setup();
-  uint32_t* u = (uint32_t*)0x800000;
-  uint32_t i;
-  elf_sect_t*  sect[1];
-  if(elf32_get_section_by_name(module[0].mod_start, ".text", &sect[0]))
-    printf("Running %s: .text @ 0x%x\n\tUser entry point @ 0x800000\n\n", module[0].cmdline, sect[0]->offset);
-  else
-    printf("failed to find .text\n");
+  uint32_t i = 0;
+  multiboot_module_t *module = (multiboot_module_t *) mbinfo->mods_addr;
+  for(i = 0; i < mbinfo->mods_count; i++){
+    // if(!initrd_create((uint8_t*)module[i].mod_start, (uint8_t*)module[i].mod_end))
+      task_add(task_create_from_elf((char*)module[i].cmdline, (uint8_t*)module[i].mod_start));
+      // module_load((char*)module[i].cmdline, (uint8_t*)module[i].mod_start);
+  }
 
-  for(i=0;i<(module[0].mod_end-module[0].mod_start);i++)
-    u[i] = ((uint32_t*)(module[0].mod_start+sect[0]->offset))[i];
+  setup_kb();     // enables built-in keyboard
+  setup_timer();  // enable timer
 
-  to_user((uint32_t)u); // ELF entrypoint
+  terminal_root_setup();
+
+  task_show_all();
+  task_start();
 
   enable();       // crossing fingers... wellcome to the jungle.
 
-  while(1);
+  // while(1);
 }

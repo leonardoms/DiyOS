@@ -72,6 +72,7 @@ setup_bochs_vbe() {
 
     aux = pci_read(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0);
     aux = aux & 0xF;
+    printf("0x%x\n", aux);
     bochs_vbe_fb = (uint8_t*)0xE0000000; // force 0xE0000000 address
     pci_write(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0, (uint32_t)bochs_vbe_fb | aux);
 // pre-kmalloc testing
@@ -82,8 +83,8 @@ setup_bochs_vbe() {
       page_table[i] |= 3;
     }
     // alloc 8MB Video RAM
-    memory_set_table((uint32_t)bochs_vbe_fb,&page_table[0],0x3);      // first 4MB VRAM
-    memory_set_table((uint32_t)(bochs_vbe_fb+0x01000000),&page_table[1024],0x3); // last 4MB VRAM.
+    memory_set_table(NULL, (uint32_t)bochs_vbe_fb,&page_table[0],0x3);      // first 4MB VRAM
+    memory_set_table(NULL, (uint32_t)(bochs_vbe_fb+0x01000000),&page_table[1024],0x3); // last 4MB VRAM.
 #endif
 
     printf("\tEntering on mode 640x480 (24-bits)\n" );

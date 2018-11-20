@@ -1,21 +1,71 @@
 // keyboard built-in
 #include <drivers/kb.h>
 #include <drivers/video.h>
+#include <task.h>
+#include <panic.h>
 
-void keyboard_handle(irq_regs_t regs) {
-    uint8_t scode = inb(0x60);
-    uint32_t code = convert(scode);
-    if(code) {
-      putchar((uint8_t)code);
-    }
+task_t* kb_task;
+uint8_t keyboard_wait;
+
+
+void
+update_key(task_t* t, uint32_t* data) {
+  if( t->waitkey == 1 ) {
+    t->waitkey = 0;
+    t->key = *data;
+    t->state = TS_READY;
+  }
+}
+
+void
+keyboad_task() {
+
+  static int32_t code;
+
+  while(1) {
+
+      disable();
+
+      uint8_t scode = inb(0x60);
+
+      code = convert(scode);
+      if(code) {
+        task_queue_foreach(&tq_blocked, update_key, (uint32_t*)&code);
+      }
+
+      task_block(); // block 'keyboard' task
+  }
+}
+
+// __attribute__((interrupt))
+void keyboard_handle() {
+    BOCHS_BREAKPOINT
+    // asm volatile("add $12, %esp");
+  	// asm volatile("pusha");
+
+    pic_acknowledge(1);
+
+    kb_task->state = TS_READY;
+    // printf("kb");
+
+    // asm volatile("popa");
+  	// asm volatile("iret");
+
+    task_schedule();
 }
 
 void setup_kb() {
-    irq_install_callback(1, keyboard_handle);
+
+    kb_task = task_create(keyboad_task, "keyboard", TS_BLOCKED);
+    ASSERT_PANIC(kb_task != NULL);
+
+    task_add(kb_task);
+
+    irq_enable(1);
 }
 
 // adapted from Projeto-SOmBRA kbd.c
-uint32_t convert(uint32_t code){
+int32_t convert(uint32_t code){
 	static uint8_t k_shift = 0;
 	static uint8_t k_alt   = 0;
 	static uint8_t k_ctrl  = 0;

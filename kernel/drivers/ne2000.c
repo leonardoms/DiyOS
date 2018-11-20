@@ -1,7 +1,7 @@
 #include <pci.h>
 #include <x86/x86.h>
 #include <small.h>
-
+// https://github.com/levex/levos7/blob/master/drivers/e1000.c
 const struct _ne2000_id {
   uint16_t  vendor;
   uint16_t  device;

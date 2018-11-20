@@ -6,7 +6,7 @@
 #include <drivers/fb.h>
 
 void setup_kb();
-uint32_t convert(uint32_t code); // convert keycode to ascii
+int32_t convert(uint32_t code); // convert keycode to ascii
 
 int keymap[105][2];
 

@@ -1,5 +1,6 @@
 
 #include <x86/x86.h>
+#include <task.h>
 
 extern void load_idt(struct idt* addr);
 extern void isr0();
@@ -51,6 +52,10 @@ extern void isr45();
 extern void isr46();
 extern void isr47();
 extern void isr66();
+extern void isr255();
+extern void timer_handle();
+extern void keyboard_handle();
+extern void task_schedule_handler();
 
 isr_callback_t isr_callbacks[256] __attribute__ ((aligned (8)));
 idt_entry_t    idt[256];
@@ -73,13 +78,13 @@ void
 irq_dispacher(isr_regs_t regs) {
     isr_callback_t c = isr_callbacks[regs.intn];
 
+    pic_acknowledge(regs.intn - IRQ_BASE);
+
     if(c) {
       c(regs);
     } else {
       printf("isr_dispacher: undefined callback for IRQ#%x !\n", regs.intn - IRQ_BASE);
     }
-
-    pic_acknowledge(regs.intn - IRQ_BASE);
 }
 
 void
@@ -109,10 +114,102 @@ irq_install_callback(uint8_t irq, isr_callback_t callback) {
   irq_enable(irq);
 }
 
+struct fault_name {
+    char* name;
+    uint8_t has_errcode;
+} fault_names[] = {
+  {"Divide-by-Zero", FALSE },
+  {"Debug", FALSE},
+  {"Non-maskable Interrupt", FALSE},
+  {"Breakpoint", FALSE},
+  {"Overflow", FALSE},
+  {"Bound Range Exceeded", FALSE},
+  {"Invalid Opcode", FALSE},
+  {"Device Not Available", FALSE},
+  {"Double Fault", TRUE},
+  {"Coprocessor Segment Overrun", FALSE},
+  {"Invalid TSS", TRUE},
+  {"Segment Not Present", TRUE},
+  {"Stack-Segment Fault", TRUE},
+  {"General Protection Fault", TRUE},
+  {"Page Fault", TRUE},
+  {NULL, FALSE},
+  {"x87 Floating-Point Exception", FALSE},
+  {"Alignment Check", TRUE},
+  {"Machine Check", FALSE},
+  {"SIMD Floating-Point Exception", FALSE},
+  {"Virtualization Exception", FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {NULL, FALSE},
+  {"Security Exception", TRUE},
+  {NULL, FALSE}
+};
+
 void
 fault_handler(isr_regs_t regs) {
-    printf("CPU fault #%d\n", regs.intn);
+    uint32_t cr2;
+
+    task_t* t;
+    t = task_get();
+    printf("********************************************************************\n");
+    if(t) {
+      printf("*\tPID: %d\tNAME: %s\n", t->id, t->name );
+    } else {
+      printf("*\tPID: -\tNAME: -\n" );
+    }
+
+    __asm__ __volatile__("mov %%cr2, %%eax; mov %%eax, %0":"=m"(cr2)::"%eax");
+    printf("*\tError! %s (error: 0x%x)\n", fault_names[regs.intn].name, regs.err_code);
+    printf("*\tEAX=0x%x\tEBX=0x%x\tECX=0x%x\tEDX=0x%x\n", regs.eax, regs.ebx, regs.ecx, regs.edx );
+    printf("*\tCS:EIP=0x%x:0x%x\tSS:ESP=0x%x:0x%x\n", regs.cs, regs.eip, regs.ss, regs.useresp );
+    printf("********************************************************************\n");
+
+    if(t)
+      task_destroy();
+
+    while(1)
+      __asm__ __volatile__("cli\n");
 }
+
+void
+page_fault_handler(isr_regs_t regs) {
+    uint32_t cr2, cr3;
+    task_t* t = task_get();
+    __asm__ __volatile__("mov %%cr2, %%eax; mov %%eax, %0":"=m"(cr2)::"%eax");
+    __asm__ __volatile__("mov %%cr3, %%eax; mov %%eax, %0":"=m"(cr3)::"%eax");
+
+    if(t) {
+      printf("********************************************************************\n");
+      printf("*\tPID: %d\tNAME: %s\n", t->id, t->name );
+      printf("*\tPAGEFAULT on address 0x%x (%s %s %s) !\n", cr2, (regs.err_code&1)?"Prot.":" ",
+                                                    (regs.err_code&2)?"Write":"Read",
+                                                    (regs.err_code&5)?"User":"Super" );
+      printf("*\tEAX=0x%x\tEBX=0x%x\tECX=0x%x\tEDX=0x%x\n", regs.eax, regs.ebx, regs.ecx, regs.edx );
+      printf("*\tCS:EIP=0x%x:0x%x\tSS:ESP=0x%x:0x%x\n", regs.cs, regs.eip, regs.ss, regs.useresp );
+      printf("********************************************************************\n");
+      task_destroy();
+    } else {
+      printf("********************************************************************\n");
+      printf("*\tPID: -\tNAME: (null)\n" );
+      printf("*\tPAGEFAULT on address 0x%x (%s %s %s) !\n", cr2, (regs.err_code&1)?"Prot.":" ",
+                                                    (regs.err_code&2)?"Write":"Read",
+                                                    (regs.err_code&5)?"User":"Super" );
+      printf("*\tEAX=0x%x\tEBX=0x%x\tECX=0x%x\tEDX=0x%x\n", regs.eax, regs.ebx, regs.ecx, regs.edx );
+      printf("*\tCS:EIP=0x%x:0x%x\tSS:ESP=0x%x:0x%x\n", regs.cs, regs.eip, regs.ss, regs.useresp );
+      printf("********************************************************************\n");
+    }
+
+    while(1)
+      __asm__ __volatile__("cli\n");
+}
+
 
 void
 isr_install() {
@@ -129,7 +226,7 @@ isr_install() {
   isr_install_callback(11, fault_handler);
   isr_install_callback(12, fault_handler);
   isr_install_callback(13, fault_handler);
-  isr_install_callback(14, fault_handler);
+  isr_install_callback(14, page_fault_handler);
   isr_install_callback(16, fault_handler);
   isr_install_callback(17, fault_handler);
   isr_install_callback(18, fault_handler);
@@ -191,8 +288,9 @@ void setup_idt() {
   setup_idt_entry(31, (uint32_t)isr31, 0);
 
   // IRQ
-  setup_idt_entry(32, (uint32_t)isr32, 0);
-  setup_idt_entry(33, (uint32_t)isr33, 0);
+  setup_idt_entry(32, (uint32_t)timer_handle, 0);
+  setup_idt_entry(33, (uint32_t)keyboard_handle, 0);
+  printf("keyboard_handle: 0x%x\n", (uint32_t)keyboard_handle);
   setup_idt_entry(34, (uint32_t)isr34, 0);
   setup_idt_entry(35, (uint32_t)isr35, 0);
   setup_idt_entry(36, (uint32_t)isr36, 0);
@@ -210,6 +308,8 @@ void setup_idt() {
 
   // syscall
   setup_idt_entry(66, (uint32_t)isr66, 3);      // dpl = 3
+
+  setup_idt_entry(0xFF, (uint32_t)task_schedule_handler, 0);
 
   irq_install_callback(7,irq7_handler);
   isr_install();

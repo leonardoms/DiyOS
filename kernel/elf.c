@@ -11,8 +11,9 @@
 *****************************************************************************/
 
 #include <elf.h>
+#include <aspace.h>
 
-int32_t load_elf_exec(char *image, unsigned *entry/*, aspace_t *as*/)
+int32_t load_elf_exec(char *image, unsigned *entry, aspace_t *as)
 {
 	elf_file_t *elf;
 	elf_seg_t *seg;
@@ -29,12 +30,16 @@ int32_t load_elf_exec(char *image, unsigned *entry/*, aspace_t *as*/)
 		elf->machine != 3 ||	/* 3=i386 */
 		elf->elf_ver_2 != 1)
 			return 1;
+
 /* get entry point */
 	(*entry) = elf->entry;
 /* seek to program headers (segments) */
+
+
 	image += elf->phtab_offset;
 	for(i = 0; i < elf->num_ph; i++)
 	{
+
 		seg = (elf_seg_t *)(image + elf->ph_size * i);
 /* choke on 2=DYNAMIC and the forbidden 5=SHLIB segments */
 		if(seg->type == 2 || seg->type == 5)
@@ -42,18 +47,21 @@ int32_t load_elf_exec(char *image, unsigned *entry/*, aspace_t *as*/)
 /* handle 1=LOAD segment */
 		else if(seg->type == 1)
 		{
-			// err = aspace_section_add(as, seg->virt_adr, seg->disk_size,
-				// SF_LOAD | (seg->flags & 7), seg->offset);
+			err = aspace_section_create(as, seg->virt_adr, seg->disk_size,
+				SF_LOAD | (seg->flags & 7), seg->offset);
 			if(err)
 				return err;
+
 /* if size-in-mem > size-on-disk, this segment contains the BSS */
 			if(seg->mem_size > seg->disk_size)
 			{
-				// err = aspace_section_add(as,
-				// 	seg->virt_adr + seg->disk_size,
-				// 	seg->mem_size - seg->disk_size,
-				// 	SF_ZERO | (seg->flags & 7),
-				// 	seg->offset);
+
+				err = aspace_section_create(as,
+					seg->virt_adr + seg->disk_size,
+					seg->mem_size - seg->disk_size,
+					SF_ZERO | (seg->flags & 7),
+					seg->offset);
+
 				if(err)
 					return err;
 			}
@@ -62,6 +70,7 @@ int32_t load_elf_exec(char *image, unsigned *entry/*, aspace_t *as*/)
 		else
 			nothing; */
 	}
+
 	return 0;
 }
 
@@ -69,7 +78,7 @@ int32_t load_elf_exec(char *image, unsigned *entry/*, aspace_t *as*/)
 uint8_t	elf32_get_section_by_name(void* image, char* sect_name, elf_sect_t** sect)
 {
 	elf_file_t	*elf = (elf_file_t*)image;
-	elf_sect_t	*sect_table, *str_sect;
+	elf_sect_t	/**sect_table,*/ *str_sect;
 	int8_t		*strings;
 	uint32_t	i, index;
 
@@ -80,12 +89,12 @@ uint8_t	elf32_get_section_by_name(void* image, char* sect_name, elf_sect_t** sec
 	strings = (int8_t*)(str_sect->offset + image);
 	//printf("%s", strings);
 
-	sect_table = (elf_sect_t*)(image + elf->shtab_offset);
+	// sect_table = (elf_sect_t*)(image + elf->shtab_offset);
 	for(i = 0; i < elf->num_sects; i++)
 	{
 		// Pega o �ndice do nome da se��o atual.
 		index = ((elf_sect_t*)(image + elf->shtab_offset + (elf->sh_size * i)))->sect_name;
-		if(!strcmp(strings + index , sect_name))
+		if(!strcmp((char*)(strings + index) , sect_name))
 		{
 			*sect = (elf_sect_t*)(image + elf->shtab_offset + (elf->sh_size * i));
 			return 1;
@@ -195,7 +204,7 @@ uint8_t	elf32_get_symbol_by_name(void* image, const char* sym_name, int32_t type
 	for(i = 0; i < (symtab->size / symtab->ent_size); i++)
 	{
 		sym = (elf_sym_t*)(image + symtab->offset + i * symtab->ent_size);
-		if(!strcmp(strings + sym->name, (char*)sym_name))
+		if(!strcmp((char*)(strings + sym->name), (char*)sym_name))
 		{
 			if(type > 0 && sym->type != type)
 				return 0;
@@ -241,7 +250,7 @@ uint8_t	elf32_get_name(void* image, uint32_t index, elf_sect_t* strtab, const ch
 
 	strings = (int8_t*)(image + strtab->offset);
 
-	*name = (int8_t*)(strings + index);
+	*name = (char*)(strings + index);
 
 	return 1;
 }

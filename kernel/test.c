@@ -23,7 +23,7 @@ test() {
     tester = tester / 0;
 #endif
 
-#if 1
+#if 0
     uint32_t i;
     uint8_t* my_dynamic_data = (uint8_t*)kmalloc(15000);
 
