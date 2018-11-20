@@ -27,6 +27,7 @@ printf (const char *format, ...) {
          }
 
          switch (c) {
+           case 'X':
            case 'd':
            case 'u':
            case 'x':

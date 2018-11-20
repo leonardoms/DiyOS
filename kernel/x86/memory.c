@@ -1,22 +1,15 @@
 #include <x86/memory.h>
+#include <x86/frame.h>
 #include <debug/bochs.h>
+#include <panic.h>
 
 extern uint32_t page_directory[1024];
-
-#define BYTES_TO_FRAMES //TODO: replace memory_bytes_to_frames(uint32_t size)
-
-#define PAGE_FLAG_BITMAP_END    (0x5 << 9)  // use the 3-bit unused in PageTable entry as flag
-#define PAGE_FLAG_BITMAP_START  (0x2 << 9)
-
-#define PAGE_TABLE_SIZE   0x1000
-#define PAGE_TABLE_ADDR   0xFFC00000    // page tables at end of linear address
-#define PAGE_TABLE_ENTRY  (PAGE_TABLE_ADDR >> 22)
 
 uint32_t   page_table_paddr;
 uint32_t*  page_table;
 uint32_t   page_table_temp[1024] __attribute__((aligned (4096))); // onde page table in kernel space (with access!)
 // TODO: use multiboot memory info
-#define    memory_frames_count 16384  // 64MB (test)
+uint32_t   memory_frames_count;// 16384  // 64MB (test)
 uint32_t   memory_frames_free;
 
 #define    ADDR_TO_BITMAP(addr)       ( ( (addr >> 22) * 0x80 ) + ((addr >> 12) & 0x3FF000) >> 3)
@@ -28,7 +21,7 @@ uint32_t   memory_frames_free;
 #define    BITMAP_SIZE     0x20000
 uint8_t    physical_bitmap[BITMAP_SIZE];  // bitmap for physical memory
 void
-memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
+memory_set_table(uint32_t* pd, uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
 
 uint32_t
 memory_bytes_to_frames(uint32_t size) {
@@ -43,8 +36,13 @@ void
 setup_memory(uint32_t mem_size) {
   uint32_t i, j;
 
-  printf("Paging enabled: kernel @ 0x%x (%dKB)\n", (uint32_t)&kernel_vaddr_start, ((uint32_t)&kernel_vaddr_end-(uint32_t)&kernel_vaddr_start)/1024);
+  // ASSERT_PANIC(kernel_paddr_end != NULL);
 
+  frame_setup(mem_size, 0, 0x900000);
+
+  printf("Paging enabled: kernel @ 0x%x (%dKB)\n", (uint32_t)&kernel_vaddr_start, ((uint32_t)&kernel_vaddr_end-(uint32_t)&kernel_vaddr_start)/1024);
+  printf("\tSystem Memory: %d MB\n", mem_size / (1024 * 1024 ));
+  memory_frames_count = mem_size / 0x1000;
   memory_frames_free = memory_frames_count;
   // alloc one directory for page tables itself
   // get a physical address after kernel (4MB aligned)!
@@ -56,10 +54,10 @@ setup_memory(uint32_t mem_size) {
       page_table_temp[i] |= PAGE_FLAG_RW | PAGE_FLAG_PRESENT;
   }
   // finally allow access for PAGE_TABLE_ADDR area ...
-  memory_set_table(PAGE_TABLE_ADDR,&page_table_temp,PAGE_FLAG_RW | PAGE_FLAG_PRESENT);
+  memory_set_table(NULL, page_table_paddr, &page_table_temp, PAGE_FLAG_RW | PAGE_FLAG_PRESENT);
 
   // populate the new page tables area!
-  page_table = (uint32_t*)PAGE_TABLE_ADDR;
+  page_table = (uint32_t*)page_table_paddr;
 
   // set all frames as 'not present'
   for(i = 0; i < 1024; i++)
@@ -95,8 +93,12 @@ memory_set_frame(uint32_t virt_addr, uint32_t phys_addr) {
 
 // alloc a page table (4MB) for a Virtual Address (4MB aligned)
 void
-memory_set_table(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
-    page_directory[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
+memory_set_table(uint32_t* pd, uint32_t virt_addr, uint32_t* pg_table, uint32_t flags) {
+    if( pd == NULL )
+      page_directory[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
+    else
+      pd[virt_addr >> 22] = VIRTUAL_TO_PHYSICAL(pg_table) | flags;
+
 }
 
 // set memory frame (4KB) as dirty
@@ -112,10 +114,11 @@ memory_bitmap_unset(uint32_t address) {
 }
 
 void*
-_kmalloc(uint32_t size, uint16_t base, uint16_t limit, uint32_t uflag) { // base: starting dir; limit: limit dir
+kmalloc_ex(uint32_t size, uint32_t* phys, uint32_t base, uint32_t limit, uint32_t uflag) { // base: starting dir; limit: limit dir
    uint32_t frames, frames_left;
    uint32_t*  page_table;
-   uint32_t i, j, i_byte, i_bit, addr;
+   uint32_t i, j, addr;
+   static uint32_t i_byte, i_bit;
    uint32_t start_dir, start_frame;
 
    frames = memory_bytes_to_frames(size);
@@ -125,11 +128,17 @@ _kmalloc(uint32_t size, uint16_t base, uint16_t limit, uint32_t uflag) { // base
      return NULL;
    }
 
+   // if((phys != NULL) && (size > 0x1000)) {
+   //   printf("kmalloc_phys: not implemented for 4K+ blocks!\n");
+   //   return NULL;
+   // }
+
    frames_left = frames;
 
    // find continguous block of linear memory in high-half 3GB~4GB
    for(i = base; i < limit; i++ ) {
         for(j = 0; j < 1024; j++ ) { // search frames
+//TODO: get CR3 value
             page_table = (uint32_t*)(PAGE_TABLE_ADDR + i * 0x1000);
             if((page_table[j] & PAGE_FLAG_PRESENT) == 0) {
                 if( frames_left == frames ) { // mark first frame
@@ -140,16 +149,20 @@ _kmalloc(uint32_t size, uint16_t base, uint16_t limit, uint32_t uflag) { // base
             } else frames_left = frames;
 
             if( frames_left == 0 )
-                goto _alloc_frames;
+                // goto _alloc_frames;
+                break;
         }
+        if( frames_left == 0 )
+            // goto _alloc_frames;
+            break;
    }
 
-   printf("kmalloc: out of memory (fragmented)!\n");
-   return NULL;
+   if( frames_left > 0 ) {
+     printf("kmalloc: out of memory (fragmented)!\n");
+     return NULL;
+   }
 
-_alloc_frames:
-
-   // printf("kmalloc: %d frames @ 0x%x\n", frames, start_dir * 0x400000 + start_frame * 0x1000);
+// _alloc_frames:
 
    frames_left = frames;
 
@@ -160,10 +173,15 @@ _alloc_frames:
      // printf("#%d: %d\n", i_byte, (uint8_t)physical_bitmap[i_byte] );
      // printf("%d.%d ", i_byte, i_bit );
 
-     if(physical_bitmap[i_byte] & ( 1 << i_bit) ) { // is it a free bit?
+     if(physical_bitmap[i_byte] && ( 1 << i_bit) ) { // is it a free bit?
         continue; // dirty bit
      }
 
+     if(phys != NULL)
+     {
+         *phys = (uint32_t)(( i_byte * 8 + i_bit ) * 0x1000 );
+         // printf("phys=0x%x\n", *phys);
+     }
 
      physical_bitmap[i_byte] |= ( 1 << i_bit);  // mark the bit as dirty
 
@@ -192,7 +210,6 @@ _alloc_frames:
      }
 
    }
-
    memory_frames_free -= frames;
 
    // memory_flush_all();
@@ -285,11 +302,6 @@ memory_debug_addr(uint32_t addr) {
 
     printf("\nend of blocks (%d frames)\n", i);
 
-}
-
-uint32_t*
-alloc_physical_block() {
-    
 }
 
 void

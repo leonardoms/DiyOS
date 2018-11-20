@@ -1,7 +1,7 @@
 bits 32
 
 global start
-global kernel_stack
+extern kernel_stack_addr
 global page_directory
 extern do_it_yourself   ; void do_it_yourself(); from main.c
 

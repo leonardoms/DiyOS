@@ -14,6 +14,9 @@ strlen(uint8_t* str);
 int
 strcmp(char *s1, char *s2);
 
+int
+strncmp(const char *s1, const char *s2, unsigned int n);
+
 void
 memset(void* src, uint8_t value, uint32_t size);
 
@@ -22,5 +25,8 @@ memcpy(void* src, void* dst, uint32_t size);
 
 void
 printf (const char *format, ...);
+
+uint32_t
+getchar();
 
 #endif

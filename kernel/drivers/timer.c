@@ -1,30 +1,46 @@
 
 #include <drivers/timer.h>
 #include <small.h>
+#include <task.h>
 
-#define HZ_FREQUENCY  1000
+#define HZ_FREQUENCY  100
 
-void timer_handle(isr_regs_t regs) {
-  static uint8_t state = 0;
-  static uint32_t count = 0;
+uint32_t current_tick;
+uint8_t tasking = 0;
 
-  if(count == HZ_FREQUENCY) { // 1-second
-#if 0
-    if(!state)
-       printf("tic...");
-    else
-       printf("tac!\n");
-    state = ~state;
-#endif
-    count = 0;
-  } else
-  count++;
+void
+update_timeout(task_t* t, uint32_t* data) {
+  if(t->timeout > 0) {
+    t->timeout -= (int32_t)data;
+    if( t->timeout <= 0 ) {
+      t->state = TS_READY;
+      t->timeout = 0;
+      // task_queue_insert(&tq_ready, t);
+    }
+      // printf("%s (%d) %dms left for timeout.\n", t->name, t->state, t->timeout);
+  }
 }
 
-void setup_timer(){
+void
+timer_handle() {
+  // asm volatile("add $0x1c, %esp");
+  // asm volatile("pusha");
+  // pic_acknowledge(0);
+
+  // current_tick++;
+  // task_queue_foreach(&tq_blocked, update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
+  BOCHS_BREAKPOINT
+	task_schedule();
+}
+
+void
+setup_timer(){
   unsigned short f = 1193181 / HZ_FREQUENCY; // 100 = 100hz -> 0.01s
   outportb(0x43, 0x36);
   outportb(0x40, f & 0xFF);
   outportb(0x40, f >> 8);
-  irq_install(0,timer_handle);
+
+  current_tick = 0;
+
+  irq_install_callback(0,timer_handle);
 }

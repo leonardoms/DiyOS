@@ -6,7 +6,7 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   kb.o fb.o timer.o bochs_vbe.o ne2000.o rtl81xx.o rtl8139.o
+OBJECTS =   kb.o fb.o timer.o bochs_vbe.o ne2000.o rtl81xx.o rtl8139.o acpi.o vga.o
 
 all: clean $(OBJECTS)
 	@ar rcs -o ../built-in_drivers.a $(OBJECTS)
@@ -14,6 +14,14 @@ all: clean $(OBJECTS)
 fb.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c fb.c -o fb.o
+
+vga.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c vga.c -o vga.o
+
+acpi.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c acpi.c -o acpi.o
 
 kb.o:
 	@echo "[BUILD]"	$@
@@ -37,7 +45,7 @@ rtl81xx.o:
 
 rtl8139.o:
 	@echo "[BUILD]"	$@
-	@$(CC) $(C_FLAGS) -c rtl8139.c -o rtl8139.o	
+	@$(CC) $(C_FLAGS) -c rtl8139.c -o rtl8139.o
 
 clean:
 	@-rm *.o > /dev/null

@@ -12,7 +12,7 @@
 
 uint32_t k_eip;
 extern uint32_t kernel_eip();
-extern  uint32_t* kernel_stack;
+uint32_t kernel_stack_addr;
 
 typedef struct
 {
@@ -22,15 +22,10 @@ typedef struct
     uint32_t eip, cs, eflags, useresp, ss;
 } isr_regs_t;
 
-typedef struct
-{
-    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    uint32_t gs, fs, es, ds;
-    uint32_t eip, cs, eflags, useresp, ss;
-} irq_regs_t;
+#define irq_regs_t isr_regs_t
 
 typedef void (*isr_callback_t)(isr_regs_t);
-typedef void (*irq_callback_t)(irq_regs_t);
+typedef void (*irq_callback_t)(isr_regs_t);
 
 struct gdt {
   uint16_t size;
@@ -88,6 +83,8 @@ struct tss_entry_struct
    uint16_t iomap_base;
 } __attribute__ ((__packed__));
 
+typedef struct tss_entry_struct tss_t;
+
 void setup_gdt();
 void setup_idt();
 
@@ -99,8 +96,14 @@ void
 syscall_setup();
 
 void
+isr_install();
+
+void
 irq_install_callback(uint8_t irq, isr_callback_t callback);
 
-#define setup_x86() {setup_gdt(); setup_idt(); isr_install(); syscall_setup();}
+void
+isr_install_callback(uint8_t irq, isr_callback_t callback);
+
+#define setup_x86() { setup_gdt(); setup_idt(); isr_install(); syscall_setup(); }
 
 #endif
