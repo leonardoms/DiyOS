@@ -40,7 +40,8 @@ void fb_setup();
 void fb_clear();
 void fb_color(uint8_t color);
 void fb_gotoxy(uint32_t x, uint32_t y);
-// void fb_getxy(uint32_t* x, uint32_t* y);
+void fb_getxy(uint32_t* x, uint32_t* y);
+void fb_get_color(uint8_t* color);
 void fb_newline();
 
 void fb_putchar(const char c);

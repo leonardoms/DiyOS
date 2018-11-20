@@ -25,11 +25,11 @@ void
 timer_handle() {
   // asm volatile("add $0x1c, %esp");
   // asm volatile("pusha");
-  // pic_acknowledge(0);
+  pic_acknowledge(0);
 
   // current_tick++;
-  // task_queue_foreach(&tq_blocked, update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
-  BOCHS_BREAKPOINT
+  task_queue_foreach(&tq_blocked, update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
+  // BOCHS_BREAKPOINT
 	task_schedule();
 }
 

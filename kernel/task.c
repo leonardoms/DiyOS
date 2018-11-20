@@ -181,7 +181,7 @@ task_create_from_elf(const char* name, uint8_t* runnable) {
     t->regs.cr3 = t->pagedir_phys;
 
     t->next = NULL;
-    t->switch_function = context_switch;
+    // t->switch_function = context_switch;
 
     // printf("ok (id=%d entry=0x%x cr3=0x%x)\n", t->id, t->regs.eip, t->regs.cr3);
     printf("loaded.\n");
