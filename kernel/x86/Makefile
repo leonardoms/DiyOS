@@ -6,7 +6,7 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   tables.o memory.o pic.o helper.o idt.o isr.o context_switch.o paging_helper.o start.o
+OBJECTS =   tables.o memory.o pic.o helper.o idt.o isr.o paging_helper.o start.o
 
 all: clean $(OBJECTS)
 	make -C mem/
@@ -19,10 +19,6 @@ start.o:
 isr.o:
 	@echo "[BUILD]"	$@
 	@$(ASM) $(ASM_FLAGS) isr.asm -o isr.o
-
-context_switch.o:
-	@echo "[BUILD]"	$@
-	@$(ASM) $(ASM_FLAGS) context_switch.asm -o context_switch.o
 
 paging_helper.o:
 	@echo "[BUILD]"	$@

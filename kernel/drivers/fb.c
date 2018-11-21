@@ -41,6 +41,17 @@ void fb_color(uint8_t _color) {
   color = _color;
 }
 
+void fb_getxy(uint32_t* _x, uint32_t* _y) {
+  if(_x != NULL)
+    *_x = x;
+  if(_y != NULL)
+    *_y = y;
+}
+void fb_get_color(uint8_t* _color) {
+  if(_color != NULL)
+    *_color = color;
+}
+
 void fb_clear() {
   offset = 0;
   do {

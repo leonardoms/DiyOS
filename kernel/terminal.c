@@ -106,10 +106,50 @@ exec(char* cmd) {
 }
 
 void
+terminal_bar() {
+
+  uint32_t old_x, old_y, color, time_elapsed = 0, h, m, s, x;
+
+  while(1) {
+      fb_getxy(&old_x, &old_y); // save cursor position
+      fb_get_color(&color); // save color
+
+      h = time_elapsed / 3600;
+      m = (time_elapsed % 3600) / 60;
+      s = time_elapsed % 60;
+
+      fb_gotoxy(0,0);
+      fb_color(FC_DGRAY | BC_WHITE);
+      printf(" Welcome to ");
+      fb_color(FC_BLACK | BC_WHITE);
+      printf("DiyOS ");
+      fb_color(FC_DGRAY | BC_WHITE);
+      printf("| uptime %02d:%02d:%02d", h, m, s );
+
+      while(1) {
+        fb_getxy(&x,NULL);
+        if(x >= (80 - 1))
+          break;
+        printf(" ");  // complete the line
+
+      }
+
+      fb_color(color);
+      fb_gotoxy(old_x, old_y);
+
+      sleep(1000);
+      time_elapsed++;
+  }
+}
+
+void
 terminal_root_setup() {
   task_t* t;
 
   t = task_create(terminal_root, "terminal_root", TS_READY);
+  task_add(t);
+
+  t = task_create(terminal_bar, "terminal_bar", TS_READY);
   task_add(t);
 
 }
