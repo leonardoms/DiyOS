@@ -7,8 +7,10 @@ This is a very very very experimental code, no warranties, it's for own study.
 ---
 Latest built ISO @ [build/](build/)
 
-Latest boot screenshot
+Latest boot screenshots
+
 ![Boot Screenshot](build/screenshot.png)
+
 ![Testing GUI Screenshot](build/screenshot_gui.png)
 
 ---
