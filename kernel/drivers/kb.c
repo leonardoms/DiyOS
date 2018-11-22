@@ -20,7 +20,7 @@ update_key(task_t* t, uint32_t* data) {
 void
 keyboad_task() {
 
-  static int32_t code;
+  static int32_t code, y = 0;
 
   while(1) {
 

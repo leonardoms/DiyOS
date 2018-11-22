@@ -26,22 +26,21 @@ task_get() {
 typedef void (*task_callback_t)(task_t* t, uint8_t* data);
 
 void
-task_foreach(task_callback_t c, uint8_t* data) {
-  task_t* t;
-
-  t = running_task;
-  do {
-    c(t, data);
-    t = t->next;
-  } while( t != running_task );
+update_wait4pid(task_t* t, uint8_t* data) {
+  if(t->wait4pid == ((task_t*)data)->id) {
+    t->wait4pid = 0;
+    t->state = TS_READY;
+  }
 }
 
 void
 task_destroy() {
-    printf("[RIP] %s task \n", running_task->name, running_task->id);
+    printf("kill: %s (pid: %d)\n", running_task->name, running_task->id);
+
+    task_queue_foreach(&tq_blocked, update_wait4pid, (uint32_t*)running_task);
+
     running_task = NULL;
     num_tasks--;
-    // task_show_all();
     __asm__ __volatile__("int $0xff\n");
 }
 

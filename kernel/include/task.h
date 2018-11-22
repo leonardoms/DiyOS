@@ -20,6 +20,7 @@ typedef struct task {
     task_state_t  state;
     uint32_t    time_ms;
     int32_t     timeout; // timeout in seconds, used in sleep
+    uint32_t    wait4pid;
     uint8_t     waitkey, key;
     int32_t     quatum; // ticks of time left for running
     char        name[1024];

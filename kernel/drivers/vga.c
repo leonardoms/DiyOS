@@ -1,33 +1,14 @@
 // adapted code, thanks for Chris Giese <geezer@execpc.com>	http://my.execpc.com/~geezer
 
-#include <small.h>
+#include <drivers/vga.h>
+#include "font8x8_basic.h"
 
 uint32_t width, height, depth;
 uint8_t* fb;
 
-#define	VGA_AC_INDEX		  0x3C0
-#define	VGA_AC_WRITE		  0x3C0
-#define	VGA_AC_READ       0x3C1
-#define	VGA_MISC_WRITE		0x3C2
-#define VGA_SEQ_INDEX		  0x3C4
-#define VGA_SEQ_DATA		  0x3C5
-#define	VGA_DAC_READ_INDEX	0x3C7
-#define	VGA_DAC_WRITE_INDEX	0x3C8
-#define	VGA_DAC_DATA		  0x3C9
-#define	VGA_MISC_READ		  0x3CC
-#define VGA_GC_INDEX 		  0x3CE
-#define VGA_GC_DATA 	    0x3CF
-/*			COLOR emulation		MONO emulation */
-#define VGA_CRTC_INDEX		0x3D4		/* 0x3B4 */
-#define VGA_CRTC_DATA		  0x3D5		/* 0x3B5 */
-#define	VGA_INSTAT_READ		0x3DA
+void
+vga_set_RRRGGGBB();
 
-#define	VGA_NUM_SEQ_REGS	5
-#define	VGA_NUM_CRTC_REGS	25
-#define	VGA_NUM_GC_REGS		9
-#define	VGA_NUM_AC_REGS		21
-#define	VGA_NUM_REGS		  (1 + VGA_NUM_SEQ_REGS + VGA_NUM_CRTC_REGS + \
-				VGA_NUM_GC_REGS + VGA_NUM_AC_REGS)
 /*****************************************************************************
 VGA REGISTER DUMPS FOR VARIOUS TEXT MODES
 *****************************************************************************/
@@ -1003,10 +984,9 @@ assume: chain-4 addressing already off */
 }
 /*****************************************************************************
 *****************************************************************************/
-static void (*vga_write_pixel)(unsigned x, unsigned y, unsigned c);
 static unsigned g_wd, g_ht;
 
-static void write_pixel1(unsigned x, unsigned y, unsigned c)
+static void write_pixel1(unsigned x, unsigned y, unsigned char c)
 {
 	unsigned wd_in_bytes;
 	unsigned off, mask;
@@ -1020,7 +1000,7 @@ static void write_pixel1(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel2(unsigned x, unsigned y, unsigned c)
+static void write_pixel2(unsigned x, unsigned y, unsigned char c)
 {
 	unsigned wd_in_bytes, off, mask;
 
@@ -1033,7 +1013,7 @@ static void write_pixel2(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel4p(unsigned x, unsigned y, unsigned c)
+static void write_pixel4p(unsigned x, unsigned y, unsigned char c)
 {
 	unsigned wd_in_bytes, off, mask, p, pmask;
 
@@ -1054,7 +1034,7 @@ static void write_pixel4p(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel8(unsigned x, unsigned y, unsigned c)
+static void write_pixel8(unsigned x, unsigned y, unsigned char c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1065,7 +1045,7 @@ static void write_pixel8(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel8x(unsigned x, unsigned y, unsigned c)
+static void write_pixel8x(unsigned x, unsigned y, unsigned char c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1100,9 +1080,20 @@ vga_clear(uint8_t c) {
   for( x = 0; x < width; x++ ) {
     fb[y*width+x] = c;
   }
+	vga_flip();
 }
 
-void drawline(int x0, int y0, int x1, int y1, uint8_t c)
+uint32_t
+vga_width() {
+	return width;
+}
+
+uint32_t
+vga_height() {
+	return height;
+}
+
+void vga_line(int x0, int y0, int x1, int y1, uint8_t c)
 {
     int dx, dy, p, x, y;
 
@@ -1160,23 +1151,85 @@ void drawrect_fill(int left,int top, int right, int bottom, uint8_t color)
 
 void
 vga_set_graphic() {
+
   write_regs(g_320x200x256);
   vga_write_pixel = write_pixel8;// 4-bit = 16 colors
   putpixel = vga_write_pixel;
   clear_screen = vga_clear;
-  fb = (uint8_t*)vga_get_fb();
+  // fb = (uint8_t*)vga_get_fb();
+	fb = (uint8_t*)kmalloc(width * height * ( depth >> 3 ));
 
   width  = 320;
   height = 200;
   depth  = 8;
 
-  vga_clear(0);
+	vga_set_RRRGGGBB();
 
-  uint16_t y;
-  for(y=0;y<200;y++)
-    drawline(0,y,width,y,y & 0xFF);
+  vga_clear(RGB_TO_332(0xA0,0xA0,0xA0));
 
-  drawrect_fill(0,0,width,10,20);
+  // uint16_t y;
+  // for(y=0;y<200;y++)
+  //   drawline(0,y,width,y,y & 0xFF);
+	//
+  // drawrect_fill(0,0,width,10,20);
 
 
+}
+
+void
+vga_rect(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t color) {
+	unsigned top_offset,bottom_offset,i,temp,w;
+
+  if (y0>y1)
+  {
+    temp=y0;
+    y0=y1;
+    y1=temp;
+  }
+  if (x0>x1)
+  {
+    temp=x0;
+    x0=x1;
+    x1=temp;
+  }
+
+  top_offset=(y0<<8)+(y0<<6)+x0;
+  bottom_offset=(y1<<8)+(y1<<6)+x0;
+  w=x1-x0+1;
+
+  for(i=top_offset;i<=bottom_offset;i+=width)
+  {
+    memset(&fb[i],color,w-1);
+  }
+}
+
+void
+vga_flip() {
+	memcpy(fb,(uint8_t*)vga_get_fb(), width * height * ( depth >> 3 ));
+	memset(fb, 0, width * height * ( depth >> 3 )); // clear buffer
+}
+
+void
+vga_set_RRRGGGBB() {
+	uint32_t i;
+
+	for( i=0; i < 256; i++)
+	{
+		outportb(VGA_DAC_WRITE_INDEX, i);
+		// use high values for RGB that fits on channel's bits.
+		// note that VGA has 18-bit color on pallete (6-bit per channel)
+		// so each channel will be right-shifted >> 2
+	  outportb(VGA_DAC_DATA, (i & 0xE0) >> 2 );
+	  outportb(VGA_DAC_DATA, (i & 0x1C) << 1 ); // (i & 0x1C) << 3) >> 2
+	  outportb(VGA_DAC_DATA, (i & 0x3) << 4 ); // ((i & 0x3) << 6) >> 2
+	}
+}
+
+void
+vga_putchar(uint32_t x, uint32_t y, uint8_t fgcolor, uint8_t bgcolor, const char c) {
+    uint8_t i, j;
+    for(i = 0; i < 8; i++)
+      for(j = 0; j < 8; j++) {
+        vga_write_pixel(x+i, y+j, ((font8x8_basic[c & 0x7F][j] >> i ) & 1) ? fgcolor : bgcolor );
+      }
 }

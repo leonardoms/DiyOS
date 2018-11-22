@@ -2,6 +2,7 @@
 #include <small.h>
 #include <task.h>
 #include <drivers/fb.h>
+#include <x86/frame.h>
 
 #define BUFFER_SIZE 1024
 
@@ -61,6 +62,8 @@ terminal_root() {
 
   printf("%s@%s~# ", "root", "/initrd/");
 
+  sleep(2000); gfx_setup();
+
   while(1) {
     // BOCHS_BREAKPOINT;
     c = getchar();
@@ -99,8 +102,11 @@ exec(char* cmd) {
       else if(!strcmp(cmd,"reboot")) {
         acpi_power_down();
         acpi_reset();
-      }
-      else return 0;
+      } else if(!strcmp(cmd,"startx")) {
+        // gfx_setup();
+        gfx_start();
+        // task_block();
+      } else return 0;
 
   return 1;
 }
@@ -119,19 +125,20 @@ terminal_bar() {
       s = time_elapsed % 60;
 
       fb_gotoxy(0,0);
-      fb_color(FC_DGRAY | BC_WHITE);
+      fb_color(FC_DGRAY | BC_BLUE);
       printf(" Welcome to ");
-      fb_color(FC_BLACK | BC_WHITE);
+      fb_color(FC_BLACK | BC_BLUE);
       printf("DiyOS ");
-      fb_color(FC_DGRAY | BC_WHITE);
-      printf("| uptime %02d:%02d:%02d", h, m, s );
+      fb_color(FC_DGRAY | BC_BLUE);
+      printf("| uptime %02d:%02d:%02d ", h, m, s );
 
       while(1) {
         fb_getxy(&x,NULL);
-        if(x >= (80 - 1))
+        if(x >= 79) {
+          // printf(" ");
           break;
+        }
         printf(" ");  // complete the line
-
       }
 
       fb_color(color);

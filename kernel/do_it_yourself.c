@@ -53,9 +53,11 @@ void do_it_yourself(uint32_t multiboot_info) {
   setup_kb();     // enables built-in keyboard
   setup_timer();  // enable timer
 
-  terminal_root_setup();
+  // terminal_root_setup();
 
-  task_show_all();
+  gfx_setup();
+  gfx_start();
+
   task_start();
 
   enable();       // crossing fingers... wellcome to the jungle.
