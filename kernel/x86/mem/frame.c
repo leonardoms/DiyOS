@@ -140,6 +140,10 @@ frame_free(uint32_t addr) {
   frame_unset_address(addr);
 }
 
+uint32_t
+frame_count() {
+  return frames_count;
+}
 
 uint32_t
 frame_free_count() {

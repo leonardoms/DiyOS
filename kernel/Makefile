@@ -6,15 +6,19 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS = module.o test.o task_queue.o queue.o panic.o bios.o io.o pci.o aspace.o task.o elf.o syscall.o terminal.o do_it_yourself.o
+OBJECTS = module.o test.o gfx.o task_queue.o queue.o panic.o bios.o io.o pci.o aspace.o task.o elf.o syscall.o terminal.o do_it_yourself.o
 
-all: clean x86.a built-in_drivers.a small.a $(OBJECTS)
-		$(LD) $(LD_FLAGS) -o diyOS_x86 $(OBJECTS) x86.a built-in_drivers.a small.a -T x86/x86.ld
+all: clean x86.a built-in_drivers.a small.a gui.a $(OBJECTS)
+		$(LD) $(LD_FLAGS) -o diyOS_x86 $(OBJECTS) x86.a built-in_drivers.a small.a gui.a -T x86/x86.ld
 		cp diyOS_x86 ../bin/diyOS_x86
 
 small.a:
 	@echo "[BUILD BASIC LIB]"	$@
 	@make -C ./libsmall/
+
+gui.a:
+	@echo "[BUILD GUI]"	$@
+	@make -C ./gui/
 
 x86.a:
 	@echo "[BUILD ARCH]"	$@
@@ -31,6 +35,10 @@ test.o:
 terminal.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c terminal.c -o terminal.o
+
+gfx.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c gfx.c -o gfx.o
 
 module.o:
 	@echo "[BUILD]"	$@
