@@ -9,6 +9,8 @@ Latest built ISO @ [build/](build/)
 
 Latest boot screenshot
 ![Boot Screenshot](build/screenshot.png)
+![Testing GUI Screenshot](build/screenshot_gui.png)
+
 ---
 
 What is done:
