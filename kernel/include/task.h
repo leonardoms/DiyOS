@@ -6,6 +6,14 @@
 #include <aspace.h>
 #include <x86/x86.h>
 #include <x86/memory.h>
+#include <queue.h>
+
+#define LISTEN_ALL  0xFFFFFFFF
+#define LISTEN_NONE 0
+#define IDLE        (1 << 0)
+#define TIMER       (1 << 1)
+#define KEYBOARD    (1 << 2)
+#define MOUSE       (1 << 3)
 
 typedef enum { TS_RUNNING = 0, TS_READY = 1, TS_BLOCKED = 3 } task_state_t;
 
@@ -17,21 +25,15 @@ typedef struct task {
     task_regs_t   regs;
     uint32_t      stacktop;
     uint32_t      id;
+    uint32_t      listen;
     task_state_t  state;
-    uint32_t    time_ms;
     int32_t     timeout; // timeout in seconds, used in sleep
     uint32_t    wait4pid;
     uint8_t     waitkey, key;
-    int32_t     quatum; // ticks of time left for running
     char        name[1024];
-    aspace_t*   aspace;
-    uint32_t    pagedir_phys; // page directory physical address
-    uint32_t    task_phys;
-    uint32_t    stack_phys; //pagedir[1024],
-    uint32_t    *pagedir_virt;  // page directory virt address, used for kfree
-    uint32_t    *task_virt; // used for kfree
-    uint32_t    *stack_virt; // used for kfree
-    void        (*switch_function)(task_regs_t regs);
+
+    queue_t     message_queue;
+
     struct task *next;
 } task_t;
 

@@ -1,50 +1,71 @@
 #include <queue.h>
-#include <x86/memory.h>
 
-/* Pega e remove o primeiro elemento da lista. */
-uint8_t queue_get_data(queue_t *q, uint8_t *data)
-{
-	/* Caso da lista estar vazia. */
-	if(q->id_first == q->id_last){
-		return 0;
-	}
-
-	/* Pega o elemento e incrementa o id do primeiro item. */
-	(*data) = q->data[q->id_first++];
-
-	/* Retorna para o começo do array, se id_first>=size. */
-	if(q->id_first >= q->size){
-		q->id_first = 0;
-	}
-
-	return 1;
+void
+queue_init(queue_t* q, uint16_t size) {
+  q->front 	= 0;
+  q->rear 	= -1;
+  q->count 	= 0;
+	q->size 	= size;
+	q->data = (uint32_t*)kmalloc(sizeof(uint32_t*)*size);
 }
 
-uint8_t queue_insert_data(queue_t *q, uint8_t data)
-{
-	uint32_t i;
+uint32_t*
+queue_peek(queue_t* q) {
 
-	i = q->id_last + 1;
-	if(i >= q->size){
-		i = 0;
-	}
+  if( q->count == 0 )
+    return NULL;
 
-	/* Caso a lista esteja cheia. */
-	if(i == q->id_first){
-		return false;
-	}
-
-	/* Coloca o dado na lista e seta o id(id_last) da próxima inserção. */
-	q->data[q->id_last] = data;
-	q->id_last = i;
-
-	return true;
+  return q->data[q->front];
 }
 
-uint8_t queue_init(queue_t *q, uint32_t sz)
-{
-	q->data = kmalloc(sz * sizeof(char));
-	q->size = sz;
+uint32_t
+queue_size(queue_t* q) {
+  return q->count;
+}
 
-	return q->data != NULL;
+void
+queue_add(queue_t* q, uint32_t* ptr) {
+
+  if( queue_size(q) < q->size ) {
+      if( q->rear == (q->size - 1) ) {
+          q->rear = -1;
+      }
+
+      q->data[++q->rear] = ptr;
+      q->count++;
+  }
+}
+
+uint32_t*
+queue_remove(queue_t* q) {
+
+  uint32_t* ptr;
+
+  if( q->count == 0 )
+    return NULL;
+
+  ptr = q->data[q->front++];
+
+  if( q->front == q->size )
+      q->front = 0;
+
+  q->count--;
+
+  return ptr;
+}
+
+void
+queue_foreach(queue_t* q, queue_callback_t c, void* data) {
+  int32_t i, i_max;
+
+  if( q->rear > q->front )
+    i = q->front;
+  else
+    i = q->rear;
+
+  i_max = i + queue_size(q);
+
+  for( ; i < i_max; i++ ) {
+    c(q->data[i], data);
+  }
 }

@@ -6,31 +6,12 @@ uint16_t update_x0, update_x1, update_y0, update_y1;
 void
 gfx_main() {
 
-
   gui_create();
 
   while(1) {
     //task_disable();
     disable();
 
-// #if 1 // animate a test window...
-// int32_t x = 0, y = 0, w = 150, h = 100;
-// int8_t deltax = 1, deltay = 1;
-//     x += deltax;
-//     y += deltay;
-//
-//     if( ((x+w) > vga_width()) || (x <= 0) ) {
-//       deltax = -deltax;
-//       x += deltax;
-//     }
-//
-//     if( ((y+h) > vga_height()) || (y <= 0) ) {
-//       deltay = -deltay;
-//       y += deltay;
-//     }
-// #endif
-//
-//     gfx_draw_window(x,y,w,h);
     gui_draw();
 
     if( update_x1 > 0 ) { // has any area to re-draw? (test a update_?? coordinate )

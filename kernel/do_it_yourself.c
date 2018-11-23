@@ -46,7 +46,7 @@ void do_it_yourself(uint32_t multiboot_info) {
   multiboot_module_t *module = (multiboot_module_t *) mbinfo->mods_addr;
   for(i = 0; i < mbinfo->mods_count; i++){
     // if(!initrd_create((uint8_t*)module[i].mod_start, (uint8_t*)module[i].mod_end))
-      task_add(task_create_from_elf((char*)module[i].cmdline, (uint8_t*)module[i].mod_start));
+      // task_add(task_create_from_elf((char*)module[i].cmdline, (uint8_t*)module[i].mod_start));
       // module_load((char*)module[i].cmdline, (uint8_t*)module[i].mod_start);
   }
 

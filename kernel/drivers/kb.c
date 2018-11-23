@@ -18,6 +18,13 @@ update_key(task_t* t, uint32_t* data) {
 }
 
 void
+keyboard_listen(task_t* t, uint32_t* data) {
+  if(t->listen && KEYBOARD) {
+    message_to(t->id, (uint32_t*)(*data), 1); // send a fake pointer with value of the key code!
+  }
+}
+
+void
 keyboad_task() {
 
   static int32_t code, y = 0;
@@ -30,7 +37,8 @@ keyboad_task() {
 
       code = convert(scode);
       if(code) {
-        task_queue_foreach(&tq_blocked, update_key, (uint32_t*)&code);
+        task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)code);
+        task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)code);
       }
 
       task_block(); // block 'keyboard' task
