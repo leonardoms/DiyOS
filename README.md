@@ -2,7 +2,9 @@
 # DiyOS - do it yourself
 Small study Operating System
 
-This is a very very very experimental code, no warranties, it's for own study.
+This is a very very very experimental code, no warranties, it's for own study. :rage3:
+
+Help me with a Star :star:
 
 ---
 Latest built ISO @ [build/](build/)
