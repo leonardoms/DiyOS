@@ -38,3 +38,8 @@ message() {
 
     return (message_t*)queue_remove(&t->message_queue);
 }
+
+void
+message_destroy(message_t* msg) {
+  // kfree(msg);
+}

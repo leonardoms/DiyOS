@@ -6,59 +6,56 @@ widget_t*
 widget_create(uint32_t class, int32_t x, int32_t y, uint32_t w, uint32_t h,
       struct widget* parent) {
 
-    widget_t* wgt = (widget_t*)kmalloc(sizeof(struct widget));
+    widget_t* widget = (widget_t*)kmalloc(sizeof(struct widget));
     widget_t* chld;
 
-    if( !wgt ) return NULL;
+    if( !widget ) return NULL;
 
-    wgt->next = NULL;
-    wgt->child = NULL;
-    wgt->class = class;
-    wgt->x = x;
-    wgt->y = y;
-    wgt->w = w;
-    wgt->h = h;
-    wgt->visible = W_VIS_PARENT;
-    wgt->fgcolor = (color_t){ 0, 0, 0 };
-    wgt->bgcolor = (color_t){ 255, 255, 255 };
-    wgt->padding_top = 2; // 2px padding
-    wgt->padding_left = 2; // 2px padding
-    wgt->padding_right = 2; // 2px padding
-    wgt->padding_bottom = 2; // 2px padding
-    wgt->focus = NULL;
-    wgt->has_focus = 0;
+    widget->next = NULL;
+    widget->child = NULL;
+    widget->class = class;
+    widget->x = x;
+    widget->y = y;
+    widget->w = w;
+    widget->h = h;
+    widget->visible = W_VIS_PARENT;
+    widget->fgcolor = (color_t){ 0, 0, 0 };
+    widget->bgcolor = (color_t){ 255, 255, 255 };
+    widget->focus = NULL;
+    widget->has_focus = 0;
 
-    widget_set_parent(wgt, parent);
+    widget_set_padding(widget, 2, 2, 2, 2);
+    widget_set_parent(widget, parent);
 
-    return wgt;
+    return widget;
 }
 
 
 
 void
-widget_draw(struct widget* wgt) {
+widget_draw(struct widget* widget) {
   uint32_t x0, x1, y0, y1;
   struct widget* chld, *parent;
 
-  if(!wgt)
+  if(!widget)
     return;
 
-  switch (wgt->class) {
+  printf("draw 0x%x\n", widget);
+
+  switch (widget->class) {
     case W_WINDOW:
-      window_draw((struct window*)wgt);
+      window_draw((struct window*)widget);
       break;
     case W_LABEL:
-      label_draw((struct label*)wgt);
+      label_draw((struct label*)widget);
       break;
     default:
-      parent = wgt->parent;
-
+      parent = widget->parent;
       if(parent) {
-
-        x0 = wgt->x + parent->padding_left;
-        x1 = x0 + wgt->w;
-        y0 = wgt->y + parent->padding_top;
-        y1 = y0 + wgt->h;
+        x0 = widget->x + parent->padding_left;
+        x1 = x0 + widget->w;
+        y0 = widget->y + parent->padding_top;
+        y1 = y0 + widget->h;
 
         if( x1 > (parent->w - parent->padding_right) ) { // fits on parent width ?
             x1 -= x1 - (parent->w - parent->padding_right);
@@ -68,20 +65,20 @@ widget_draw(struct widget* wgt) {
             y1 -= y1 - (parent->w - parent->padding_bottom);
         }
 
-        gfx_rect(x0 + parent->x, y0 + parent->y, x1 + parent->x, y1 + parent->y, wgt->bgcolor.r, wgt->bgcolor.g, wgt->bgcolor.b);
+        gfx_rect(x0 + parent->x, y0 + parent->y, x1 + parent->x, y1 + parent->y, widget->bgcolor);
 
       } else {
-        gfx_rect(wgt->x, wgt->y, wgt->x + wgt->w, wgt->y + wgt->h, wgt->bgcolor.r, wgt->bgcolor.g, wgt->bgcolor.b);
+        gfx_rect(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, widget->bgcolor);
       }
       break;
   }
 
-  if(wgt->OnPaint) {
-    if(!wgt->OnPaint(wgt))
+  if(widget->OnPaint) {
+    if(!widget->OnPaint(widget))
       return; // stop drawing childs if OnPaint return FALSE
   }
 
-  chld = wgt->child;
+  chld = widget->child;
   while(chld) {
     widget_draw(chld);
     chld = chld->next;
@@ -107,24 +104,6 @@ widget_set_parent(widget_t* widget, widget_t* parent) {
 
     chld->next = widget;
   } else parent->child = widget;
-}
-
-void
-widget_show(struct widget* wgt) {
-    if(!wgt) return;
-
-    switch (wgt->visible) {
-      // case W_VIS_HIDDEN:
-      //   break;
-      // case W_VIS_PARENT:
-      //   if(!wgt->parent) {
-      //     // default for root widget is W_VIS_VISIBLE, draw it.
-      //
-      //   } else
-      default:
-        widget_draw(wgt);
-        break;
-    }
 }
 
 void

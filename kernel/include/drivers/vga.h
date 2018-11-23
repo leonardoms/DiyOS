@@ -47,7 +47,7 @@ vga_flip();
 void
 vga_clear(uint8_t c);
 
-void (*vga_write_pixel)(unsigned x, unsigned y, unsigned char c);
+void vga_write_pixel(unsigned x, unsigned y, unsigned char c);
 
 void
 vga_rect(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t color);

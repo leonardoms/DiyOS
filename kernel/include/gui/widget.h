@@ -9,10 +9,6 @@ enum { ON_PAINT = 1, ON_KEYUP };
 
 typedef enum { W_VIS_HIDDEN, W_VIS_VISIBLE, W_VIS_PARENT } widget_visibility_t;
 
-typedef uint8_t (*Paint)(struct widget* widget);  // if return FALSE stops drawing
-typedef void (*KeyDown)(struct widget* widget, uint32_t key);
-typedef void (*KeyUp)(struct widget* widget, uint32_t key);
-
 typedef struct widget {
   uint32_t  magic;
 
@@ -31,15 +27,19 @@ typedef struct widget {
   widget_visibility_t visible;
 
   // Callbacks
-  Paint     OnPaint;
-  KeyDown   OnKeyDown;
-  KeyUp     OnKeyUp;
+  uint8_t (*OnPaint)(struct widget* widget);
+  void (*OnKeyDown)(struct widget* widget, uint32_t key);
+  void (*OnKeyUp)(struct widget* widget, uint32_t key);
 
   struct widget* focus;
   uint8_t   has_focus;
 
   struct widget* next;
 } widget_t;
+
+typedef uint8_t (*Paint)(struct widget* widget);  // if return FALSE stops drawing
+typedef void (*KeyDown)(struct widget* widget, uint32_t key);
+typedef void (*KeyUp)(struct widget* widget, uint32_t key);
 
 widget_t*
 widget_create(uint32_t class, int32_t x, int32_t y, uint32_t w, uint32_t h,

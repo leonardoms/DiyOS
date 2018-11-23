@@ -61,34 +61,39 @@ window_get_type(window_t* window) {
 void
 window_draw(window_t* window) {
   uint32_t x0, y0, i = 0;
+  color_t border, tbar;
+
+  border = (color_t){WIDGET(window)->bgcolor.r >> 1 , WIDGET(window)->bgcolor.g >> 1, WIDGET(window)->bgcolor.b >> 1};
+  tbar = (color_t){WIDGET(window)->bgcolor.r >> 2 , WIDGET(window)->bgcolor.g >> 2, WIDGET(window)->bgcolor.b >> 2};
+
   // title bar + borders
   gfx_rect( WIDGET(window)->x - WINDOW_DECORATION_BORDER,
             WIDGET(window)->y - WINDOW_DECORATION_BAR,
             WIDGET(window)->x + WIDGET(window)->w + WINDOW_DECORATION_BORDER,
             WIDGET(window)->y + WIDGET(window)->h + WINDOW_DECORATION_BORDER,
-            WIDGET(window)->bgcolor.r >> 1 , WIDGET(window)->bgcolor.g >> 1, WIDGET(window)->bgcolor.b >> 1 );
+            border );
 
   // title bar internal
   gfx_rect( WIDGET(window)->x,
             WIDGET(window)->y + WINDOW_DECORATION_BORDER - WINDOW_DECORATION_BAR,
             WIDGET(window)->x + WIDGET(window)->w,
             WIDGET(window)->y - WINDOW_DECORATION_BORDER * 2,
-            WIDGET(window)->bgcolor.r >> 2 , WIDGET(window)->bgcolor.g >> 2, WIDGET(window)->bgcolor.b >> 2 );
+            tbar );
 
   // draw widget area
   gfx_rect( WIDGET(window)->x,
             WIDGET(window)->y,
             WIDGET(window)->x + WIDGET(window)->w,
             WIDGET(window)->y + WIDGET(window)->h,
-            WIDGET(window)->bgcolor.r, WIDGET(window)->bgcolor.g, WIDGET(window)->bgcolor.b );
+            WIDGET(window)->bgcolor );
 
   // draw title
   x0 = WIDGET(window)->x + 1;
   y0 = WIDGET(window)->y - WINDOW_DECORATION_BAR + WINDOW_DECORATION_BORDER + 1;
 
   while(window->name[i]) {
-    gfx_putchar(x0+i*8, y0, WIDGET(window)->fgcolor,
-                (color_t){WIDGET(window)->bgcolor.r >> 2 , WIDGET(window)->bgcolor.g >> 2, WIDGET(window)->bgcolor.b >> 2},
+    gfx_putchar(x0+i*8, y0,
+                WIDGET(window)->fgcolor, tbar,
                 window->name[i]);
     i++;
   }

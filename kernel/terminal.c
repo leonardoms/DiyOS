@@ -102,7 +102,7 @@ exec(char* cmd) {
         acpi_reset();
       } else if(!strcmp(cmd,"startx")) {
         // gfx_setup();
-        gfx_start();
+        // gfx_start();
         // task_block();
       } else return 0;
 

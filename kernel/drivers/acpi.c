@@ -186,7 +186,7 @@ acpi_checksum(void* ptr, uint32_t size, uint8_t checksum) {
 #define return_val_if_fail(test,val) if(!test) return val;
 
 uint32_t
-acpi_setup() {
+acpi() {
   uint32_t  ptr;
   uint32_t  i, i_max;
   uint8_t*  S5Block;

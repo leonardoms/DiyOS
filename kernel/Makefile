@@ -36,4 +36,4 @@ built-in_drivers.a:
 	@$(CC) $(C_FLAGS) -c $< -o $@
 
 clean:
-	@-rm *.o > /dev/null
+	@-rm *.o *.a > /dev/null

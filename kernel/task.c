@@ -139,9 +139,8 @@ task_add(task_t* t) {
 }
 
 void
-task_setup() {
-
-    task_id = 0;
+task() {
+    task_id = 1000;
     num_tasks = 0;
     isr_install_callback(0xFF, task_schedule_handler); // "int 0xff" calls scheduling
 
@@ -156,11 +155,8 @@ task_setup() {
 void
 task_start() {
   running_task = task_queue_remove(&tq_ready);
-  // task_show_all();
-  task_execute();
-  // task_schedule_forced();
 
-  PANIC("task_start() fails.")
+  task_execute();
 }
 
 void
@@ -181,11 +177,11 @@ task_listen(uint32_t l) {
 }
 
 void
-task_wake() {
-  ASSERT_PANIC(running_task != NULL);
+task_wake(task_t* t) {
+  ASSERT_PANIC(t != NULL);
 
-  running_task->state = TS_READY;
-  // task_schedule_forced();
+  t->state = TS_READY;
+  task_schedule_forced();
 
   return;
 }
@@ -202,11 +198,12 @@ task_from_pid(uint32_t pid) {
   uint32_t  t[2]; // 0: pid; 1: pointer to pid (if found)
 
   t[0] = pid;
+  t[1] = NULL;
 
   task_queue_foreach(&tq_ready, _task_get_pid, t);
   task_queue_foreach(&tq_blocked, _task_get_pid, t);
 
-  return t;
+  return t[1];
 }
 
 uint32_t
@@ -278,7 +275,8 @@ task_schedule_forced() {
   return;
 }
 
-__attribute__((interrupt)) void
+// __attribute__((interrupt)) void
+void
 task_schedule_handler() {
   // asm volatile("add $0x1c, %esp");
   task_schedule();

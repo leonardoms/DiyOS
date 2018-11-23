@@ -9,5 +9,10 @@
 #define WINDOW_DECORATION_BORDER 1
 #define WINDOW_DECORATION_BAR 12
 
+void
+gui();
+
+widget_t*
+gui_widget_root();
 
 #endif

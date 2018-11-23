@@ -9,6 +9,8 @@ typedef struct label {
   uint8_t       *text;
 } label_t;
 
+#define LABEL(l) ((label_t*)l)
+
 label_t*
 label_create(const char* text, widget_t* parent);
 
