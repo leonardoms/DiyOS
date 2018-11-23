@@ -33,7 +33,7 @@ memory_bytes_to_frames(uint32_t size) {
 }
 
 void
-setup_memory(uint32_t mem_size) {
+memory(uint32_t mem_size) {
   uint32_t i, j;
 
   // ASSERT_PANIC(kernel_paddr_end != NULL);

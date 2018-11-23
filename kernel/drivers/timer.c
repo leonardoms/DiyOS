@@ -34,7 +34,7 @@ timer_handle() {
 }
 
 void
-setup_timer(){
+timer(){
   unsigned short f = 1193181 / HZ_FREQUENCY; // 100 = 100hz -> 0.01s
   outportb(0x43, 0x36);
   outportb(0x40, f & 0xFF);

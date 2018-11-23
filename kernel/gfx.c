@@ -1,66 +1,55 @@
 
 #include <gfx.h>
+#include <drivers/vga.h> //TODO: driver must set virtual functions on GFX Server on driver load.
 
 uint16_t update_x0, update_x1, update_y0, update_y1;
+uint8_t  gfx_loaded = 0;
 
 void
 gfx_main() {
 
+  gfx_loaded = 1;
+  uint8_t x = 0, y = 0;
 
-  gui_create();
 
   while(1) {
-    //task_disable();
-    disable();
-
-// #if 1 // animate a test window...
-// int32_t x = 0, y = 0, w = 150, h = 100;
-// int8_t deltax = 1, deltay = 1;
-//     x += deltax;
-//     y += deltay;
-//
-//     if( ((x+w) > vga_width()) || (x <= 0) ) {
-//       deltax = -deltax;
-//       x += deltax;
-//     }
-//
-//     if( ((y+h) > vga_height()) || (y <= 0) ) {
-//       deltay = -deltay;
-//       y += deltay;
-//     }
-// #endif
-//
-//     gfx_draw_window(x,y,w,h);
-    gui_draw();
-
-    if( update_x1 > 0 ) { // has any area to re-draw? (test a update_?? coordinate )
+  disable();
+  // gfx_rect(x++,y++,100,100,(color_t){255,0,0}); // testing...
+    // if( update_x1 > 0 ) { // has any area to re-draw? (test a update_?? coordinate )
       // vga_flip_area(update_x0, update_y0, update_x1, update_y1); // update only modified area
       vga_flip();
       update_x0 = 0xFFFF;
       update_y0 = 0xFFFF;
       update_x1 = 0x0;
       update_y1 = 0x0;
-    }
+    // }
     // task_enable();
     // vga_draw_pointer(); // write mouse pointer directly on video memory
     enable();
     sleep(50); // 20 fps
   }
+
 }
 
 task_t* gfx_task;
 
-void
-gfx_start() {
-  if(gfx_task) {
-    vga_set_graphic();
-    gfx_task->state = TS_READY;
-  }
+uint8_t
+gfx_is_ready() {
+  return gfx_loaded;
 }
 
+// void
+// gfx_start() {
+//   if(gfx_task) {
+//     gfx_task->state = TS_READY;
+//   }
+// }
+
 void
-gfx_setup() {
-  gfx_task = task_create((uint32_t)gfx_main, "gfx", TS_BLOCKED);
+gfx() {
+  vga_set_graphic();
+
+  gfx_task = task_create((uint32_t)gfx_main, "gfx", TS_READY);
 
   update_x0 = 0xFFFF;
   update_y0 = 0xFFFF;
@@ -78,26 +67,24 @@ gfx_setup() {
                             }
 
 void
-gfx_put_pixel(uint32_t x, uint32_t y, uint8_t R, uint8_t G, uint8_t B) {
-    vga_write_pixel(x,y,RGB_TO_332(R,G,B));
+gfx_put_pixel(uint32_t x, uint32_t y, color_t c) {
+    vga_write_pixel(x,y,COLOR_TO_332(c));
     GFX_AREA_GROW(x,y);
 }
 
 void
-gfx_rect(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t R, uint8_t G, uint8_t B) {
-    vga_rect(x0,y0,x1,y1,RGB_TO_332(R,G,B));
+gfx_rect(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, color_t c) {
+    vga_rect(x0,y0,x1,y1,COLOR_TO_332(c));
     GFX_AREA_GROW(x0,y0);
     GFX_AREA_GROW(x1,y1);
 }
 
 void
-gfx_line(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint8_t R, uint8_t G, uint8_t B) {
-  vga_line(x0,y0,x1,y1,RGB_TO_332(R,G,B));
+gfx_line(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, color_t c) {
+  vga_line(x0,y0,x1,y1,COLOR_TO_332(c));
   GFX_AREA_GROW(x0,y0);
   GFX_AREA_GROW(x1,y1);
 }
-
-#define COLOR_TO_332(c) RGB_TO_332(c.r, c.g, c.b)
 
 void
 gfx_putchar(uint32_t x, uint32_t y, color_t fgcolor, color_t bgcolor, const char c) {

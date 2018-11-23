@@ -62,8 +62,6 @@ terminal_root() {
 
   printf("%s@%s~# ", "root", "/initrd/");
 
-  sleep(2000); gfx_setup();
-
   while(1) {
     // BOCHS_BREAKPOINT;
     c = getchar();
@@ -104,7 +102,7 @@ exec(char* cmd) {
         acpi_reset();
       } else if(!strcmp(cmd,"startx")) {
         // gfx_setup();
-        gfx_start();
+        // gfx_start();
         // task_block();
       } else return 0;
 
@@ -155,8 +153,8 @@ terminal_root_setup() {
 
   t = task_create(terminal_root, "terminal_root", TS_READY);
   task_add(t);
-
-  t = task_create(terminal_bar, "terminal_bar", TS_READY);
-  task_add(t);
+  //
+  // t = task_create(terminal_bar, "terminal_bar", TS_READY);
+  // task_add(t);
 
 }

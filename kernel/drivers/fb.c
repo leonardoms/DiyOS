@@ -11,7 +11,7 @@ void fb_update_offset();
 void fb_cursor_enable();
 void fb_cursor_update();
 
-void fb_setup() {
+void fb() {
   fbmem = (uint8_t*)0xB8000;
   x = y = 0;
   offset = 0;

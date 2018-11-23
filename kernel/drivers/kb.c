@@ -18,9 +18,17 @@ update_key(task_t* t, uint32_t* data) {
 }
 
 void
+keyboard_listen(task_t* t, uint32_t* data) {
+  if(t->listen && KEYBOARD) {
+    // printf("message_to %d: '0x%x'\n", t->id, (uint8_t)data);
+    message_to(t->id, (uint32_t*)((uint8_t)data), 1); // send a fake pointer with value of the key code!
+  }
+}
+
+void
 keyboad_task() {
 
-  static int32_t code, y = 0;
+  static uint8_t code, y = 0;
 
   while(1) {
 
@@ -28,11 +36,13 @@ keyboad_task() {
 
       uint8_t scode = inb(0x60);
 
-      code = convert(scode);
+      code = (uint8_t)convert(scode);
       if(code) {
-        task_queue_foreach(&tq_blocked, update_key, (uint32_t*)&code);
+        task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)code);
+        task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)code);
       }
 
+      enable();
       task_block(); // block 'keyboard' task
   }
 }
@@ -54,11 +64,12 @@ void keyboard_handle() {
     task_schedule();
 }
 
-void setup_kb() {
+void kb() {
 
     kb_task = task_create(keyboad_task, "keyboard", TS_BLOCKED);
     ASSERT_PANIC(kb_task != NULL);
 
+    kb_task->id = KEYBOARD; // force keyboard pid
     task_add(kb_task);
 
     irq_enable(1);

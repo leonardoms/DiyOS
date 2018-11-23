@@ -53,7 +53,6 @@ task_create(uint32_t eip, const char* name, task_state_t s) {
 
   	memset(t, 0, sizeof(struct task));
     t->id = ++task_id;
-    t->time_ms = 0;
     t->state = s;
     t->waitkey = 0;
     memcpy((void*)name, (void*)t->name, strlen(name) + 1);
@@ -83,107 +82,8 @@ task_create(uint32_t eip, const char* name, task_state_t s) {
 
     t->next = NULL;
 
-    return t;
-}
+    queue_init(&t->message_queue, 32); // 32 messages buffer
 
-task_t*
-task_create_from_elf(const char* name, uint8_t* runnable) {
-
-    task_t*   t;
-    sect_t*   s;
-    uint32_t err, i, entry, *pd;
-    t = (task_t*)kmalloc(sizeof(struct task));
-
-    ASSERT_PANIC(name);
-    ASSERT_PANIC(runnable);
-
-    printf("[M] %s ... ", name);
-
-    if(elf32_check(runnable,ET_EXEC) == FALSE) {
-        printf("invalid elf executable.\n");
-        return NULL;
-    }
-
-    t->aspace = aspace_create();
-    if(t->aspace == NULL) {
-        // kfree(t);
-        return NULL;
-    }
-
-    err = load_elf_exec((char*)runnable, (unsigned int*)&entry, t->aspace);
-    if(err != 0) { // has error code?
-        printf("failed to load elf executable. (err: %d)\n", name, err);
-        // aspace_destroy(t->aspace);
-        // kfree(t);
-        return NULL;
-    }
-
-    // alloc task to 0x800000 and stack to 0xBF800000
-    //TODO: change to kmalloc_phys getting virtual and phys addr
-    t->pagedir_phys = (uint32_t)kmalloc_p(0x1000);
-    t->task_phys = (uint32_t)kmalloc_p(0x4000);//
-    t->stack_phys = (uint32_t)kmalloc_p(0x2000);
-
-    __asm__ __volatile__("movl %%cr3, %%eax; movl %%eax, %0;":"=m"(pd)::"%eax");
-    pd = (uint32_t*)( (uint32_t)pd & 0xFFFFF000 );
-
-    // copy the Kernel Page tables
-    for( i = 768; i < 1024; i++ ) {
-      ((uint32_t*)t->pagedir_phys)[i] = pd[i] | PAGE_FLAG_RW | PAGE_FLAG_PRESENT; // force all tables present.
-    }
-    ((uint32_t*)t->pagedir_phys)[0] = pd[0]; // first 8MB is kernel mapped area 1:1 !
-    ((uint32_t*)t->pagedir_phys)[1] = pd[1];
-    // ((uint32_t*)t->pagedir_phys)[2] = pd[2];
-    // ((uint32_t*)t->pagedir_phys)[3] = pd[3];
-
-    // maps the task space on task page directory
-    ((uint32_t*)t->pagedir_phys)[USER_ADDRESS_BASE >> 22] = t->task_phys | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-    ((uint32_t*)t->pagedir_phys)[USER_STACK_ADDRESS_BASE >> 22] = t->stack_phys | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-
-    ((uint32_t*)t->task_phys)[0] = (uint32_t)kmalloc_p(0x1000) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-    ((uint32_t*)t->task_phys)[1] = (uint32_t)kmalloc_p(0x1000) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-    ((uint32_t*)t->task_phys)[2] = (uint32_t)kmalloc_p(0x1000) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-    ((uint32_t*)t->task_phys)[3] = (uint32_t)kmalloc_p(0x1000) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-    ((uint32_t*)t->stack_phys)[0] = (uint32_t)kmalloc_p(0x1000) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-    ((uint32_t*)t->stack_phys)[1] = (uint32_t)kmalloc_p(0x1000) | PAGE_FLAG_RW | PAGE_FLAG_PRESENT | PAGE_FLAG_USER;
-
-    for(i = 0; i < t->aspace->sects; i++) {
-        s = &t->aspace->sect[i];
-
-        if( (s->addr < USER_ADDRESS_BASE) || (s->addr >= KERNEL_ADDRESS_BASE) ) {
-            printf("section out of user memory space (0x%x). \n", name, s->addr);
-            // aspace_destroy(t->aspace);
-            // kfree(t);
-            return NULL;
-        }
-
-        memcpy((void*)(runnable + s->offset), (void*)(((uint32_t*)t->task_phys)[0] & 0xFFFFF000), s->size);
-
-    }
-
-    t->id = ++task_id;
-    t->time_ms = 0;
-    t->state = TS_READY;
-    t->waitkey = 0;
-    memcpy((void*)name, (void*)t->name, strlen((uint8_t*)name) + 1);
-    t->regs.eax = 0;
-    t->regs.ebx = 0;
-    t->regs.ecx = 0;
-    t->regs.edx = 0;
-    t->regs.esi = 0;
-    t->regs.edi = 0;
-    t->regs.eip = (uint32_t)entry;
-    t->regs.ebp = USER_STACK_ADDRESS_BASE + USER_STACK_SIZE - sizeof(int);
-    t->regs.esp = USER_STACK_ADDRESS_BASE + USER_STACK_SIZE - sizeof(int);
-    // __asm__ __volatile__("pushf; popl %%eax; mov %%eax, %0":"=m"(t->regs.eflags)::"%eax");
-    t->regs.eflags = 0x200; // USER level task (to allow syscall interrupt)
-    t->regs.cr3 = t->pagedir_phys;
-
-    t->next = NULL;
-    // t->switch_function = context_switch;
-
-    // printf("ok (id=%d entry=0x%x cr3=0x%x)\n", t->id, t->regs.eip, t->regs.cr3);
-    printf("loaded.\n");
     return t;
 }
 
@@ -239,9 +139,8 @@ task_add(task_t* t) {
 }
 
 void
-task_setup() {
-
-    task_id = 0;
+task() {
+    task_id = 1000;
     num_tasks = 0;
     isr_install_callback(0xFF, task_schedule_handler); // "int 0xff" calls scheduling
 
@@ -256,11 +155,8 @@ task_setup() {
 void
 task_start() {
   running_task = task_queue_remove(&tq_ready);
-  // task_show_all();
-  task_execute();
-  // task_schedule_forced();
 
-  PANIC("task_start() fails.")
+  task_execute();
 }
 
 void
@@ -271,6 +167,50 @@ task_block() {
   task_schedule_forced();
 
   return;
+}
+
+void
+task_listen(uint32_t l) {
+  ASSERT_PANIC(running_task != NULL);
+
+  running_task->listen |= l;
+}
+
+void
+task_wake(task_t* t) {
+  ASSERT_PANIC(t != NULL);
+
+  t->state = TS_READY;
+  task_schedule_forced();
+
+  return;
+}
+
+void
+_task_get_pid(task_t* t, uint32_t* data) {
+  if(t->id == data[0]) {
+    data[1] = (uint32_t)t;
+  }
+}
+
+task_t*
+task_from_pid(uint32_t pid) {
+  uint32_t  t[2]; // 0: pid; 1: pointer to pid (if found)
+
+  t[0] = pid;
+  t[1] = NULL;
+
+  task_queue_foreach(&tq_ready, _task_get_pid, t);
+  task_queue_foreach(&tq_blocked, _task_get_pid, t);
+
+  return t[1];
+}
+
+uint32_t
+task_pid() {
+  ASSERT_PANIC(running_task != NULL);
+
+  return running_task->id;
 }
 
 void
@@ -335,7 +275,8 @@ task_schedule_forced() {
   return;
 }
 
-__attribute__((interrupt)) void
+// __attribute__((interrupt)) void
+void
 task_schedule_handler() {
   // asm volatile("add $0x1c, %esp");
   task_schedule();

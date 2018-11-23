@@ -104,6 +104,6 @@ irq_install_callback(uint8_t irq, isr_callback_t callback);
 void
 isr_install_callback(uint8_t irq, isr_callback_t callback);
 
-#define setup_x86() { setup_gdt(); setup_idt(); isr_install(); syscall_setup(); }
+#define x86() { setup_gdt(); setup_idt(); isr_install(); syscall_setup(); }
 
 #endif
