@@ -30,7 +30,7 @@ void do_it_yourself(uint32_t multiboot_info) {
   task();   // multitasking
   kb();     // enable keyboard
   timer();  // enable timer
-  terminal();  // create terminal
+  // terminal();  // create terminal
   gfx();    // graphical server
   gui();    // graphical user interface server
 

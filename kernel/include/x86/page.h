@@ -24,4 +24,7 @@ page_map_until(uint32_t new_limit);
 uint32_t
 page_free_above(uint32_t limit);
 
+void
+page_table_set(uint32_t virt_addr, uint32_t* pg_table, uint32_t flags);
+
 #endif

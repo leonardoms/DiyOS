@@ -1,11 +1,13 @@
 #include <mm.h>
+#include <debug/bochs.h>
 
 //TODO: create tool for merge neighbor holes
 
 uint32_t  malloc_top, heap;
 mblock_t  *root_mblock, *last_block;
+uint32_t   page_table_temp[1024] __attribute__((aligned (4096)));
 
-uint32_t
+static uint32_t
 expand(uint32_t requested_size) {
   return page_map_until(malloc_top + requested_size);
 }
@@ -36,7 +38,7 @@ _split_hole(mblock_t* b, uint32_t size) {
   if(!b->hole)
     return NULL;
 
-  if( (b->size - (size + sizeof(mblock_t)) ) < (sizeof(mblock_t) + 4) ) { // remain size is too small ?
+  if( (b->size - (size + sizeof(mblock_t)) ) < (sizeof(mblock_t)) ) { // remain size is too small ?
     b->hole = 0;
     return b; // dont split, use entire hole!
   } else {
@@ -80,31 +82,31 @@ _find_hole(uint32_t size) {
   return NULL;
 }
 
-void*
+uint32_t*
 malloc(uint32_t size) {
   mblock_t* b;
+  uint32_t new_heap;
 
   if(size == 0)
     return NULL;
-printf("1");
+
   b = _find_hole(size); // try to find a hole that fits requested size
   if(b)
     return (void*)b->addr;
-printf("2");
 
+  // printf("next_mblock=0x%x,heap=0x%x\n", malloc_top, heap);
   if( (malloc_top + size + sizeof(mblock_t)) > heap ) {
-    uint32_t new_heap;
-printf("3");
+
     new_heap = expand(size); // need more memory
-printf("4");
-    if(new_heap == heap)
-      return NULL; // failed to expand (out of memory)
-printf("5");
+
+    // if(new_heap == heap)
+    //   return NULL; // failed to expand (out of memory)
+
     heap = new_heap;
   }
 
   b = (mblock_t*)malloc_top;
-
+  b->hole = 0;
   b->magic = MBLOCK_MAGIC;
   b->size = size;
   b->addr = malloc_top + sizeof(mblock_t);
@@ -113,9 +115,10 @@ printf("5");
   last_block->next = b;
   last_block = b;
 
-  malloc_top = (uint32_t)(b->addr + b->size);
+  malloc_top = (uint32_t)(b->addr + b->size );
+  // printf("\tmblock_addr=0x%x, malloc_addr=0x%x, mblock_next=0x%x\n", (uint32_t)b, b->addr, malloc_top);
 
-  return b;
+  return (uint32_t*)b->addr;
 }
 
 void
@@ -124,9 +127,8 @@ free(void* address) {
 
   if( b->magic == MBLOCK_MAGIC ) {
     b->hole = 1;
-  }
-
-  heap = constrict(); // try to reduce the heap
+    heap = constrict(); // try to reduce the heap
+  } else printf("free(): invalid pointer (0x%x)\n", (uint32_t)address);
 
 }
 
@@ -150,8 +152,36 @@ mm(multiboot_info_t* mb) {
         heap = KERNEL_BASE + mod->mod_end - 0x100000;
   }
 
-  frame_setup(mb->mem_upper * 1024, KERNEL_BASE, heap); // start frame manager with original kernel memory as reserved area
+  printf("Memory Manager: heap=0x%x, sys_memory=%dkb\n", heap, mb->mem_upper);
 
+  frame_setup(mb->mem_upper * 1024, 0, heap - KERNEL_BASE + 0x100000); // start frame manager with original kernel memory as reserved area
+
+  // map kernel pages
+  uint32_t p_addr, p_addr_max, v_addr;
+
+  p_addr = 0x100000;
+  p_addr_max = ((heap - KERNEL_BASE + 0x100000) & 0xFFFFF000) + 0x1000;
+  v_addr = KERNEL_BASE;
+
+  for( ; p_addr < p_addr_max; p_addr += 0x1000, v_addr += 0x1000 )
+    page_map(p_addr,v_addr);
+
+  // start mm variables
   malloc_top = heap;
   heap = (heap & 0xFFFFF000) + 0x1000;
+  root_mblock = malloc(1) - sizeof(mblock_t);
+  last_block = root_mblock;
+
+}
+
+void
+mm_dump() {
+  mblock_t* b;
+
+  b = root_mblock;
+
+  while(b) {
+    printf("mblock=0x%x, size=%d, malloc=0x%x\n", (uint32_t)&b, b->size, b->addr);
+    b = b->next;
+  }
 }

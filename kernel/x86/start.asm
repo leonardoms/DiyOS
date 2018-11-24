@@ -77,7 +77,7 @@ start:  ; for LD entrypoint
     mov     eax, page_directory
     and     eax, 0xFFFFF000
     add     eax, kernel_virt2phys
-    or      eax, 3
+    ; or      eax, 3
     mov     cr3, eax
     mov     eax, cr0
     or      eax, 0x80000001
@@ -110,5 +110,5 @@ page_table768:
     resb  0x1000
 
 kernel_stack_end:
-    resb    16384
+    resb    8192
 kernel_stack:

@@ -20,7 +20,7 @@ typedef struct mblock {
   uint32_t  size;
   uint32_t  addr;
   struct mblock*  next;
-} mblock_t;
+} mblock_t __attribute__ ((packed));
 
 // from Linker script
 extern void kernel_paddr_start;
@@ -33,7 +33,7 @@ extern void kernel_vaddr_end;
 void
 mm(multiboot_info_t* mb);
 
-void*
+uint32_t*
 malloc(uint32_t size);
 
 void
