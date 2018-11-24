@@ -1,7 +1,7 @@
 
 #include <debug/test.h>
 #include <debug/bochs.h>
-#include <x86/memory.h>
+#include <mm.h>
 
 void
 test() {

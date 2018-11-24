@@ -2,7 +2,7 @@
 #define _QUEUE_H
 
 #include <ctypes.h>
-#include <x86/memory.h>
+#include <mm.h>
 
 typedef struct queue {
 	uint32_t *data;

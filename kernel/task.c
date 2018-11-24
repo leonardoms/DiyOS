@@ -49,7 +49,7 @@ task_create(uint32_t eip, const char* name, task_state_t s) {
 
     uint32_t* stack_esp;
 
-    task_t* t = (task_t*)kmalloc(sizeof(struct task));;
+    task_t* t = (task_t*)malloc(sizeof(struct task));;
 
   	memset(t, 0, sizeof(struct task));
     t->id = ++task_id;
@@ -57,7 +57,7 @@ task_create(uint32_t eip, const char* name, task_state_t s) {
     t->waitkey = 0;
     memcpy((void*)name, (void*)t->name, strlen(name) + 1);
   	t->regs.eip = eip;
-  	t->regs.esp = (uint32_t)kmalloc(4096);
+  	t->regs.esp = (uint32_t)malloc(4096);
   	asm volatile("mov %%cr3, %%eax":"=a"(t->regs.cr3));
   	uint32_t* stack = (uint32_t *)(t->regs.esp + 4096);
   	t->stacktop = t->regs.esp;

@@ -2,7 +2,7 @@
 #define __ASPACE_H__
 
 #include <ctypes.h>
-#include <x86/memory.h>
+#include <x86/x86.h>
 
 #define	SF_ZERO		0x10	// BSS - zerar antes de usar
 #define	SF_LOAD		0x08	// Lido de um arquivo.

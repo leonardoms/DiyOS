@@ -6,11 +6,11 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   tables.o memory.o pic.o helper.o idt.o isr.o paging_helper.o start.o
+OBJECTS =   tables.o pic.o helper.o idt.o isr.o start.o
 
 all: clean $(OBJECTS)
-	make -C mem/
-	ar rcs -o ../x86.a $(OBJECTS) mem/frame.o mem/kmalloc.o
+	make -C mm/
+	ar rcs -o ../x86.a mm/frame.o mm/mm.o mm/page.o $(OBJECTS)
 
 start.o:
 	@echo "[BUILD]"	$@
@@ -20,17 +20,9 @@ isr.o:
 	@echo "[BUILD]"	$@
 	@$(ASM) $(ASM_FLAGS) isr.asm -o isr.o
 
-paging_helper.o:
-	@echo "[BUILD]"	$@
-	@$(ASM) $(ASM_FLAGS) paging_helper.asm -o paging_helper.o
-
 tables.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c tables.c -o tables.o
-
-memory.o:
-	@echo "[BUILD]"	$@
-	@$(CC) $(C_FLAGS) -c memory.c -o memory.o
 
 idt.o:
 	@echo "[BUILD]"	$@
@@ -40,13 +32,9 @@ pic.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c pic.c -o pic.o
 
-mem/page.o:
-	@echo "[BUILD]"	$@
-	@$(CC) $(C_FLAGS) -c mem/page.c -o mem/page.o
-
 helper.o:
 	@echo "[BUILD]"	$@
 	@$(ASM) $(ASM_FLAGS) helper.asm -o helper.o
 
 clean:
-	@-rm *.o
+	@-rm *.o *.a

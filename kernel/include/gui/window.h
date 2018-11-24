@@ -8,9 +8,12 @@ typedef enum { WINDOW_NONE, WINDOW_TOPLEVEL } window_type_t;
 typedef struct window {
   struct widget widget;
 
+  widget_t*     focus;  // widget with the focus
   uint8_t       *name;
   window_type_t type;
 } window_t;
+
+#define WINDOW(w) ((window_t*)w)
 
 window_t*
 window_create(uint32_t w, uint32_t h);

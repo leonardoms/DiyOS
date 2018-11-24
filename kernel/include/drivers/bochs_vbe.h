@@ -6,7 +6,7 @@
 #include <small.h>
 #include <io.h>
 #include <debug/bochs.h>
-#include <x86/memory.h>
+#include <mm.h>
 
 void
 setup_bochs_vbe();

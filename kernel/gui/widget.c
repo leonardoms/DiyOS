@@ -6,7 +6,7 @@ widget_t*
 widget_create(uint32_t class, int32_t x, int32_t y, uint32_t w, uint32_t h,
       struct widget* parent) {
 
-    widget_t* widget = (widget_t*)kmalloc(sizeof(struct widget));
+    widget_t* widget = (widget_t*)malloc(sizeof(struct widget));
     widget_t* chld;
 
     if( !widget ) return NULL;

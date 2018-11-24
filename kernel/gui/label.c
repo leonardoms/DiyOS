@@ -5,7 +5,7 @@ label_size_request(label_t* lbl);
 
 label_t*
 label_create(const char* text, widget_t* parent) {
-  label_t* lbl = (label_t*)kmalloc(sizeof(struct window));
+  label_t* lbl = (label_t*)malloc(sizeof(struct window));
 
   if( !lbl ) return NULL;
 
@@ -105,9 +105,9 @@ label_set_text(label_t* lbl, const char* text) {
     return;
 
   if(lbl->text)
-    kfree(lbl->text);
+    free(lbl->text);
 
-  lbl->text = (char*)kmalloc(strlen(text)+1);
+  lbl->text = (char*)malloc(strlen(text)+1);
 
   memcpy((void*)text, (void*)lbl->text, strlen(text) + 1);
 }

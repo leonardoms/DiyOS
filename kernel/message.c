@@ -13,7 +13,7 @@ message_to(uint32_t to, void* data, uint32_t size) {
     return;
   }
 
-  msg = (message_t*)kmalloc(sizeof(struct message));
+  msg = (message_t*)malloc(sizeof(struct message));
 
   msg->from = task_pid();
   msg->to = to;
@@ -41,5 +41,5 @@ message() {
 
 void
 message_destroy(message_t* msg) {
-  // kfree(msg);
+    free(msg);
 }

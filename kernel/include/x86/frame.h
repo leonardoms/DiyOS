@@ -2,7 +2,7 @@
 #define _FRAME_H_
 
 #include <ctypes.h>
-#include <x86/memory.h>
+#include <mm.h>
 
 #define    FRAME_SIZE      0x1000
 
