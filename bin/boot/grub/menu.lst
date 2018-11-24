@@ -3,10 +3,4 @@ title	diyOS (x86)
 root	(cd)
 kernel	/diyOS_x86
 
-;module  /hello.mo
-;module  /terminal.elf
-;module /user_test_2.elf
-;module /user_test.elf
-;module	/countdown.elf
-
 boot

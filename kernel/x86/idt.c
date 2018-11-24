@@ -290,7 +290,6 @@ void setup_idt() {
   // IRQ
   setup_idt_entry(32, (uint32_t)timer_handle, 0);
   setup_idt_entry(33, (uint32_t)keyboard_handle, 0);
-  printf("keyboard_handle: 0x%x\n", (uint32_t)keyboard_handle);
   setup_idt_entry(34, (uint32_t)isr34, 0);
   setup_idt_entry(35, (uint32_t)isr35, 0);
   setup_idt_entry(36, (uint32_t)isr36, 0);

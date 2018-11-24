@@ -1,12 +1,12 @@
 #include <task.h>
-#include <x86/memory.h>
+#include <mm.h>
 #include <aspace.h>
 
 aspace_t*
 aspace_create() {
     aspace_t* a;
 
-    a = (aspace_t*)kmalloc(sizeof(struct aspace));
+    a = (aspace_t*)malloc(sizeof(struct aspace));
     if(a == NULL)
         return NULL;
 
@@ -24,7 +24,7 @@ aspace_section_create(aspace_t* as, uint32_t addr, uint32_t size, uint32_t flags
     // sect_t*  old_s;
 
     //TODO: replace with krealloc
-    s = (sect_t*)kmalloc((as->sects + 1) * sizeof(struct sect));
+    s = (sect_t*)malloc((as->sects + 1) * sizeof(struct sect));
     if(s == NULL)
       return TRUE;
 

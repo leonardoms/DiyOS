@@ -2,7 +2,6 @@
 #define _X86_H_
 
 #include <ctypes.h>
-#include <x86/memory.h>
 #include <x86/pic.h>
 
 #define KERNEL_CODE   0x08

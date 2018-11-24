@@ -3,7 +3,7 @@
 
 window_t*
 window_create(uint32_t w, uint32_t h) {
-  window_t* wnd = (window_t*)kmalloc(sizeof(struct window));
+  window_t* wnd = (window_t*)malloc(sizeof(struct window));
 
   if( !wnd ) return NULL;
 
@@ -28,9 +28,9 @@ window_create(uint32_t w, uint32_t h) {
   WIDGET(wnd)->x += WINDOW_DECORATION_BORDER;
   WIDGET(wnd)->y += WINDOW_DECORATION_BAR;
 
-  wnd->name = "DiyOS";
+  // wnd->name = "DiyOS";
 
-  // window_set_name(wnd,"DiyOS");
+  window_set_name(wnd,"DiyOS");
 
   widget_set_parent(wnd,gui_widget_root()); // the parent is the desktop area
 

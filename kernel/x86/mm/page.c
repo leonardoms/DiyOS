@@ -69,9 +69,9 @@ page_upper() {
 uint32_t
 page_map_until(uint32_t new_limit) {
   uint32_t old_limit, p_addr;
-printf("a");
-  old_limit = page_upper() + 0x1000;
-printf("b");
+
+  old_limit = page_upper();
+
   new_limit &= 0xFFFFF000;
   while( old_limit <= new_limit ) {
     p_addr = frame_get();
@@ -80,7 +80,7 @@ printf("b");
       //TODO: hollback the mapped pages
       return old_limit;
     }
-printf("c");
+
     page_map(p_addr,old_limit);
 
     old_limit += 0x1000;

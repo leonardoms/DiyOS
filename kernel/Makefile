@@ -12,7 +12,7 @@ OBJECTS = $(C_FILES:.c=.o)
 .PHONY: all clean
 
 all: clean x86.a built-in_drivers.a small.a gui.a $(OBJECTS)
-	$(LD) $(LD_FLAGS) -o diyOS_x86 $(OBJECTS) x86.a built-in_drivers.a small.a gui.a -T x86/x86.ld
+	$(LD) $(LD_FLAGS) -o diyOS_x86 $(OBJECTS) built-in_drivers.a small.a gui.a x86.a -T x86/x86.ld
 	cp diyOS_x86 ../bin/diyOS_x86
 
 small.a:

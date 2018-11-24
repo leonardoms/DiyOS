@@ -1,12 +1,6 @@
 #include <x86/frame.h>
 #include <debug/bochs.h>
 
-// a posicao fisica do frame usado em malloc e kmalloc nao importa,
-// a unica coisa que importa é a tabela onde ele esta inserido, seja
-// ela a da task ou a do kernel. portanto
-// malloc: frame_get e alloca o frame na tabela do processo, atravez de syscall "getFrame"
-// kmalloc: frame_get e alloca o frame na tabela do kernel.
-
 uint32_t   frames_count, frame_idx;
 uint32_t   frames_free;
 
@@ -61,7 +55,7 @@ frame_setup(uint32_t mem_size, uint32_t reserved_start, uint32_t reserved_end) {
 
   // printf("frame_setup(): sz=%d, s=0x%x, e=0x%x\n", mem_size, reserved_start, reserved_end);
 
-  // set kernel frames as diry
+  // set kernel frames as dirty
   for( i = reserved_start; i < reserved_end; i += FRAME_SIZE) {
     frame_set_address(i);
     frame_idx++;

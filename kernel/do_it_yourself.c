@@ -13,7 +13,7 @@
 #include <elf.h>
 #include <task.h>
 #include <panic.h>
-#include <x86/memory.h>
+#include <mm.h>
 
 void do_it_yourself(uint32_t multiboot_info) {
   disable();      // "please, dont disturb". (no interrupts while setting up)
@@ -23,16 +23,14 @@ void do_it_yourself(uint32_t multiboot_info) {
   fb();     // enables built-in video
   printf("DiyOS - do it yourself Operating System\n");
 
-  x86();    // enables x86 32-bits things
-
-  // TODO: use multiboot_mmap_entry
-  memory(mbinfo->mem_upper * 1024); // in bytes
+  x86();      // enables x86 32-bits things
+  mm(mbinfo); // memory manager
 
   acpi();   // configure ACPI
   task();   // multitasking
   kb();     // enable keyboard
   timer();  // enable timer
-  // terminal();  // create terminal
+  terminal();  // create terminal
   gfx();    // graphical server
   gui();    // graphical user interface server
 

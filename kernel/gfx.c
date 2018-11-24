@@ -9,24 +9,23 @@ void
 gfx_main() {
 
   gfx_loaded = 1;
-  uint8_t x = 0, y = 0;
-
 
   while(1) {
   disable();
-  // gfx_rect(x++,y++,100,100,(color_t){255,0,0}); // testing...
-    // if( update_x1 > 0 ) { // has any area to re-draw? (test a update_?? coordinate )
+
+    if( update_x1 > 0 ) { // has any area to re-draw? (test a update_?? coordinate )
       // vga_flip_area(update_x0, update_y0, update_x1, update_y1); // update only modified area
       vga_flip();
       update_x0 = 0xFFFF;
       update_y0 = 0xFFFF;
       update_x1 = 0x0;
       update_y1 = 0x0;
-    // }
+    }
     // task_enable();
     // vga_draw_pointer(); // write mouse pointer directly on video memory
     enable();
     sleep(50); // 20 fps
+
   }
 
 }
@@ -37,13 +36,6 @@ uint8_t
 gfx_is_ready() {
   return gfx_loaded;
 }
-
-// void
-// gfx_start() {
-//   if(gfx_task) {
-//     gfx_task->state = TS_READY;
-//   }
-// }
 
 void
 gfx() {

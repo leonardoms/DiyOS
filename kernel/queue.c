@@ -6,7 +6,7 @@ queue_init(queue_t* q, uint16_t size) {
   q->rear 	= -1;
   q->count 	= 0;
 	q->size 	= size;
-	q->data = (uint32_t*)kmalloc(sizeof(uint32_t*)*size);
+	q->data = (uint32_t*)malloc(sizeof(uint32_t*)*size);
 }
 
 uint32_t*

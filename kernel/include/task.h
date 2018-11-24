@@ -5,7 +5,6 @@
 #include <elf.h>
 #include <aspace.h>
 #include <x86/x86.h>
-#include <x86/memory.h>
 #include <queue.h>
 
 #define LISTEN_ALL  0xFFFFFFFF

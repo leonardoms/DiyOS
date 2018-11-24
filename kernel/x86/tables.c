@@ -1,4 +1,5 @@
 #include <x86/x86.h>
+#include <mm.h>
 #include <x86/pic.h>
 #include <debug/bochs.h>
 
@@ -20,14 +21,6 @@ void tss_setup() {
     tss.cs = KERNEL_CODE;// | 3;
     tss.ss = tss.ds = tss.es = tss.fs = tss.gs = KERNEL_DATA;// | 3;
     tss.cr3 = (uint32_t)&page_directory[0];
-}
-
-void to_kernel_stack(uint32_t stack) {
-    tss.esp0 = stack;
-}
-
-uint32_t kernel_get_stack() {
-  return tss.esp0;
 }
 
 void gdt_entry_setup(struct gdt_entry* gdte, uint32_t base, uint32_t limit,
@@ -58,30 +51,4 @@ void setup_gdt() {
 
   load_gdt(&gdtr);
   load_tss();
-}
-
-#define USER_STACK 0xBFFFFFFB
-
-static uint32_t  user_code_page[1024] __attribute__((aligned (4096)));
-static uint32_t  user_stack_page[1024] __attribute__((aligned (4096)));
-
-// void
-// user_setup() {
-//   int i;
-//   for(i=0;i<1024;i++) {
-//     user_code_page[i] = 0;
-//     user_stack_page[i] = 0;
-//   }
-//   // setup user space memory; begins at 0x00000000 (virtual)
-//   memory_set_table(0x400000, &user_code_page, PAGE_FLAG_USER );
-//   _kmalloc(0x100000,2,766,PAGE_FLAG_USER); // alloc 1MB for user process above 0x100000
-//   memory_set_table(0xBF800000-1, &user_stack_page, PAGE_FLAG_USER ); // 4MB bellow kernel virtual memory
-//   _kmalloc(0x1000,766,767,PAGE_FLAG_USER); // alloc 4KB for user stack at 0xBFC00000 ~ 0xC0000000 area
-//   kmalloc(1);
-// }
-
-void
-user_test() {
-  while(1);
-  __asm__ __volatile__("cli\n"); // must generate a GPF
 }

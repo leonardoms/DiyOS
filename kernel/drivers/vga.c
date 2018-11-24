@@ -1157,7 +1157,7 @@ vga_set_graphic() {
   putpixel = vga_write_pixel;
   clear_screen = vga_clear;
   // vgafb= (uint8_t*)vga_get_fb();
-	vgafb= (uint8_t*)kmalloc(width * height * ( depth >> 3 ));
+	vgafb = (uint8_t*)malloc(width * height * ( depth >> 3 ));
 
   width  = 320;
   height = 200;

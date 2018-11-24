@@ -1,9 +1,10 @@
-#include <x86/x86.h>
+#include <mm.h>
 #include <panic.h>
 #include <small.h>
+#include <x86/x86.h>
 
 void
-page_map(uint32_t p_addr, uint32_t v_addr, uint32_t length) {
+_page_map(uint32_t p_addr, uint32_t v_addr, uint32_t length) {
   uint32_t  *pd, *table, p_idx, t_idx;
   uint32_t pages;
 
@@ -25,7 +26,6 @@ page_map(uint32_t p_addr, uint32_t v_addr, uint32_t length) {
     p_addr += 0x1000;
     pages --;
   }
-
 
 }
 
@@ -211,15 +211,15 @@ acpi() {
                       rsdp->Revision );
 
       rsdt = (struct RSDT*)rsdp->RsdtAddress;
-      page_map(rsdp->RsdtAddress, rsdp->RsdtAddress, 0x1000); // make rsdt header accessible
-      page_map(rsdp->RsdtAddress, rsdp->RsdtAddress, rsdt->h.Length);
+      _page_map(rsdp->RsdtAddress, rsdp->RsdtAddress, 0x1000); // make rsdt header accessible
+      _page_map(rsdp->RsdtAddress, rsdp->RsdtAddress, rsdt->h.Length);
       i_max = (rsdt->h.Length - sizeof(struct ACPISDTHeader)) / 4;
 
       for( i = 0; i < i_max; i++ ) {
         sdt = (struct ACPISDTHeader*)rsdt->PointerToOtherSDT[i];
 
-        page_map(rsdt->PointerToOtherSDT[i], rsdt->PointerToOtherSDT[i], 0x1000);
-        page_map(rsdt->PointerToOtherSDT[i], rsdt->PointerToOtherSDT[i], sdt->Length);
+        _page_map(rsdt->PointerToOtherSDT[i], rsdt->PointerToOtherSDT[i], 0x1000);
+        _page_map(rsdt->PointerToOtherSDT[i], rsdt->PointerToOtherSDT[i], sdt->Length);
 
         switch( *((uint32_t*)sdt->Signature) ) {
           case 'TDSS': // same than DSDT
@@ -253,8 +253,8 @@ acpi() {
 
             dsdt = (struct ACPISDTHeader*)facp->Dsdt;
             if( dsdt != NULL ) {
-              page_map(facp->Dsdt, facp->Dsdt, 0x1000); // make DSDT header accessible
-              page_map(facp->Dsdt, facp->Dsdt, dsdt->Length); // map the correct size
+              _page_map(facp->Dsdt, facp->Dsdt, 0x1000); // make DSDT header accessible
+              _page_map(facp->Dsdt, facp->Dsdt, dsdt->Length); // map the correct size
             }
 
             if( (*((uint32_t*)dsdt) == 'TDSD') )  { // "DSDT"
