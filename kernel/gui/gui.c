@@ -49,7 +49,11 @@ gui_main() {
                 window = gui_get_active_window();
                 if( window == NULL )
                   break;
-                // widget_keydown(window->focus);
+
+                if(window->focus)
+                if(window->focus->OnKeyDown)
+                  window->focus->OnKeyDown(window->focus,'a');
+
                 break;
             case MOUSE:
                 break;
@@ -77,7 +81,7 @@ gui_desktop_create() {
     desktop_window->bgcolor = (color_t){255,255,255};
 
 #if 1
-    widget_t  *wnd, *wnd1, *lbl;
+    widget_t  *wnd, *wnd1, *lbl, *btn;
     wnd1 = WIDGET(window_create(250,100));
     lbl = WIDGET(label_create("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam venenatis viverra quam, id pretium mi maximus quis. Vestibulum vestibulum arcu in rutrum sagittis. Etiam interdum nec mi sit amet tincidunt.", wnd1));
     window_set_name(WINDOW(wnd1), "another window");
@@ -85,10 +89,11 @@ gui_desktop_create() {
 
     wnd = WIDGET(window_create(150,100));
     lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
-    button_size( button_create("OK", wnd), (wnd->w - 40) / 2, (wnd->h - 12 - 10), 40, 12 );
+    btn = button_create("OK", wnd);
+    button_size( BUTTON(btn), (wnd->w - 40) / 2, (wnd->h - 12 - 10), 40, 12 );
     window_set_name(WINDOW(wnd), "Welcome Message!");
     gui_set_active_window(wnd);
-
+    WINDOW(wnd)->focus = btn;
     window_move(WINDOW(wnd),50,70);
 
 #endif

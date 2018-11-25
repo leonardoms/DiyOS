@@ -26,10 +26,15 @@ typedef struct widget {
 
   widget_visibility_t visible;
 
-  // Callbacks
+  // callbacks
   uint8_t (*OnPaint)(struct widget* widget);
   void (*OnKeyDown)(struct widget* widget, uint32_t key);
   void (*OnKeyUp)(struct widget* widget, uint32_t key);
+
+  // user callbacks
+  uint8_t (*OnPaint_User)(struct widget* widget);
+  void (*OnKeyDown_User)(struct widget* widget, uint32_t key);
+  void (*OnKeyUp_User)(struct widget* widget, uint32_t key);
 
   struct widget* focus;
   uint8_t   has_focus;
