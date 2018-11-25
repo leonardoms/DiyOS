@@ -15,10 +15,27 @@ extern do_it_yourself   ; void do_it_yourself(); from main.c
 
 section .multiboot  ; section defined in x86.ld
         ;multiboot spec for grub2
-        align 4
-        dd 0x1BADB002
-        dd 0x00000001
-        dd -(0x1BADB002 + 0x00000001)
+        MBOOT_HEADER_MAGIC  equ 0x1BADB002
+        MBOOT_PAGE_ALIGN    equ 1 << 0
+        MBOOT_MEM_INFO      equ 1 << 1
+        MBOOT_GRAPH_MODE    equ 1 << 2
+        MBOOT_HEADER_FLAGS  equ MBOOT_PAGE_ALIGN | MBOOT_MEM_INFO | MBOOT_GRAPH_MODE
+        MBOOT_CHECKSUM      equ -(MBOOT_HEADER_MAGIC + MBOOT_HEADER_FLAGS)
+
+        dd MBOOT_HEADER_MAGIC
+        dd MBOOT_HEADER_FLAGS
+        dd MBOOT_CHECKSUM
+
+        dd 0
+        dd 0
+        dd 0
+        dd 0
+        dd 0
+
+        dd 0
+        dd 640
+        dd 480
+        dd 32
 
 section .text
 

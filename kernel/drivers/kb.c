@@ -12,7 +12,7 @@ void
 update_key(task_t* t, uint32_t* data) {
   if( t->waitkey == 1 ) {
     t->waitkey = 0;
-    t->key = *data;
+    t->key = (uint8_t)data;
     t->state = TS_READY;
   }
 }
@@ -40,6 +40,8 @@ keyboad_task() {
       if(code) {
         task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)code);
         task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)code);
+
+        task_queue_foreach(&tq_blocked, update_key, (uint32_t*)code);
       }
 
       enable();

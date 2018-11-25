@@ -225,8 +225,6 @@ task_update_queue() {
       t = task_queue_remove(&tq_blocked);
       if(t->state == TS_READY) {
         task_queue_insert(&tq_ready,t);
-        // t->switch_function(t->regs);
-        // task_show_all();
       }
       else
         task_queue_insert(&tq_blocked,t);
@@ -335,7 +333,7 @@ task_schedule()
   	asm volatile("pop %ebp");
   	asm volatile("pop %edi");
   	asm volatile("pop %esi");
-  	asm volatile("out %%al, %%dx": :"d"(0x20), "a"(0x20)); // send EoI to master PIC
+  	// asm volatile("out %%al, %%dx": :"d"(0x20), "a"(0x20)); // send EoI to master PIC
   	asm volatile("pop %edx");
   	asm volatile("pop %ecx");
   	asm volatile("pop %ebx");

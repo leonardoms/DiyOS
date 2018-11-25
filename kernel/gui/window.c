@@ -15,12 +15,14 @@ window_create(uint32_t w, uint32_t h) {
   WIDGET(wnd)->w = w;
   WIDGET(wnd)->h = h;
   WIDGET(wnd)->visible = W_VIS_PARENT;
-  WIDGET(wnd)->fgcolor = (color_t){ 64, 64, 64 };
-  WIDGET(wnd)->bgcolor = (color_t){ 255, 255, 255 };
+  WIDGET(wnd)->fgcolor = (color_t){ 0, 0, 0 };
+  WIDGET(wnd)->bgcolor = (color_t){ 128, 128, 128 };
   widget_set_padding(WIDGET(wnd),2,2,2,2);
   WIDGET(wnd)->OnPaint = NULL;
   WIDGET(wnd)->OnKeyUp = NULL;
   WIDGET(wnd)->OnKeyDown = NULL;
+  wnd->name = NULL;
+  wnd->active = 0;
 
   wnd->type = WINDOW_TOPLEVEL;
 
@@ -40,7 +42,16 @@ window_create(uint32_t w, uint32_t h) {
 
 void
 window_set_name(window_t* window, char* name) {
-  memcpy((void*)name, (void*)window->name, strlen(name) + 1);
+
+  if(window == NULL)
+      return;
+
+  // if(window->name)
+  //   free(window->name);
+
+  window->name = (uint8_t*)malloc(strlen(name) + 1);
+  if( window->name != NULL)
+    memcpy((void*)name, (void*)window->name, strlen(name) + 1);
 }
 
 char*
@@ -59,12 +70,23 @@ window_get_type(window_t* window) {
 }
 
 void
+window_move(window_t* window, uint32_t x, uint32_t y) {
+  widget_move(WIDGET(window),x,y);
+}
+
+void
 window_draw(window_t* window) {
   uint32_t x0, y0, i = 0;
   color_t border, tbar;
 
-  border = (color_t){WIDGET(window)->bgcolor.r >> 1 , WIDGET(window)->bgcolor.g >> 1, WIDGET(window)->bgcolor.b >> 1};
-  tbar = (color_t){WIDGET(window)->bgcolor.r >> 2 , WIDGET(window)->bgcolor.g >> 2, WIDGET(window)->bgcolor.b >> 2};
+  if(window == NULL)
+    return;
+
+  if(window->name == NULL)
+    return;
+
+  border = (window->active == 1) ? (color_t){64,64,64} : (color_t){32,32,32};
+  tbar = (window->active == 1) ? (color_t){32,32,96} : (color_t){64,64,64};
 
   // title bar + borders
   gfx_rect( WIDGET(window)->x - WINDOW_DECORATION_BORDER,
@@ -88,41 +110,15 @@ window_draw(window_t* window) {
             WIDGET(window)->bgcolor );
 
   // draw title
-  x0 = WIDGET(window)->x + 1;
-  y0 = WIDGET(window)->y - WINDOW_DECORATION_BAR + WINDOW_DECORATION_BORDER + 1;
+  if(window->name) {
+    x0 = WIDGET(window)->x + 1;
+    y0 = WIDGET(window)->y - WINDOW_DECORATION_BAR + WINDOW_DECORATION_BORDER + 1;
 
-  while(window->name[i]) {
-    gfx_putchar(x0+i*8, y0,
-                WIDGET(window)->fgcolor, tbar,
-                window->name[i]);
-    i++;
+    while(window->name[i]) {
+      gfx_putchar(x0+i*8, y0,
+                  WIDGET(window)->fgcolor, tbar,
+                  window->name[i]);
+      i++;
+    }
   }
-
-  // draw decoration
-  // //bottom line
-  // gfx_line( WIDGET(window)->x,
-  //           WIDGET(window)->y + WINDOW_DECORATION_BAR + WIDGET(window)->h + WINDOW_DECORATION_BORDER ,
-  //           WIDGET(window)->x + WIDGET(window)->w + WINDOW_DECORATION_BORDER * 2,
-  //           WIDGET(window)->y + WINDOW_DECORATION_BAR + WIDGET(window)->h + WINDOW_DECORATION_BORDER,
-  //           WIDGET(window)->bgcolor.r >> 1 , WIDGET(window)->bgcolor.g >> 1, WIDGET(window)->bgcolor.b >> 1);
-  // // left line
-  // gfx_line( WIDGET(window)->x,
-  //           WIDGET(window)->y,
-  //           WIDGET(window)->x,
-  //           WIDGET(window)->y + WINDOW_DECORATION_BAR + WIDGET(window)->h + WINDOW_DECORATION_BORDER,
-  //           WIDGET(window)->bgcolor.r >> 1 , WIDGET(window)->bgcolor.g >> 1, WIDGET(window)->bgcolor.b >> 1);
-  // // right line
-  // gfx_line( WIDGET(window)->x + WIDGET(window)->w + WINDOW_DECORATION_BORDER * 2,
-  //           WIDGET(window)->y,
-  //           WIDGET(window)->x + WIDGET(window)->w + WINDOW_DECORATION_BORDER * 2,
-  //           WIDGET(window)->y + WINDOW_DECORATION_BAR + WIDGET(window)->h + WINDOW_DECORATION_BORDER,
-  //           WIDGET(window)->bgcolor.r >> 1 , WIDGET(window)->bgcolor.g >> 1, WIDGET(window)->bgcolor.b >> 1);
-  //
-  // // title bar
-  // gfx_rect( WIDGET(window)->x,
-  //           WIDGET(window)->y,
-  //           WIDGET(window)->x + WINDOW_DECORATION_BORDER * 2 + WIDGET(window)->w,
-  //           WIDGET(window)->y + WINDOW_DECORATION_BAR,
-  //           WIDGET(window)->bgcolor.r >> 1 , WIDGET(window)->bgcolor.g >> 1, WIDGET(window)->bgcolor.b >> 1 );
-
 }
