@@ -19,6 +19,7 @@ Latest boot screenshots
 
 What is done:
 * Multitasking  
+* Basic Message System (IPC)
 * Global Descriptor Table (GDT)
   * Flat memory
 * Interrupt Descriptor Table (IDT)
