@@ -114,7 +114,7 @@ widget_set_parent(widget_t* widget, widget_t* parent) {
     } else {
       parent->child = widget;
     }
-    
+
     widget->next = NULL;
 
   }
@@ -164,10 +164,10 @@ widget_set_callback(widget_t* widget, uint8_t callback, void* ptr) {
 
   switch (callback) {
     case ON_PAINT:
-      widget->OnPaint = (Paint)ptr;
+      widget->OnPaint_User = (Paint)ptr;
       break;
     case ON_KEYUP:
-      widget->OnKeyUp = (KeyUp)ptr;
+      widget->OnKeyUp_User = (KeyUp)ptr;
       break;
   }
 }

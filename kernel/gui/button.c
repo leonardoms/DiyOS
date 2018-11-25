@@ -1,5 +1,7 @@
 #include <gui.h>
 
+void button_keydown(struct widget* widget, uint32_t key);
+
 button_t*
 button_create(const char* caption, widget_t* parent) {
   button_t* btn = (button_t*)malloc(sizeof(struct button));
@@ -22,7 +24,7 @@ button_create(const char* caption, widget_t* parent) {
   widget_set_padding(WIDGET(btn),0,0,0,0);
   WIDGET(btn)->OnPaint = NULL;
   WIDGET(btn)->OnKeyUp = NULL;
-  WIDGET(btn)->OnKeyDown = NULL;
+  WIDGET(btn)->OnKeyDown = button_keydown;
 
   widget_set_parent(WIDGET(btn), parent);
 
@@ -32,6 +34,14 @@ button_create(const char* caption, widget_t* parent) {
   WIDGET(btn->label)->x = 12; //(uint32_t)(WIDGET(btn->label)->w / 2);
 
   return btn;
+}
+
+void button_keydown(struct widget* widget, uint32_t key) {
+  widget_t* wnd = WINDOW(window_create(100,50)); // just for testing!
+  window_move(WINDOW(wnd), (gfx_width() - 100)/2, (gfx_height() - 50)/2 );
+  window_set_name(WINDOW(wnd), "Message Box");
+  label_create("Button has been clicked! :)", wnd);
+  gui_set_active_window(WINDOW(wnd));
 }
 
 void
