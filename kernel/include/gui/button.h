@@ -6,10 +6,17 @@
 typedef struct button {
   struct widget widget;
 
+  label_t*  label;
+
   uint8_t       enabled;
-} label_t;
+} button_t;
+
+#define BUTTON(b) ((button_t*)b)
 
 button_t*
-button_create(widget_t* parent);
+button_create(const char* caption, widget_t* parent);
+
+void
+button_size(button_t* btn, uint32_t x, uint32_t y, uint32_t w, uint32_t h);
 
 #endif

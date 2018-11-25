@@ -48,10 +48,13 @@ widget_draw(struct widget* widget) {
 
   switch (widget->class) {
     case W_WINDOW:
-      window_draw((struct window*)widget);
+      window_draw(WINDOW(widget));
       break;
     case W_LABEL:
-      label_draw((struct label*)widget);
+      label_draw(LABEL(widget));
+      break;
+    case W_BUTTON:
+      button_draw(BUTTON(widget));
       break;
     default:
       parent = widget->parent;
@@ -94,14 +97,12 @@ void
 widget_set_parent(widget_t* widget, widget_t* parent) {
   widget_t* chld;
 
-  if(!widget)
+  if( widget == NULL )
     return;
 
   widget->parent = parent;
 
   if(parent) {
-    widget->x += parent->x + parent->padding_left;
-    widget->y += parent->y + parent->padding_top;
 
     if(parent->child) {
 
@@ -110,8 +111,14 @@ widget_set_parent(widget_t* widget, widget_t* parent) {
         chld = chld->next;
 
       chld->next = widget;
-    } else parent->child = widget;
+    } else {
+      parent->child = widget;
+    }
+    
+    widget->next = NULL;
+
   }
+
 }
 
 void
@@ -124,12 +131,6 @@ widget_move(widget_t* widget, uint32_t x, uint32_t y) {
     widget->x = x;
     widget->y = y;
 
-    chld = widget->child;
-    while(chld) {
-      widget_move(chld, chld->x + x + widget->padding_left, chld->y + y + widget->padding_top);
-
-      chld = chld->next;
-    }
 }
 
 void
@@ -169,4 +170,23 @@ widget_set_callback(widget_t* widget, uint8_t callback, void* ptr) {
       widget->OnKeyUp = (KeyUp)ptr;
       break;
   }
+}
+
+void
+widget_absolute_xy(widget_t* widget, uint32_t* x, uint32_t* y) {
+    widget_t  *parent;
+
+    if(widget == NULL || x == NULL || y == NULL )
+      return;
+
+    *x = widget->x;
+    *y = widget->y;
+
+    parent = widget->parent;
+    while(parent) {
+      *x += parent->x + parent->padding_left;
+      *y += parent->y + parent->padding_top;
+      parent = parent->parent;
+    }
+
 }

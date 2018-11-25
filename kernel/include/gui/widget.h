@@ -3,7 +3,7 @@
 
 #define WIDGET(w) ((struct widget*)w)
 
-enum { W_WIDGET = 0, W_WINDOW, W_LABEL };
+enum { W_WIDGET = 0, W_WINDOW, W_LABEL, W_BUTTON };
 
 enum { ON_PAINT = 1, ON_KEYUP };
 
@@ -59,5 +59,8 @@ widget_set_callback(widget_t* widget, uint8_t callback, void* ptr);
 
 void
 widget_move(widget_t* widget, uint32_t x, uint32_t y);
+
+void
+widget_absolute_xy(widget_t* widget, uint32_t* x, uint32_t* y);
 
 #endif
