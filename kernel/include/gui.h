@@ -5,15 +5,10 @@
 #include <gui/widget.h>
 #include <gui/window.h>
 #include <gui/label.h>
+#include <gui/button.h>
 
 #define WINDOW_DECORATION_BORDER 1
 #define WINDOW_DECORATION_BAR 12
-
-void
-gui();
-
-widget_t*
-gui_widget_root();
 
 #define ESC 0x1B
 
@@ -55,5 +50,18 @@ gui_widget_root();
 #define	KEY_NUM_LOCK		0x45
 #define	KEY_SCROLL_LOCK		0x46
 #define	KEY_CAPS_LOCK		0x3A
+
+
+void
+gui();
+
+widget_t*
+gui_widget_root();
+
+window_t*
+gui_get_active_window();
+
+void
+gui_set_active_window(window_t* window);
 
 #endif

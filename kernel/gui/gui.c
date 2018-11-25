@@ -28,7 +28,7 @@ paint(struct widget* widget) {
 void
 gui_main() {
   message_t* msg;
-  static uint8_t c[2];
+  window_t*  window;
 
   while(!gfx_is_ready());
 
@@ -41,11 +41,15 @@ gui_main() {
     while( (msg = message()) != NULL ) { // read all messages
         switch(msg->from) {
             case KEYBOARD:
+                // keyboard packet: byte0 = state keys; byte1 = key;
+                // byte0: 0 = Press(1)/Release(0);
+
                 // printf("GUI SERVER: key event (0x%x).\n", (uint8_t)msg->data);
-                //TODO
-                // 1: get active window
-                // 2: get focused widget
-                // 3: call onKeyDown/Up function for widget
+
+                window = gui_get_active_window();
+                if( window == NULL )
+                  break;
+                // widget_keydown(window->focus);
                 break;
             case MOUSE:
                 break;
@@ -70,17 +74,23 @@ gui_desktop_create() {
     // desktop_taskbar = widget_create(0, 0, gfx_height() - TASK_BAR_HEIGHT, gfx_width(), gfx_height(), NULL);
     // widget_set_padding(desktop_taskbar,2,2,2,2);
     // desktop_taskbar->bgcolor = (color_t){128,128,128};
-    desktop_window->bgcolor = (color_t){0,0,0};
+    desktop_window->bgcolor = (color_t){255,255,255};
 
 #if 1
     widget_t  *wnd, *wnd1, *lbl;
-    wnd1 = WIDGET(window_create(250,125));
+    wnd1 = WIDGET(window_create(250,100));
+    lbl = WIDGET(label_create("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam venenatis viverra quam, id pretium mi maximus quis. Vestibulum vestibulum arcu in rutrum sagittis. Etiam interdum nec mi sit amet tincidunt.", wnd1));
+    window_set_name(WINDOW(wnd1), "another window");
+    // window_move(WINDOW(wnd1),10,10); // ERROR here!! (WTF)
+
     wnd = WIDGET(window_create(150,100));
     lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
-    window_move(WINDOW(wnd1),50,50);
-    lbl = WIDGET(label_create("while( (msg = message()) != NULL ) { // read all messages", wnd1));
-    window_set_name(WINDOW(wnd1), "Window1 - DiyOS");
+    button_size( button_create("OK", wnd), (wnd->w - 40) / 2, (wnd->h - 12 - 10), 40, 12 );
+    window_set_name(WINDOW(wnd), "Welcome Message!");
     gui_set_active_window(wnd);
+
+    window_move(WINDOW(wnd),50,70);
+
 #endif
 
     // the taskbar space
@@ -183,7 +193,6 @@ gui_get_active_window() {
 
 void
 gui_draw() {
-  // widget_draw(desktop_taskbar); //ERRO AQUI!
   widget_draw(desktop_window);
 
   // gui_pointer_draw(pointerX, pointerY);

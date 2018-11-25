@@ -10,8 +10,8 @@ window_create(uint32_t w, uint32_t h) {
   memset(wnd, 0, sizeof(struct window));
 
   WIDGET(wnd)->class = W_WINDOW;
-  WIDGET(wnd)->x = 5;
-  WIDGET(wnd)->y = 5;
+  WIDGET(wnd)->x = (gfx_width() - w) / 2;
+  WIDGET(wnd)->y = 10;
   WIDGET(wnd)->w = w;
   WIDGET(wnd)->h = h;
   WIDGET(wnd)->visible = W_VIS_PARENT;
@@ -82,37 +82,43 @@ window_draw(window_t* window) {
   if(window == NULL)
     return;
 
-  if(window->name == NULL)
-    return;
-
   border = (window->active == 1) ? (color_t){64,64,64} : (color_t){32,32,32};
   tbar = (window->active == 1) ? (color_t){32,32,96} : (color_t){64,64,64};
 
+  widget_absolute_xy(WIDGET(window), &x0, &y0);
+
+  // shadow
+  gfx_rect( x0 - WINDOW_DECORATION_BORDER + 1,
+            y0 - WINDOW_DECORATION_BAR + 1,
+            x0 + WIDGET(window)->w + WINDOW_DECORATION_BORDER + 1,
+            y0 + WIDGET(window)->h + WINDOW_DECORATION_BORDER + 1,
+            (color_t){16,16,16} );
+
   // title bar + borders
-  gfx_rect( WIDGET(window)->x - WINDOW_DECORATION_BORDER,
-            WIDGET(window)->y - WINDOW_DECORATION_BAR,
-            WIDGET(window)->x + WIDGET(window)->w + WINDOW_DECORATION_BORDER,
-            WIDGET(window)->y + WIDGET(window)->h + WINDOW_DECORATION_BORDER,
+  gfx_rect( x0 - WINDOW_DECORATION_BORDER,
+            y0 - WINDOW_DECORATION_BAR,
+            x0 + WIDGET(window)->w + WINDOW_DECORATION_BORDER,
+            y0 + WIDGET(window)->h + WINDOW_DECORATION_BORDER,
             border );
 
   // title bar internal
-  gfx_rect( WIDGET(window)->x,
-            WIDGET(window)->y + WINDOW_DECORATION_BORDER - WINDOW_DECORATION_BAR,
-            WIDGET(window)->x + WIDGET(window)->w,
-            WIDGET(window)->y - WINDOW_DECORATION_BORDER * 2,
+  gfx_rect( x0,
+            y0 + WINDOW_DECORATION_BORDER - WINDOW_DECORATION_BAR,
+            x0 + WIDGET(window)->w,
+            y0 - WINDOW_DECORATION_BORDER * 2,
             tbar );
 
   // draw widget area
-  gfx_rect( WIDGET(window)->x,
-            WIDGET(window)->y,
-            WIDGET(window)->x + WIDGET(window)->w,
-            WIDGET(window)->y + WIDGET(window)->h,
+  gfx_rect( x0,
+            y0,
+            x0 + WIDGET(window)->w,
+            y0 + WIDGET(window)->h,
             WIDGET(window)->bgcolor );
 
   // draw title
   if(window->name) {
-    x0 = WIDGET(window)->x + 1;
-    y0 = WIDGET(window)->y - WINDOW_DECORATION_BAR + WINDOW_DECORATION_BORDER + 1;
+    x0 += 1;
+    y0 += WINDOW_DECORATION_BORDER + 1 - WINDOW_DECORATION_BAR;
 
     while(window->name[i]) {
       gfx_putchar(x0+i*8, y0,
