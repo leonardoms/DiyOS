@@ -24,6 +24,10 @@ widget_create(uint32_t class, int32_t x, int32_t y, uint32_t w, uint32_t h,
     widget->focus = NULL;
     widget->has_focus = 0;
 
+    widget->OnPaint = NULL;
+    widget->OnKeyUp = NULL;
+    widget->OnKeyDown = NULL;
+
     widget_set_padding(widget, 2, 2, 2, 2);
     widget_set_parent(widget, parent);
 
@@ -40,7 +44,7 @@ widget_draw(struct widget* widget) {
   if(!widget)
     return;
 
-  printf("draw 0x%x\n", widget);
+  // printf("draw 0x%x\n", widget);
 
   switch (widget->class) {
     case W_WINDOW:
@@ -95,15 +99,37 @@ widget_set_parent(widget_t* widget, widget_t* parent) {
 
   widget->parent = parent;
 
-  if(parent)
-  if(parent->child) {
+  if(parent) {
+    widget->x += parent->x + parent->padding_left;
+    widget->y += parent->y + parent->padding_top;
 
-    chld = parent->child;
-    while(chld->next)
+    if(parent->child) {
+
+      chld = parent->child;
+      while(chld->next)
+        chld = chld->next;
+
+      chld->next = widget;
+    } else parent->child = widget;
+  }
+}
+
+void
+widget_move(widget_t* widget, uint32_t x, uint32_t y) {
+    widget_t* chld;
+
+    if(!widget)
+      return;
+
+    widget->x = x;
+    widget->y = y;
+
+    chld = widget->child;
+    while(chld) {
+      widget_move(chld, chld->x + x + widget->padding_left, chld->y + y + widget->padding_top);
+
       chld = chld->next;
-
-    chld->next = widget;
-  } else parent->child = widget;
+    }
 }
 
 void

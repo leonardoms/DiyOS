@@ -9,10 +9,12 @@ void
 gfx_main() {
 
   gfx_loaded = 1;
+  // uint8_t x = 0;
 
   while(1) {
   disable();
-
+    // gfx_rect(x,20,x+50,100,(color_t){64,0,0});
+    // x++;
     if( update_x1 > 0 ) { // has any area to re-draw? (test a update_?? coordinate )
       // vga_flip_area(update_x0, update_y0, update_x1, update_y1); // update only modified area
       vga_flip();

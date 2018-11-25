@@ -57,4 +57,7 @@ widget_set_parent(widget_t* widget, widget_t* parent);
 void
 widget_set_callback(widget_t* widget, uint8_t callback, void* ptr);
 
+void
+widget_move(widget_t* widget, uint32_t x, uint32_t y);
+
 #endif

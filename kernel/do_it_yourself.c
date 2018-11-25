@@ -15,6 +15,10 @@
 #include <panic.h>
 #include <mm.h>
 
+void putchar_dummy(const char c) {
+
+}
+
 void do_it_yourself(uint32_t multiboot_info) {
   disable();      // "please, dont disturb". (no interrupts while setting up)
 
@@ -31,6 +35,9 @@ void do_it_yourself(uint32_t multiboot_info) {
   kb();     // enable keyboard
   timer();  // enable timer
   // terminal();  // create terminal
+
+  putchar = putchar_dummy; // dont disturb Video memory (ist a hack)
+
   gfx();    // graphical server
   gui();    // graphical user interface server
 

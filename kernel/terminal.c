@@ -151,7 +151,7 @@ void
 terminal() {
   task_t* t;
 
-  t = task_create(terminal, "terminal_root", TS_READY);
+  t = task_create(terminal_root, "terminal_root", TS_READY);
   task_add(t);
   //
   // t = task_create(terminal_bar, "terminal_bar", TS_READY);

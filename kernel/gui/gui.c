@@ -16,13 +16,11 @@ task_t* gui_task;
 
 #define TASK_BAR_HEIGHT 16
 
-widget_t  *wnd, *lbl;
-
 uint8_t
 paint(struct widget* widget) {
   // create a label as child at runtime, for testing...
-  widget_t* w = WIDGET(label_create("teste!",widget));
-  w->bgcolor = (color_t) {255,0, 0};
+  // widget_t* w = WIDGET(label_create("teste!",widget));
+  // w->bgcolor = (color_t) {255,0, 0};
 
   return 1;
 }
@@ -30,13 +28,11 @@ paint(struct widget* widget) {
 void
 gui_main() {
   message_t* msg;
+  static uint8_t c[2];
 
   while(!gfx_is_ready());
 
   gui_desktop_create();
-  wnd = WIDGET(window_create(150,100));
-  lbl = WIDGET(label_create("Testando um Label com texto grande em uma janela que esta contida no Desktop ...", wnd));
-  window_set_name(WINDOW(wnd), "Window1 - DiyOS");
 
   task_listen(KEYBOARD); // listen for Keyboard events
 
@@ -45,17 +41,7 @@ gui_main() {
     while( (msg = message()) != NULL ) { // read all messages
         switch(msg->from) {
             case KEYBOARD:
-                printf("GUI SERVER: key event (0x%x).\n", (uint8_t)msg->data);
-                static uint8_t c[2];
-                c[0] = (uint8_t)msg->data;
-                c[1] = '\0';
-
-                LABEL(lbl)->text = &c;
-                //
-                // if(c[0] == 'a') pointerX--;
-                // if(c[0] == 'd') pointerX++;
-                // if(c[0] == 'w') pointerY--;
-                // if(c[0] == 's') pointerY++;
+                // printf("GUI SERVER: key event (0x%x).\n", (uint8_t)msg->data);
                 //TODO
                 // 1: get active window
                 // 2: get focused widget
@@ -80,16 +66,27 @@ void
 gui_desktop_create() {
 
     // the desktop area
-    desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height() - TASK_BAR_HEIGHT - 1, NULL);
-    desktop_taskbar = widget_create(0, 0, gfx_height() - TASK_BAR_HEIGHT, gfx_width(), gfx_height(), NULL);
-    widget_set_padding(desktop_taskbar,2,2,2,2);
-    desktop_taskbar->bgcolor = (color_t){32,32,32};
+    desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height()/* - TASK_BAR_HEIGHT - 1*/, NULL);
+    // desktop_taskbar = widget_create(0, 0, gfx_height() - TASK_BAR_HEIGHT, gfx_width(), gfx_height(), NULL);
+    // widget_set_padding(desktop_taskbar,2,2,2,2);
+    // desktop_taskbar->bgcolor = (color_t){128,128,128};
+    desktop_window->bgcolor = (color_t){0,0,0};
+
+#if 1
+    widget_t  *wnd, *wnd1, *lbl;
+    wnd1 = WIDGET(window_create(250,125));
+    wnd = WIDGET(window_create(150,100));
+    lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
+    window_move(WINDOW(wnd1),50,50);
+    lbl = WIDGET(label_create("while( (msg = message()) != NULL ) { // read all messages", wnd1));
+    window_set_name(WINDOW(wnd1), "Window1 - DiyOS");
+    gui_set_active_window(wnd);
+#endif
 
     // the taskbar space
-    widget_set_padding(desktop_window,0,0,0,TASK_BAR_HEIGHT); // childs cannot use TaskBar area
-    desktop_window->bgcolor = (color_t){64,64,64};
+    widget_set_padding(desktop_window,0,0,0,/*TASK_BAR_HEIGHT*/0); // childs cannot use TaskBar area
 
-    taskbar_create_windows(desktop_taskbar);
+    // taskbar_create_windows(desktop_taskbar);
 
     // mouse position
     pointerX = (gfx_width() - POINTER_W) / 2;
@@ -143,11 +140,51 @@ taskbar_create_windows(widget_t* taskbar) {
   }
 }
 
+void
+gui_set_active_window(window_t* window) {
+  widget_t* child, *root;
+
+  root = gui_widget_root();
+  if(root == NULL)
+    return;
+
+  child = root->child;
+  while( child ) {
+    if(child->class == W_WINDOW) {
+      if(child == window)
+        WINDOW(child)->active = 1;
+      else
+        WINDOW(child)->active = 0;
+    }
+    child = child->next;
+  }
+}
+
+window_t*
+gui_get_active_window() {
+  //TODO: create GUI class struct with active_window member
+  widget_t* child, *root;
+
+  root = gui_widget_root();
+  if(root == NULL)
+    return;
+
+  child = root->child;
+  while( child ) {
+    if(child->class == W_WINDOW) {
+      if(WINDOW(child)->active == 1)
+        return child;
+    }
+    child = child->next;
+  }
+
+  return NULL;
+}
 
 void
 gui_draw() {
-  widget_draw(desktop_taskbar);
+  // widget_draw(desktop_taskbar); //ERRO AQUI!
   widget_draw(desktop_window);
 
-  gui_pointer_draw(pointerX, pointerY);
+  // gui_pointer_draw(pointerX, pointerY);
 }
