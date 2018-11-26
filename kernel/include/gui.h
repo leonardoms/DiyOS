@@ -10,6 +10,8 @@
 #define WINDOW_DECORATION_BORDER 1
 #define WINDOW_DECORATION_BAR 12
 
+#define KEY_RELEASED 0x80
+
 #define ESC 0x1B
 
 #define KEY_F1  0x80

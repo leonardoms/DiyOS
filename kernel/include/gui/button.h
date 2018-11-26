@@ -8,7 +8,8 @@ typedef struct button {
 
   label_t*  label;
 
-  uint8_t       enabled;
+  uint8_t     enabled;
+  uint8_t     pressed;
 } button_t;
 
 #define BUTTON(b) ((button_t*)b)

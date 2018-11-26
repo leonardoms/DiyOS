@@ -41,18 +41,27 @@ gui_main() {
     while( (msg = message()) != NULL ) { // read all messages
         switch(msg->from) {
             case KEYBOARD:
-                // keyboard packet: byte0 = state keys; byte1 = key;
-                // byte0: 0 = Press(1)/Release(0);
+                // keyboard packet: byte1 = status; byte0 = key;
+                // byte1: 0 = Press(1)/Release(0);
 
-                // printf("GUI SERVER: key event (0x%x).\n", (uint8_t)msg->data);
+                // printf("GUI SERVER: key %s (0x%x). %x\n",
+                //               (((uint32_t)msg->data >> 8) & 1) ? "pressed" : "released",
+                //               (uint8_t)msg->data, (uint32_t)msg->data >> 8 );
 
                 window = gui_get_active_window();
                 if( window == NULL )
                   break;
 
-                if(window->focus)
-                if(window->focus->OnKeyDown)
-                  window->focus->OnKeyDown(window->focus,'a');
+                if(window->focus) {
+                  if((((uint32_t)msg->data >> 8) & 1)) {
+                    if(window->focus->OnKeyDown)
+                      window->focus->OnKeyDown(window->focus,((uint32_t)msg->data & 0xFF));
+                  } else {
+                    if(window->focus->OnKeyUp)
+                      window->focus->OnKeyUp(window->focus,((uint32_t)msg->data & 0xFF));
+                  }
+                }
+
 
                 break;
             case MOUSE:
@@ -75,9 +84,6 @@ gui_desktop_create() {
 
     // the desktop area
     desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height()/* - TASK_BAR_HEIGHT - 1*/, NULL);
-    // desktop_taskbar = widget_create(0, 0, gfx_height() - TASK_BAR_HEIGHT, gfx_width(), gfx_height(), NULL);
-    // widget_set_padding(desktop_taskbar,2,2,2,2);
-    // desktop_taskbar->bgcolor = (color_t){128,128,128};
     desktop_window->bgcolor = (color_t){255,255,255};
 
 #if 1

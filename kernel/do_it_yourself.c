@@ -14,6 +14,7 @@
 #include <task.h>
 #include <panic.h>
 #include <mm.h>
+// #include <fs/ramfs.h>
 
 void putchar_dummy(const char c) {
 
@@ -29,15 +30,18 @@ void do_it_yourself(uint32_t multiboot_info) {
 
   x86();      // enables x86 32-bits things
   mm(mbinfo); // memory manager
+  if(mbinfo->mods_count > 0)
+    ramfs(((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_start, ((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_end);    // start ramdisk at first module location
 
   acpi();   // configure ACPI
   task();   // multitasking
   kb();     // enable keyboard
   timer();  // enable timer
+
   // terminal();  // create terminal
-
-  putchar = putchar_dummy; // dont disturb Video memory (ist a hack)
-
+  //
+  // putchar = putchar_dummy; // dont disturb Video memory (ist a hack)
+  //
   gfx();    // graphical server
   gui();    // graphical user interface server
 

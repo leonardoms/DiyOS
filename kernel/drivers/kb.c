@@ -21,7 +21,7 @@ void
 keyboard_listen(task_t* t, uint32_t* data) {
   if(t->listen && KEYBOARD) {
     // printf("message_to %d: '0x%x'\n", t->id, (uint8_t)data);
-    message_to(t->id, (uint32_t*)((uint8_t)data), 1); // send a fake pointer with value of the key code!
+    message_to(t->id, data, 0); // send a fake pointer with value of the key code!
   }
 }
 
@@ -29,6 +29,7 @@ void
 keyboad_task() {
 
   static uint8_t code, y = 0;
+  uint32_t  packet;
 
   while(1) {
 
@@ -38,19 +39,30 @@ keyboad_task() {
 
       code = (uint8_t)convert(scode);
       if(code) {
-        task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)code);
-        task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)code);
+
+        if(scode & KEY_RELEASED)
+          packet = 0;
+        else
+          packet = 1;
+
+        packet <<= 8;
+        packet |= code;
+        // printf("%x packet\n", packet);
+
+        task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)(packet) );
+        task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)(packet));
 
         task_queue_foreach(&tq_blocked, update_key, (uint32_t*)code);
       }
 
-      enable();
+      // enable();
       task_block(); // block 'keyboard' task
   }
 }
 
 // __attribute__((interrupt))
 void keyboard_handle() {
+    disable();
     BOCHS_BREAKPOINT
     // asm volatile("add $12, %esp");
   	// asm volatile("pusha");
@@ -109,8 +121,15 @@ int32_t convert(uint32_t code){
 			case CTRL:
 				k_ctrl  = 0;
 			default:
-				return 0;
+				break; // modified
 		}
+
+    if (k_shift){
+      key  = keymap[code][1];
+    }
+    else{
+      key  = keymap[code][0];
+    }
 	}
 
 

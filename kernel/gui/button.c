@@ -1,6 +1,7 @@
 #include <gui.h>
 
 void button_keydown(struct widget* widget, uint32_t key);
+void button_keyup(struct widget* widget, uint32_t key);
 
 button_t*
 button_create(const char* caption, widget_t* parent) {
@@ -23,8 +24,9 @@ button_create(const char* caption, widget_t* parent) {
   WIDGET(btn)->bgcolor = (color_t){ 196, 196, 196 };
   widget_set_padding(WIDGET(btn),0,0,0,0);
   WIDGET(btn)->OnPaint = NULL;
-  WIDGET(btn)->OnKeyUp = NULL;
+  WIDGET(btn)->OnKeyUp = button_keyup;
   WIDGET(btn)->OnKeyDown = button_keydown;
+  btn->pressed = 0;
 
   widget_set_parent(WIDGET(btn), parent);
 
@@ -36,12 +38,30 @@ button_create(const char* caption, widget_t* parent) {
   return btn;
 }
 
-void button_keydown(struct widget* widget, uint32_t key) {
+void
+button_keydown(struct widget* widget, uint32_t key) {
+
+  BUTTON(widget)->pressed = 1;
+  widget_draw(widget);
+
+  if(widget->OnKeyDown_User)
+    widget->OnKeyDown_User(widget,key);
+}
+
+void
+button_keyup(struct widget* widget, uint32_t key) {
+
+  BUTTON(widget)->pressed = 0;
+  widget_draw(widget);
+
   widget_t* wnd = WINDOW(window_create(100,50)); // just for testing!
   window_move(WINDOW(wnd), (gfx_width() - 100)/2, (gfx_height() - 50)/2 );
   window_set_name(WINDOW(wnd), "Message Box");
   label_create("Button has been clicked! :)", wnd);
   gui_set_active_window(WINDOW(wnd));
+
+  if(widget->OnKeyUp_User)
+    widget->OnKeyUp_User(widget,key);
 }
 
 void
@@ -58,17 +78,20 @@ button_draw(button_t* btn) {
   widget_absolute_xy(WIDGET(btn), &x0, &y0);
 
   // shadow
-  gfx_rect( x0 + 1,
-            y0 + 1,
-            x0 + WIDGET(btn)->w,
-            y0 + WIDGET(btn)->h,
-            (color_t){64,64,64});
+  if(btn->pressed == 0) {
+    gfx_rect( x0 + 1,
+              y0 + 1,
+              x0 + WIDGET(btn)->w,
+              y0 + WIDGET(btn)->h,
+              (color_t){64,64,64});    
+  }
+
 
   // button
-  gfx_rect( x0,
-            y0,
-            x0 + WIDGET(btn)->w - 1,
-            y0 + WIDGET(btn)->h - 1,
+  gfx_rect( x0 + btn->pressed,
+            y0 + btn->pressed,
+            x0 + WIDGET(btn)->w - 1 + btn->pressed,
+            y0 + WIDGET(btn)->h - 1 + btn->pressed,
             WIDGET(btn)->bgcolor );
 }
 
