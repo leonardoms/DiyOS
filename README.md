@@ -20,6 +20,7 @@ Latest boot screenshots
 What is done:
 * Graphical Server (initial tests)
 * Graphical User Interface (initial tests)
+* Initial RAM Disk in Tar file format.
 * Multitasking  
 * Basic Message System (IPC)
 * Global Descriptor Table (GDT)
