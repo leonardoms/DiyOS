@@ -56,7 +56,7 @@ page_upper() {
       p_idx = ( v_addr >> 12 ) & 0x3FF;
 
       if( table[p_idx] == 0) {
-        BOCHS_BREAKPOINT
+        // BOCHS_BREAKPOINT
 
         return (v_addr - 0x1000);
       }

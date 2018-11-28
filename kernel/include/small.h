@@ -18,6 +18,9 @@ int
 strncmp(const char *s1, const char *s2, unsigned int n);
 
 void
+strcpy(char dest[], const char source[]);
+
+void
 memset(void* src, uint8_t value, uint32_t size);
 
 void

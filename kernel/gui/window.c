@@ -16,7 +16,7 @@ window_create(uint32_t w, uint32_t h) {
   WIDGET(wnd)->h = h;
   WIDGET(wnd)->visible = W_VIS_PARENT;
   WIDGET(wnd)->fgcolor = (color_t){ 0, 0, 0 };
-  WIDGET(wnd)->bgcolor = (color_t){ 128, 128, 128 };
+  WIDGET(wnd)->bgcolor = (color_t){ 224, 224, 224 };
   widget_set_padding(WIDGET(wnd),2,2,2,2);
   WIDGET(wnd)->OnPaint = NULL;
   WIDGET(wnd)->OnKeyUp = NULL;
@@ -77,7 +77,7 @@ window_move(window_t* window, uint32_t x, uint32_t y) {
 void
 window_draw(window_t* window) {
   uint32_t x0, y0, i = 0;
-  color_t border, tbar;
+  color_t border, tbar, title;
 
   if(window == NULL)
     return;
@@ -85,14 +85,16 @@ window_draw(window_t* window) {
   border = (window->active == 1) ? (color_t){64,64,64} : (color_t){32,32,32};
   tbar = (window->active == 1) ? (color_t){32,32,96} : (color_t){64,64,64};
 
+  title = (window->active == 1) ? (color_t){196,196,196} : (color_t){128,128,128};
+
   widget_absolute_xy(WIDGET(window), &x0, &y0);
 
   // shadow
-  gfx_rect( x0 - WINDOW_DECORATION_BORDER + 1,
-            y0 - WINDOW_DECORATION_BAR + 1,
-            x0 + WIDGET(window)->w + WINDOW_DECORATION_BORDER + 1,
-            y0 + WIDGET(window)->h + WINDOW_DECORATION_BORDER + 1,
-            (color_t){16,16,16} );
+  gfx_rect( x0 - WINDOW_DECORATION_BORDER + WINDOW_SHADOW_SIZE,
+            y0 - WINDOW_DECORATION_BAR + WINDOW_SHADOW_SIZE,
+            x0 + WIDGET(window)->w + WINDOW_DECORATION_BORDER + WINDOW_SHADOW_SIZE,
+            y0 + WIDGET(window)->h + WINDOW_DECORATION_BORDER + WINDOW_SHADOW_SIZE,
+            (color_t){96,96,96} );
 
   // title bar + borders
   gfx_rect( x0 - WINDOW_DECORATION_BORDER,
@@ -122,7 +124,7 @@ window_draw(window_t* window) {
 
     while(window->name[i]) {
       gfx_putchar(x0+i*8, y0,
-                  WIDGET(window)->fgcolor, tbar,
+                  title, tbar,
                   window->name[i]);
       i++;
     }

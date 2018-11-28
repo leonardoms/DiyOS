@@ -6,7 +6,7 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-C_FILES = gui.c widget.c window.c label.c button.c
+C_FILES = gui.c widget.c window.c label.c button.c edit.c
 OBJECTS = $(C_FILES:.c=.o)
 
 .PHONY: all clean

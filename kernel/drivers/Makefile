@@ -6,10 +6,14 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-OBJECTS =   kb.o fb.o timer.o bochs_vbe.o ne2000.o rtl81xx.o rtl8139.o acpi.o vga.o
+OBJECTS =   kb.o fb.o timer.o ne2000.o rtl81xx.o rtl8139.o acpi.o gfx/bochs.o
 
 all: clean $(OBJECTS)
 	@ar rcs -o ../built-in_drivers.a $(OBJECTS)
+
+gfx/bochs.o:
+	@echo "[BUILD]"	$@
+	@$(CC) $(C_FLAGS) -c gfx/bochs.c -o gfx/bochs.o
 
 fb.o:
 	@echo "[BUILD]"	$@
@@ -31,10 +35,6 @@ timer.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c timer.c -o timer.o
 
-bochs_vbe.o:
-	@echo "[BUILD]"	$@
-	@$(CC) $(C_FLAGS) -c bochs_vbe.c -o bochs_vbe.o
-
 ne2000.o:
 	@echo "[BUILD]"	$@
 	@$(CC) $(C_FLAGS) -c ne2000.c -o ne2000.o
@@ -49,3 +49,4 @@ rtl8139.o:
 
 clean:
 	@-rm *.o > /dev/null
+	@-rm gfx/bochs.o > /dev/null

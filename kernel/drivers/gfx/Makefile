@@ -6,13 +6,13 @@ ASM_FLAGS = -f elf32
 LD = ld
 LD_FLAGS =  -m elf_i386
 
-C_FILES = ramfs.c fs.c
+C_FILES = bochs.c
 OBJECTS = $(C_FILES:.c=.o)
 
 .PHONY: all clean
 
 all: clean $(OBJECTS)
-	@ar rcs -o ../fs.a $(OBJECTS)
+	@ar rcs -o ../gfx_drivers.a $(OBJECTS)
 
 .c.o:
 	@echo "[BUILD]"	$@

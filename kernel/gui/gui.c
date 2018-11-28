@@ -43,7 +43,7 @@ gui_main() {
             case KEYBOARD:
                 // keyboard packet: byte1 = status; byte0 = key;
                 // byte1: 0 = Press(1)/Release(0);
-
+                //
                 // printf("GUI SERVER: key %s (0x%x). %x\n",
                 //               (((uint32_t)msg->data >> 8) & 1) ? "pressed" : "released",
                 //               (uint8_t)msg->data, (uint32_t)msg->data >> 8 );
@@ -84,11 +84,11 @@ gui_desktop_create() {
 
     // the desktop area
     desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height()/* - TASK_BAR_HEIGHT - 1*/, NULL);
-    desktop_window->bgcolor = (color_t){255,255,255};
+    desktop_window->bgcolor = (color_t){96,96,255};
 
 #if 1
-    widget_t  *wnd, *wnd1, *lbl, *btn;
-    wnd1 = WIDGET(window_create(250,100));
+    widget_t  *wnd, *wnd1, *lbl, *btn, *edt;
+    wnd1 = WIDGET(window_create(400,300));
     lbl = WIDGET(label_create("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam venenatis viverra quam, id pretium mi maximus quis. Vestibulum vestibulum arcu in rutrum sagittis. Etiam interdum nec mi sit amet tincidunt.", wnd1));
     window_set_name(WINDOW(wnd1), "another window");
     // window_move(WINDOW(wnd1),10,10); // ERROR here!! (WTF)
@@ -97,6 +97,21 @@ gui_desktop_create() {
     lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
     btn = button_create("OK", wnd);
     button_size( BUTTON(btn), (wnd->w - 40) / 2, (wnd->h - 12 - 10), 40, 12 );
+
+    lbl = label_create("User:",wnd);
+    edt = edit_create(wnd);
+    WIDGET(lbl)->x = (wnd->w - 75) / 2 - 19;
+    WIDGET(lbl)->y = (wnd->h - 60);
+    WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
+    WIDGET(edt)->y = (wnd->h - 60);
+
+    lbl = label_create("Passwd:",wnd);
+    edt = edit_create(wnd);
+    WIDGET(lbl)->x = (wnd->w - 75) / 2 - 35;
+    WIDGET(lbl)->y = (wnd->h - 45);
+    WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
+    WIDGET(edt)->y = (wnd->h - 45);
+
     window_set_name(WINDOW(wnd), "Welcome Message!");
     gui_set_active_window(wnd);
     WINDOW(wnd)->focus = btn;
@@ -203,7 +218,17 @@ gui_get_active_window() {
 }
 
 void
+gui_draw_wallpaper() {
+  // uint32_t i, j;
+  //
+  // for(j = 0; j < 480; j++)
+  // for(i = 0; i < 640; i++)
+  //   gfx_put_pixel(i,j,(color_t){96,96,255});
+}
+
+void
 gui_draw() {
+  gui_draw_wallpaper();
   widget_draw(desktop_window);
 
   // gui_pointer_draw(pointerX, pointerY);

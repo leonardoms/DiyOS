@@ -62,8 +62,8 @@ keyboad_task() {
 
 // __attribute__((interrupt))
 void keyboard_handle() {
-    disable();
-    BOCHS_BREAKPOINT
+    // disable();
+    // BOCHS_BREAKPOINT
     // asm volatile("add $12, %esp");
   	// asm volatile("pusha");
 

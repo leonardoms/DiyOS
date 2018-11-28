@@ -3,6 +3,14 @@
 
 #include <ctypes.h>
 
+#define FS_FILE        0x01
+#define FS_DIRECTORY   0x02
+#define FS_CHARDEVICE  0x03
+#define FS_BLOCKDEVICE 0x04
+#define FS_PIPE        0x05
+#define FS_SYMLINK     0x06
+#define FS_MOUNTPOINT  0x08
+
 typedef uint32_t (*read_type_t)(struct fs_node*,uint32_t,uint32_t,uint8_t*);
 typedef uint32_t (*write_type_t)(struct fs_node*,uint32_t,uint32_t,uint8_t*);
 typedef void (*open_type_t)(struct fs_node*);
@@ -24,6 +32,11 @@ typedef struct fs_node
    finddir_type_t finddir;
    struct fs_node *link;
 } fs_node_t;
+
+struct dirent {
+  uint8_t   name[128];  // the filename 
+  uint32_t  inode; // internal FS number
+};
 
 uint32_t
 read_fs(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);

@@ -20,7 +20,7 @@ widget_create(uint32_t class, int32_t x, int32_t y, uint32_t w, uint32_t h,
     widget->h = h;
     widget->visible = W_VIS_PARENT;
     widget->fgcolor = (color_t){ 0, 0, 0 };
-    widget->bgcolor = (color_t){ 255, 255, 255 };
+    widget->bgcolor = (color_t){ 224, 224, 224 };
     widget->focus = NULL;
     widget->has_focus = 0;
 
@@ -55,6 +55,9 @@ widget_draw(struct widget* widget) {
       break;
     case W_BUTTON:
       button_draw(BUTTON(widget));
+      break;
+    case W_EDIT:
+      edit_draw(EDIT(widget));
       break;
     default:
       parent = widget->parent;

@@ -5,7 +5,7 @@ iso:
 	genisoimage -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o ./build/diyOS_x86-live.iso ./bin
 
 run:
-	bochs -f bochsrc.bxrc
+	bochs -q -f bochsrc.bxrc
 
 run-debug:
 	bochs -f bochsrc_debug.bxrc

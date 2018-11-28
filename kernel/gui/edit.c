@@ -15,7 +15,7 @@ edit_create(widget_t* parent) {
   WIDGET(edt)->child = NULL;
   WIDGET(edt)->x = 0;
   WIDGET(edt)->y = 0;
-  WIDGET(edt)->w = 40;
+  WIDGET(edt)->w = 75;
   WIDGET(edt)->h = 12;
   WIDGET(edt)->parent = parent;
   WIDGET(edt)->visible = W_VIS_PARENT;
@@ -41,7 +41,7 @@ void edit_keydown(struct widget* widget, uint32_t key) {
   if(EDIT(widget)->cursor_position >= EDIT(widget)->length)
     return;
 
-  edt->text[EDIT(widget)->cursor_position++] = (uint8_t)key;
+  EDIT(widget)->text[EDIT(widget)->cursor_position++] = (uint8_t)key;
 
   widget_draw(widget); // redraw the Edit
 
@@ -63,30 +63,23 @@ edit_draw(edit_t* edt) {
   widget_absolute_xy(WIDGET(edt), &x0, &y0);
 
   // shadow
-  gfx_rect( x0 + 1,
-            y0 + 1,
+  // gfx_rect( x0 + 1,
+  //           y0 + 1,
+  //           x0 + WIDGET(edt)->w,
+  //           y0 + WIDGET(edt)->h,
+  //           (color_t){64,64,64});
+
+  // border
+  gfx_rect( x0,
+            y0,
             x0 + WIDGET(edt)->w,
             y0 + WIDGET(edt)->h,
             (color_t){64,64,64});
 
   // edit
-  gfx_rect( x0,
-            y0,
+  gfx_rect( x0 + 1,
+            y0 + 1,
             x0 + WIDGET(edt)->w - 1,
             y0 + WIDGET(edt)->h - 1,
             WIDGET(edt)->bgcolor );
-}
-
-void
-edit_size(edit_t* edt, uint32_t x, uint32_t y, uint32_t w, uint32_t h) {
-
-  if(edt == NULL)
-    return;
-
-  widget_move(WIDGET(edt), x, y);
-  WIDGET(edt)->w = w;
-  WIDGET(edt)->h = h;
-  // widget_resize()
-
-  label_size_request(edt->label);
 }

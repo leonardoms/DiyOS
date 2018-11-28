@@ -6,9 +6,11 @@
 #include <gui/window.h>
 #include <gui/label.h>
 #include <gui/button.h>
+#include <gui/edit.h>
 
-#define WINDOW_DECORATION_BORDER 1
-#define WINDOW_DECORATION_BAR 12
+#define WINDOW_DECORATION_BORDER  1
+#define WINDOW_DECORATION_BAR     12
+#define WINDOW_SHADOW_SIZE        2
 
 #define KEY_RELEASED 0x80
 

@@ -17,8 +17,8 @@ label_create(const char* text, widget_t* parent) {
   WIDGET(lbl)->w = 0;
   WIDGET(lbl)->h = 0;
   WIDGET(lbl)->visible = W_VIS_PARENT;
-  WIDGET(lbl)->fgcolor = (color_t){ 32, 32, 32 };
-  WIDGET(lbl)->bgcolor = (color_t){ 128, 128, 128 };
+  WIDGET(lbl)->fgcolor = (color_t){ 96, 96, 96 };
+  WIDGET(lbl)->bgcolor = (color_t){ 224, 224, 224 };
   widget_set_padding(WIDGET(lbl),2,0,0,0);
   WIDGET(lbl)->OnPaint = NULL;
   WIDGET(lbl)->OnKeyUp = NULL;

@@ -42,7 +42,13 @@ void
 button_keydown(struct widget* widget, uint32_t key) {
 
   BUTTON(widget)->pressed = 1;
-  widget_draw(widget);
+
+
+    widget_t* wnd = WINDOW(window_create(100,50)); // just for testing!
+    window_move(WINDOW(wnd), (gfx_width() - 100)/2, (gfx_height() - 50)/2 );
+    window_set_name(WINDOW(wnd), "Message Box");
+    label_create("Button has been clicked! :)", wnd);
+    gui_set_active_window(WINDOW(wnd));
 
   if(widget->OnKeyDown_User)
     widget->OnKeyDown_User(widget,key);
@@ -52,13 +58,6 @@ void
 button_keyup(struct widget* widget, uint32_t key) {
 
   BUTTON(widget)->pressed = 0;
-  widget_draw(widget);
-
-  widget_t* wnd = WINDOW(window_create(100,50)); // just for testing!
-  window_move(WINDOW(wnd), (gfx_width() - 100)/2, (gfx_height() - 50)/2 );
-  window_set_name(WINDOW(wnd), "Message Box");
-  label_create("Button has been clicked! :)", wnd);
-  gui_set_active_window(WINDOW(wnd));
 
   if(widget->OnKeyUp_User)
     widget->OnKeyUp_User(widget,key);
@@ -83,7 +82,7 @@ button_draw(button_t* btn) {
               y0 + 1,
               x0 + WIDGET(btn)->w,
               y0 + WIDGET(btn)->h,
-              (color_t){64,64,64});    
+              (color_t){64,64,64});
   }
 
 

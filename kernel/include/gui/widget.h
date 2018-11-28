@@ -3,7 +3,7 @@
 
 #define WIDGET(w) ((struct widget*)w)
 
-enum { W_WIDGET = 0, W_WINDOW, W_LABEL, W_BUTTON };
+enum { W_WIDGET = 0, W_WINDOW, W_LABEL, W_BUTTON, W_EDIT };
 
 enum { ON_PAINT = 1, ON_KEYUP };
 

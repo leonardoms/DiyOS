@@ -6,6 +6,7 @@
 #include <aspace.h>
 #include <x86/x86.h>
 #include <queue.h>
+#include <fs.h>
 
 #define LISTEN_ALL  0xFFFFFFFF
 #define LISTEN_NONE 0
@@ -32,6 +33,8 @@ typedef struct task {
     char        name[1024];
 
     queue_t     message_queue;
+
+    fs_node_t   files[16];
 
     struct task *next;
 } task_t;
