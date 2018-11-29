@@ -17,6 +17,7 @@ uint8_t  gfx_loaded = 0;
 
 void
 gfx_main() {
+  printf("GFX started.\n");
 
   gfx_loaded = 1;
 
@@ -26,8 +27,7 @@ gfx_main() {
     gfx_flip();
 
     enable();
-    sleep(50); // 20 fps
-
+    sleep(50); // 20 frames/s
   }
 
 }
@@ -38,13 +38,6 @@ uint8_t
 gfx_is_ready() {
   return gfx_loaded;
 }
-
-// #define GFX_AREA_GROW(x,y)  { \
-//                             if( x > update_x1 ) update_x1 = x; \
-//                             if( x < update_x0 ) update_x0 = x; \
-//                             if( y > update_y1 ) update_y1 = y; \
-//                             if( y < update_y0 ) update_y0 = y; \
-//                             }
 
 void
 _gfx_put_pixel(uint32_t x, uint32_t y, color_t c) {
@@ -89,11 +82,6 @@ void
 gfx() {
 
   gfx_task = task_create((uint32_t)gfx_main, "gfx", TS_READY);
-
-  // update_x0 = 0xFFFF;
-  // update_y0 = 0xFFFF;
-  // update_x1 = 0x0;
-  // update_y1 = 0x0;
 
   // dummy functions
   gfx_put_pixel = _gfx_put_pixel;

@@ -29,9 +29,21 @@
 
 uint8_t bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function;
 uint8_t* bochs_vbe_fb;
+uint8_t* bochs_vbe_fb_double[2];
+uint8_t  bochs_vbe_fb_current = 0, bochs_vbe_fb_pages;
 uint16_t w, h, d;
 uint32_t scanline, pixel_size;
 uint8_t font_xsize, font_ysize;
+
+static uint32_t  update_x1, update_x0, update_y1, update_y0;
+// expand ploted area
+#define BOCHS_AREA_GROW(x,y)  { \
+                            if( x > update_x1 ) update_x1 = x; \
+                            if( x < update_x0 ) update_x0 = x; \
+                            if( y > update_y1 ) update_y1 = y; \
+                            if( y < update_y0 ) update_y0 = y; \
+                            }
+
 
 void
 bochs_vbe_putpixel_24(uint32_t x, uint32_t y, color_t c);
@@ -81,6 +93,7 @@ bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
 
     bochs_vbe_disable();
     bochs_vbe_write(VBE_DISPI_INDEX_XRES, width);
+    bochs_vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, width);
     bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
     bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
     bochs_vbe_enable();
@@ -92,8 +105,10 @@ bochs_vbe_putpixel_24(uint32_t x, uint32_t y, color_t c) {
     if( x > w || y > h)
         return;
     offset = y * scanline + x * pixel_size;
-    bochs_vbe_fb[offset] = (uint8_t)( c.b );   // set BB
-    *((uint16_t*)&(bochs_vbe_fb[offset+1])) = (uint16_t)(c.g | c.r << 8); // set BBRR
+    bochs_vbe_fb_double[bochs_vbe_fb_current][offset] = (uint8_t)( c.b );   // set BB
+    *((uint16_t*)&(bochs_vbe_fb_double[bochs_vbe_fb_current][offset+1])) = (uint16_t)(c.g | c.r << 8); // set BBRR
+
+    BOCHS_AREA_GROW(x,y);
 }
 
 void
@@ -141,6 +156,17 @@ bochs_vbe_rect(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, color_t color
     bochs_vbe_putpixel_24(x,y,color);
 }
 
+void
+bochs_vbe_flip() {
+
+  if( update_x1 > 0 ) { // has something to plot ?
+    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current);
+    bochs_vbe_fb_current = !bochs_vbe_fb_current & 1;
+    update_x0 = update_y0 = 0xFFFFFFFF;
+    update_x1 = update_y1 = 0x0;
+  }
+
+}
 
 uint8_t
 gfx_bochs() {
@@ -173,11 +199,19 @@ gfx_bochs() {
       page_map(((uint32_t)bochs_vbe_fb + 0x1000 * i),((uint32_t)bochs_vbe_fb + 0x1000 * i));
     }
 
+    bochs_vbe_fb_current = 0;
+    bochs_vbe_fb_double[0] = (uint8_t*)0xE0000000;
+    bochs_vbe_fb_double[1] = (uint8_t*)(0xE0000000 + 640 * 480 * 3);
+
+    update_x0 = update_y0 = 0xFFFFFFFF;
+    update_x1 = update_y1 = 0x0;
+
     gfx_put_pixel = bochs_vbe_putpixel_24;
     gfx_putchar = bochs_vbe_putchar;
     gfx_width = bochs_vbe_width;
     gfx_height = bochs_vbe_height;
     gfx_rect = bochs_vbe_rect;
+    gfx_flip = bochs_vbe_flip;
 
     bochs_vbe_display(640,480,24); // set default resolution 640x480 (24-bits)
 

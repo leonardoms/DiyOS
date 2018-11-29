@@ -24,7 +24,7 @@ label_create(const char* text, widget_t* parent) {
   WIDGET(lbl)->OnKeyUp = NULL;
   WIDGET(lbl)->OnKeyDown = NULL;
   lbl->text = NULL;
-
+  lbl->wordwrap = NO_WRAP;
   widget_set_parent(WIDGET(lbl), parent);
 
   label_set_text(lbl,text);
@@ -91,10 +91,21 @@ label_draw(label_t* lbl) {
   y0 += WIDGET(lbl)->padding_top;
 
   while(lbl->text[i]) {
-    if(((x+1)*8 + WIDGET(lbl)->padding_left + WIDGET(lbl)->padding_right) > (parent->w - parent->padding_left - parent->padding_right) ) {// text wrap
-      x = 0;
-      y += 8 + lbl->linespace;
+
+    switch (lbl->wordwrap) {
+      default:
+      case CHAR_WRAP:
+        if(((x+1)*8 + WIDGET(lbl)->padding_left + WIDGET(lbl)->padding_right) > (parent->w - parent->padding_left - parent->padding_right) ) {// text wrap
+          x = 0;
+          y += 8 + lbl->linespace;
+        }
+        break;
+      case NO_WRAP:
+        if(((x+1)*8 + WIDGET(lbl)->padding_left + WIDGET(lbl)->padding_right) > (parent->w - parent->padding_left - parent->padding_right) )
+          return;
+        break;
     }
+
 
     if( y > (parent->h - parent->padding_top - parent->padding_bottom))
       return; // out of parent area!

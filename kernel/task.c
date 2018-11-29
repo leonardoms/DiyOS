@@ -181,6 +181,7 @@ task_wake(task_t* t) {
   ASSERT_PANIC(t != NULL);
 
   t->state = TS_READY;
+  
   task_schedule_forced();
 
   return;
@@ -286,6 +287,7 @@ task_schedule()
 
   if( running_task != NULL ) {
       asm volatile("add $0x1c, %esp");
+
       asm volatile("push %eax");
       asm volatile("push %ebx");
       asm volatile("push %ecx");
@@ -338,6 +340,6 @@ task_schedule()
   	asm volatile("pop %ecx");
   	asm volatile("pop %ebx");
   	asm volatile("pop %eax");
-    // BOCHS_BREAKPOINT
+
   	asm volatile("iret");
 }

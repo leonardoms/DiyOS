@@ -204,10 +204,15 @@ acpi() {
 
       // return_val_if_fail(acpi_checksum(rsdp,sizeof(struct RSDPDescriptor),rsdp->Checksum), 0);
 
-      printf("encontrado (OEM: %c%c%c%c%c%c Rev. %d) ",
-                      rsdp->OEMID[0], rsdp->OEMID[1],
-                      rsdp->OEMID[2], rsdp->OEMID[3],
-                      rsdp->OEMID[4], rsdp->OEMID[5],
+      for( i = 0; i < 6; i++ ) {
+        if(rsdp->OEMID[i] == ' ') {
+          rsdp->OEMID[i] = '\0';
+          break;
+        }
+      }
+
+      printf("found (OEM: %s Rev. %d) ",
+                      rsdp->OEMID,
                       rsdp->Revision );
 
       rsdt = (struct RSDT*)rsdp->RsdtAddress;
@@ -223,7 +228,7 @@ acpi() {
 
         switch( *((uint32_t*)sdt->Signature) ) {
           case 'TDSS': // same than DSDT
-              printf("[+SSDT] ");
+              // printf("[+SSDT] ");
               S5Block = acpi_search_S5(sdt);
               if( S5Block != NULL ) {
                 // printf("\\_S5 block found!");
@@ -243,7 +248,7 @@ acpi() {
               }
               break;
           case 'PCAF': // "FACP"
-            printf("[+FACP] ");
+            // printf("[+FACP] ");
             facp = (struct FADT*)sdt;
 
             irq_install_callback(facp->SCI_Interrupt, acpi_handler); // install ACPI IRQ handler
@@ -273,7 +278,7 @@ acpi() {
                   S5Block++;
                 SLP_TYPb = *S5Block;// & 0x7;
 
-                printf("SLP_TYPa=0x%x SLP_TYPb=0x%x ", SLP_TYPa, SLP_TYPb);
+                // printf("SLP_TYPa=0x%x SLP_TYPb=0x%x ", SLP_TYPa, SLP_TYPb);
               }
             } else {
               dsdt = (struct ACPISDTHeader*)NULL;
@@ -281,17 +286,17 @@ acpi() {
 
             break;
           case 'TEPH': // HPET
-            printf("[+HPET] ");
+            // printf("[+HPET] ");
             break;
           default:
-            printf("[-%c%c%c%c] ", sdt->Signature[0], sdt->Signature[1], sdt->Signature[2], sdt->Signature[3]);
+            // printf("[-%c%c%c%c] ", sdt->Signature[0], sdt->Signature[1], sdt->Signature[2], sdt->Signature[3]);
             break;
         }
 
       }
 
       acpi_power_button_enable();
-      printf("\n\tSCI_Interrupt=%d SMI_CommandPort=0x%x ShutDown=%c\n", facp->SCI_Interrupt, facp->SMI_CommandPort, (S5Block==NULL)?'N':'Y');
+      printf("SCI_Interrupt=%d SMI_CommandPort=0x%x ShutDown=%c\n", facp->SCI_Interrupt, facp->SMI_CommandPort, (S5Block==NULL)?'N':'Y');
       return ptr;
     }
 

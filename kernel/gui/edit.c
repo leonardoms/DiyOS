@@ -43,7 +43,7 @@ void edit_keydown(struct widget* widget, uint32_t key) {
 
   EDIT(widget)->text[EDIT(widget)->cursor_position++] = (uint8_t)key;
 
-  widget_draw(widget); // redraw the Edit
+  // widget_draw(widget); // redraw the Edit
 
   if(widget->OnKeyDown_User)
     widget->OnKeyDown_User(widget,key);
@@ -82,4 +82,15 @@ edit_draw(edit_t* edt) {
             x0 + WIDGET(edt)->w - 1,
             y0 + WIDGET(edt)->h - 1,
             WIDGET(edt)->bgcolor );
+
+  // draw text
+  uint32_t i = 0;
+  uint32_t x = 0;
+  while( edt->text[i] ) {
+    if( (x + 8) > WIDGET(edt)->w )
+      break;
+    gfx_putchar(x0 + x + 2, y0 + 2, WIDGET(edt)->fgcolor, WIDGET(edt)->bgcolor, edt->text[i]);
+    x += 8;
+    i++;
+  }
 }

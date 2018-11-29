@@ -16,21 +16,14 @@ task_t* gui_task;
 
 #define TASK_BAR_HEIGHT 16
 
-uint8_t
-paint(struct widget* widget) {
-  // create a label as child at runtime, for testing...
-  // widget_t* w = WIDGET(label_create("teste!",widget));
-  // w->bgcolor = (color_t) {255,0, 0};
-
-  return 1;
-}
-
 void
 gui_main() {
   message_t* msg;
   window_t*  window;
 
   while(!gfx_is_ready());
+
+  printf("GUI started.\n");
 
   gui_desktop_create();
 
@@ -44,9 +37,9 @@ gui_main() {
                 // keyboard packet: byte1 = status; byte0 = key;
                 // byte1: 0 = Press(1)/Release(0);
                 //
-                // printf("GUI SERVER: key %s (0x%x). %x\n",
-                //               (((uint32_t)msg->data >> 8) & 1) ? "pressed" : "released",
-                //               (uint8_t)msg->data, (uint32_t)msg->data >> 8 );
+                printf("GUI SERVER: key %s (0x%x).\n",
+                              (((uint32_t)msg->data >> 8) & 1) ? "pressed" : "released",
+                              (uint8_t)msg->data );
 
                 window = gui_get_active_window();
                 if( window == NULL )
@@ -61,7 +54,6 @@ gui_main() {
                       window->focus->OnKeyUp(window->focus,((uint32_t)msg->data & 0xFF));
                   }
                 }
-
 
                 break;
             case MOUSE:
@@ -104,9 +96,11 @@ gui_desktop_create() {
     WIDGET(lbl)->y = (wnd->h - 60);
     WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
     WIDGET(edt)->y = (wnd->h - 60);
+    WINDOW(wnd)->focus = edt;
 
     lbl = label_create("Passwd:",wnd);
     edt = edit_create(wnd);
+    EDIT(edt)->text = "******";
     WIDGET(lbl)->x = (wnd->w - 75) / 2 - 35;
     WIDGET(lbl)->y = (wnd->h - 45);
     WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
@@ -114,7 +108,6 @@ gui_desktop_create() {
 
     window_set_name(WINDOW(wnd), "Welcome Message!");
     gui_set_active_window(wnd);
-    WINDOW(wnd)->focus = btn;
     window_move(WINDOW(wnd),50,70);
 
 #endif

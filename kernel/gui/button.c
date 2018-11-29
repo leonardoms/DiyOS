@@ -41,14 +41,15 @@ button_create(const char* caption, widget_t* parent) {
 void
 button_keydown(struct widget* widget, uint32_t key) {
 
-  BUTTON(widget)->pressed = 1;
-
-
-    widget_t* wnd = WINDOW(window_create(100,50)); // just for testing!
-    window_move(WINDOW(wnd), (gfx_width() - 100)/2, (gfx_height() - 50)/2 );
-    window_set_name(WINDOW(wnd), "Message Box");
-    label_create("Button has been clicked! :)", wnd);
-    gui_set_active_window(WINDOW(wnd));
+  if( (key & 0xFF) == 0x0A) // is enter key?
+    BUTTON(widget)->pressed = 1;
+    //
+    //
+    // widget_t* wnd = WINDOW(window_create(100,50)); // just for testing!
+    // window_move(WINDOW(wnd), (gfx_width() - 100)/2, (gfx_height() - 50)/2 );
+    // window_set_name(WINDOW(wnd), "Message Box");
+    // label_create("Button has been clicked! :)", wnd);
+    // gui_set_active_window(WINDOW(wnd));
 
   if(widget->OnKeyDown_User)
     widget->OnKeyDown_User(widget,key);
@@ -57,7 +58,8 @@ button_keydown(struct widget* widget, uint32_t key) {
 void
 button_keyup(struct widget* widget, uint32_t key) {
 
-  BUTTON(widget)->pressed = 0;
+  if( (key & 0xFF) == 0x0A) // is enter key?
+    BUTTON(widget)->pressed = 0;
 
   if(widget->OnKeyUp_User)
     widget->OnKeyUp_User(widget,key);

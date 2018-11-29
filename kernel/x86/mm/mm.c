@@ -27,7 +27,7 @@ constrict() {
     }
     b = b->next;
   }
-
+  // printf("free_above: 0x%x\n", (last_used->addr + last_used->size));
   return page_free_above(last_used->addr + last_used->size);
 }
 
@@ -71,7 +71,7 @@ _find_hole(uint32_t size) {
         if(b->size >= size) // size fits on this hole?
           return _split_hole(b,size);
       }
-    } // else {
+    } else PANIC("mblock with wrong magic"); // else {
     //  printf("\nmblock: wrong magic!\n", );
     // mblock_fix();    // fix memory manager!
     // b = root_mblock; // restart
@@ -123,12 +123,14 @@ malloc(uint32_t size) {
 
 void
 free(void* address) {
-  mblock_t* b = (mblock_t*)((uint32_t)address - sizeof(mblock_t));
-
-  if( b->magic == MBLOCK_MAGIC ) {
-    b->hole = 1;
-    heap = constrict(); // try to reduce the heap
-  } else printf("free(): invalid pointer (0x%x)\n", (uint32_t)address);
+  // mblock_t* b = (mblock_t*)((uint32_t)address - sizeof(mblock_t));
+  //
+  // if( b->magic == MBLOCK_MAGIC ) {
+  //   b->hole = 1;
+  //   heap = constrict(); // try to reduce the heap
+  //
+  //   // printf("new Heap: 0x%x\n", heap);
+  // } else printf("free(): invalid pointer (0x%x)\n", (uint32_t)address);
 
 }
 
@@ -169,7 +171,14 @@ mm(multiboot_info_t* mb) {
   // start mm variables
   malloc_top = heap;
   heap = (heap & 0xFFFFF000) + 0x1000;
-  root_mblock = malloc(1) - sizeof(mblock_t);
+  // root_mblock = malloc(1) - sizeof(mblock_t);
+  root_mblock = (mblock_t*)malloc_top;
+  root_mblock->hole = 0;
+  root_mblock->magic = MBLOCK_MAGIC;
+  root_mblock->size = 1;
+  root_mblock->addr = malloc_top + sizeof(mblock_t);
+  root_mblock->next = NULL;
+  malloc_top = (uint32_t)(root_mblock->addr + root_mblock->size );
   last_block = root_mblock;
 
 }

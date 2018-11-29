@@ -24,7 +24,7 @@ update_timeout(task_t* t, uint32_t* data) {
 void
 timer_handle() {
   // asm volatile("add $0x1c, %esp");
-  // asm volatile("pusha");
+    // asm volatile("leave");
   pic_acknowledge(0);
 
   // current_tick++;

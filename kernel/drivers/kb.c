@@ -5,7 +5,7 @@
 #include <panic.h>
 
 task_t* kb_task;
-uint8_t keyboard_wait;
+static queue_t   kb_queue;
 
 
 void
@@ -28,60 +28,70 @@ keyboard_listen(task_t* t, uint32_t* data) {
 void
 keyboad_task() {
 
-  static uint8_t code, y = 0;
+  static uint8_t code, y = 0, scode;
   uint32_t  packet;
 
   while(1) {
 
       disable();
 
-      uint8_t scode = inb(0x60);
+      // uint8_t scode = inb(0x60);
+      while( ( scode = (uint8_t)queue_remove(&kb_queue) ) != NULL ) {
 
-      code = (uint8_t)convert(scode);
-      if(code) {
+        code = (uint8_t)convert(scode);
+        if(code) {
 
-        if(scode & KEY_RELEASED)
-          packet = 0;
-        else
-          packet = 1;
+          if(scode & KEY_RELEASED)
+            packet = 0;
+          else
+            packet = 1;
 
-        packet <<= 8;
-        packet |= code;
-        // printf("%x packet\n", packet);
+          packet <<= 8;
+          packet |= code;
+          // printf("%x packet\n", packet);
 
-        task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)(packet) );
-        task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)(packet));
+          task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)(packet) );
+          task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)(packet));
 
-        task_queue_foreach(&tq_blocked, update_key, (uint32_t*)code);
+          task_queue_foreach(&tq_blocked, update_key, (uint32_t*)code);
+        }
       }
-
-      // enable();
+      enable();
       task_block(); // block 'keyboard' task
   }
 }
 
 // __attribute__((interrupt))
 void keyboard_handle() {
-    // disable();
-    // BOCHS_BREAKPOINT
-    // asm volatile("add $12, %esp");
-  	// asm volatile("pusha");
+#if 1
+disable();
+// asm volatile("leave");  // ignore C code stack trash
+// asm volatile("pusha");
 
     pic_acknowledge(1);
 
-    kb_task->state = TS_READY;
-    // printf("kb");
+    queue_add(&kb_queue, (uint32_t*)inb(0x60));
 
-    // asm volatile("popa");
-  	// asm volatile("iret");
+    task_wake(kb_task);
 
-    task_schedule();
+// asm volatile("popa");
+// asm volatile("iret");
+    // task_schedule();
+#else
+  asm volatile("leave");  // ignore C code stack trash
+  asm volatile("pusha");
+  pic_acknowledge(1);
+  asm volatile("popa");
+  asm volatile("iret");
+#endif
 }
 
 void kb() {
 
     kb_task = task_create(keyboad_task, "keyboard", TS_BLOCKED);
     ASSERT_PANIC(kb_task != NULL);
+
+    queue_init(&kb_queue, 16);
 
     kb_task->id = KEYBOARD; // force keyboard pid
     task_add(kb_task);

@@ -8,9 +8,12 @@ typedef struct label {
 
   uint8_t       *text;
   uint8_t       linespace;
+  uint8_t       wordwrap;
 } label_t;
 
 #define LABEL(l) ((label_t*)l)
+
+enum { NO_WRAP = 0, CHAR_WRAP, WORD_WRAP };
 
 label_t*
 label_create(const char* text, widget_t* parent);

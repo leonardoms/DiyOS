@@ -95,11 +95,14 @@ page_free_above(uint32_t limit) {
 
   new_page_limit = (limit & 0xFFFFF000) + 0x1000;
   page_limit = page_upper();
+  // printf("page_free_above: 0x%x - 0x%x\n", page_limit, new_page_limit);
 
   while( new_page_limit <= page_limit ) {
     page_unmap(new_page_limit);
     new_page_limit += 0x1000;
   }
+
+  return new_page_limit;
 
 }
 
