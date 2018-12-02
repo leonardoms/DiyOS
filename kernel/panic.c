@@ -1,4 +1,4 @@
-#include <panic.h>
+#include <kernel.h>
 
 void
 panic(const char *message, const char *file, uint32_t line) {

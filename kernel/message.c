@@ -1,5 +1,5 @@
 
-#include <message.h>
+#include <kernel.h>
 
 void
 message_to(uint32_t to, void* data, uint32_t size) {

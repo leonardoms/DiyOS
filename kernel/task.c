@@ -1,10 +1,11 @@
 
-#include <task.h>
-#include <panic.h>
+#include <kernel.h>
 
 task_t* running_task, *idle_task;
 static uint32_t  task_id;
 uint32_t num_tasks;
+uint8_t  task_enabled = 0;
+
 
 __attribute__((interrupt)) void
 task_schedule_handler();
@@ -16,6 +17,21 @@ idle() {
       __asm__ __volatile__("sti");  // enable interrupts
       __asm__ __volatile__("hlt");  // idle the CPU until a interrupt fires
     }
+}
+
+void
+task_enable() {
+  task_enabled = 1;
+}
+
+uint8_t
+task_is_enabled() {
+  return (task_enabled != 0);
+}
+
+void
+task_disable() {
+  task_enabled = 0;
 }
 
 task_t*
@@ -181,7 +197,7 @@ task_wake(task_t* t) {
   ASSERT_PANIC(t != NULL);
 
   t->state = TS_READY;
-  
+
   task_schedule_forced();
 
   return;

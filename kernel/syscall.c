@@ -1,7 +1,5 @@
 
-#include <x86/x86.h>
-#include <task.h>
-#include <panic.h>
+#include <kernel.h>
 
 void
 syscall(isr_regs_t regs) {

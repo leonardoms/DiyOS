@@ -1,6 +1,6 @@
 timeout	0
 title	diyOS (x86)
 root	(cd)
-kernel	/diyOS_x86
+kernel	/DiyOS_x86
 module  /ramdisk.tar
 boot

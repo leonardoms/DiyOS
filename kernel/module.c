@@ -1,7 +1,4 @@
-#include <ctypes.h>
-#include <elf.h>
-#include <aspace.h>
-#include <task.h>
+#include <kernel.h>
 
 typedef void  (*module_init_callback_t)();
 

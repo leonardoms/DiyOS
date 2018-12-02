@@ -1,6 +1,0 @@
-
-
-void
-mouse_handler() {
-  
-}

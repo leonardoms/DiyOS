@@ -1,6 +1,6 @@
 
-#include <x86/x86.h>
-#include <task.h>
+#include <arch.h>
+#include <kernel.h>
 
 extern void load_idt(struct idt* addr);
 extern void isr0();
@@ -51,14 +51,12 @@ extern void isr44();
 extern void isr45();
 extern void isr46();
 extern void isr47();
-extern void isr66();
-extern void isr255();
-extern void timer_handle();
-extern void keyboard_handle();
+extern void timer_handler();
+extern void keyboard_handler();
 extern void task_schedule_handler();
 
 isr_callback_t isr_callbacks[256] __attribute__ ((aligned (8)));
-idt_entry_t    idt[256];
+idt_entry_t    idte[256];
 struct idt     idtr;
 
 void
@@ -238,7 +236,7 @@ void irq7_handler(isr_regs_t regs) {
 }
 
 void setup_idt_entry(uint8_t intn, uint32_t isr_addr, uint8_t dpl) {
-      idt_entry_t* ie = &idt[intn];
+      idt_entry_t* ie = &idte[intn];
       ie->offset_1 = isr_addr & 0xFFFF;
       ie->offset_2 = (isr_addr >> 16) & 0xFFFF;
       ie->selector = 0x08;  // kernel code
@@ -246,11 +244,11 @@ void setup_idt_entry(uint8_t intn, uint32_t isr_addr, uint8_t dpl) {
       ie->type_attr = 0x8E | (dpl << 5); // present, 32-bits interrupt, DPL = 0
 }
 
-void setup_idt() {
-  setup_pic();
+void idt() {
+  pic();
   // make sure that all idt entries are zeroed
   uint32_t* e;
-  e = (uint32_t*)idt;
+  e = (uint32_t*)idte;
   uint32_t i;
   for(i = 0; i < 512; i++)
       e[i] = 0x00000000;
@@ -288,8 +286,8 @@ void setup_idt() {
   setup_idt_entry(31, (uint32_t)isr31, 0);
 
   // IRQ
-  setup_idt_entry(32, (uint32_t)timer_handle, 0);
-  setup_idt_entry(33, (uint32_t)keyboard_handle, 0);
+  setup_idt_entry(32, (uint32_t)timer_handler, 0);
+  setup_idt_entry(33, (uint32_t)keyboard_handler, 0);
   setup_idt_entry(34, (uint32_t)isr34, 0);
   setup_idt_entry(35, (uint32_t)isr35, 0);
   setup_idt_entry(36, (uint32_t)isr36, 0);
@@ -306,7 +304,7 @@ void setup_idt() {
   setup_idt_entry(47, (uint32_t)isr47, 0);
 
   // syscall
-  setup_idt_entry(66, (uint32_t)isr66, 3);      // dpl = 3
+  // setup_idt_entry(66, (uint32_t)syscall, 3);      // dpl = 3
 
   setup_idt_entry(0xFF, (uint32_t)task_schedule_handler, 0);
 
@@ -314,7 +312,7 @@ void setup_idt() {
   isr_install();
 
   idtr.size = 8 * 256;
-  idtr.offset = (uint32_t)&idt[0];
+  idtr.offset = (uint32_t)&idte[0];
 
   load_idt(&idtr);
 }

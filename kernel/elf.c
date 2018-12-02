@@ -10,8 +10,7 @@
 **                                                                          **
 *****************************************************************************/
 
-#include <elf.h>
-#include <aspace.h>
+#include <kernel.h>
 
 int32_t load_elf_exec(char *image, unsigned *entry, aspace_t *as)
 {

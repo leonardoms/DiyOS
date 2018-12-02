@@ -1,4 +1,4 @@
-#include <task.h>
+#include <kernel.h>
 
 void
 task_queue_init(task_queue_t* q) {

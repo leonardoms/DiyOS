@@ -1,6 +1,4 @@
-#include <task.h>
-#include <mm.h>
-#include <aspace.h>
+#include <kernel.h>
 
 aspace_t*
 aspace_create() {
