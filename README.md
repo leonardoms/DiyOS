@@ -46,7 +46,7 @@ To create a disk iso file:
 ```
 make iso
 ```
-To run with Bochs (starts paused, just type 'cont' on debugger):
+To run with Qemu:
 ```
 make run
 ```
