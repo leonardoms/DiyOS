@@ -31,12 +31,6 @@ gfx_main() {
 
 }
 
-void
-putchar(uint8_t c) {
-  // get active console for the current task
-  // putchar on the console's buffer
-}
-
 task_t* gfx_task;
 
 uint8_t
@@ -96,6 +90,8 @@ gfx() {
   gfx_width = _gfx_width;
   gfx_height = _gfx_height;
   gfx_flip = _gfx_flip;
+
+  // term = terminal();
 
   task_add(gfx_task);
 }

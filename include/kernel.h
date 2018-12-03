@@ -13,6 +13,7 @@
 #include <kernel/pci.h>
 #include <kernel/pic.h>
 #include <kernel/task.h>
+#include <kernel/terminal.h>
 
 void
 sleep(uint32_t ms);

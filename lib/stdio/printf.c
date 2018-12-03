@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <drivers/fb.h>
 
 void
 printf (const char *format, ...) {

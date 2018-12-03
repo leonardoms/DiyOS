@@ -171,7 +171,7 @@ task() {
 void
 task_start() {
   running_task = task_queue_remove(&tq_ready);
-
+  task_enable();
   task_execute();
 }
 

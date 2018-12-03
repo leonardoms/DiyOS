@@ -24,7 +24,7 @@ label_create(const char* text, widget_t* parent) {
   WIDGET(lbl)->OnKeyUp = NULL;
   WIDGET(lbl)->OnKeyDown = NULL;
   lbl->text = NULL;
-  lbl->wordwrap = NO_WRAP;
+  lbl->wordwrap = CHAR_WRAP;
   widget_set_parent(WIDGET(lbl), parent);
 
   label_set_text(lbl,text);

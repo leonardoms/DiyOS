@@ -1,4 +1,5 @@
 #include <kernel.h>
+#include <stdio.h>
 
 #define PCI_CONFIG  0xCF8
 #define PCI_DATA    0xCFC

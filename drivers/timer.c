@@ -2,7 +2,7 @@
 #include <drivers/timer.h>
 #include <kernel.h>
 
-#define HZ_FREQUENCY  100
+#define HZ_FREQUENCY  20
 
 uint32_t current_tick;
 uint8_t tasking = 0;
