@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/leonardoms/DiyOS.svg?branch=master)](https://travis-ci.org/leonardoms/DiyOS)
+[![Build Status](https://travis-ci.org/leonardoms/DiyOS.svg?branch=2019)](https://travis-ci.org/leonardoms/DiyOS)
 # DiyOS - do it yourself
 Small study Operating System
 
@@ -10,8 +10,6 @@ Help me with a Star :star:
 Latest built ISO @ [build/](build/)
 
 Latest boot screenshots
-
-![Boot Screenshot](build/screenshot.png)
 
 ![Testing GUI Screenshot](build/screenshot_gui.png)
 
