@@ -306,7 +306,7 @@ void idt() {
   // syscall
   // setup_idt_entry(66, (uint32_t)syscall, 3);      // dpl = 3
 
-  setup_idt_entry(0xFF, (uint32_t)task_schedule_handler, 0);
+  setup_idt_entry(0xFF, (uint32_t)task_schedule, 0);
 
   irq_install_callback(7,irq7_handler);
   isr_install();

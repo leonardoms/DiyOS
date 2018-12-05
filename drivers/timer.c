@@ -2,10 +2,10 @@
 #include <drivers/timer.h>
 #include <kernel.h>
 
-#define HZ_FREQUENCY  20
+#define HZ_FREQUENCY  100
 
 uint32_t current_tick;
-uint8_t tasking = 0;
+static uint8_t _scheduling = 0;
 
 void
 update_timeout(task_t* t, uint32_t* data) {
@@ -21,16 +21,31 @@ update_timeout(task_t* t, uint32_t* data) {
 }
 
 void
-timer_handler() {
-  // asm volatile("add $0x1c, %esp");
-    // asm volatile("leave");
-  pic_acknowledge(0);
+scheduling(uint8_t state) {
+  _scheduling = (state != 0);
+}
 
-  if(task_is_enabled()) {
+struct interrupt_frame {
+  uint32_t  eip;
+  uint32_t  cs;
+  uint32_t  eflags;
+  uint32_t  esp;
+  uint32_t  ss;
+};
+
+void
+timer_handler(void) {
+
+  asm volatile("add $0xc, %esp");
+
+  if(_scheduling) {
     task_queue_foreach(&tq_blocked, update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
   	task_schedule();
   } else {
-    asm volatile("leave");
+
+    asm volatile("pusha");
+    pic_acknowledge(0);
+    asm volatile("popa");
     asm volatile("iret");
   }
 }
@@ -42,7 +57,6 @@ timer(){
   outportb(0x40, f & 0xFF);
   outportb(0x40, f >> 8);
 
-  current_tick = 0;
-
   irq_enable(0);
+  scheduling(0);
 }

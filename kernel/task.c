@@ -63,8 +63,6 @@ task_destroy() {
 task_t*
 task_create(uint32_t eip, const char* name, task_state_t s) {
 
-    uint32_t* stack_esp;
-
     task_t* t = (task_t*)malloc(sizeof(struct task));;
 
   	memset(t, 0, sizeof(struct task));
@@ -88,13 +86,12 @@ task_create(uint32_t eip, const char* name, task_state_t s) {
   	*--stack = 0; //edx
   	*--stack = 0; //esi
   	*--stack = 0; //edi
-  	*--stack = t->regs.esp; //ebp
+  	*--stack = t->regs.esp + 4096; //ebp
   	*--stack = 0x10; // ds
   	*--stack = 0x10; // fs
   	*--stack = 0x10; // es
   	*--stack = 0x10; // gs
   	t->regs.esp = (uint32_t)stack;
-    *stack_esp = t->stacktop;
 
     t->next = NULL;
 
@@ -171,7 +168,7 @@ task() {
 void
 task_start() {
   running_task = task_queue_remove(&tq_ready);
-  task_enable();
+  scheduling(1);
   task_execute();
 }
 
@@ -198,7 +195,7 @@ task_wake(task_t* t) {
 
   t->state = TS_READY;
 
-  task_schedule_forced();
+  // task_schedule_forced();
 
   return;
 }
@@ -264,7 +261,9 @@ void
 task_execute()
 {
   running_task->state = TS_RUNNING;
-  asm volatile("mov %%eax, %%cr3": :"a"(running_task->regs.cr3));
+  // asm volatile("mov %%eax, %%cr3": :"a"(running_task->regs.cr3));
+  asm volatile("xchg %bx, %bx");
+
 	asm volatile("mov %%eax, %%esp": :"a"(running_task->regs.esp));
 	asm volatile("pop %gs");
 	asm volatile("pop %fs");
@@ -281,9 +280,12 @@ task_execute()
 	asm volatile("iret");
 }
 
+uint8_t schedule_forced = 0;
+
 void
 task_schedule_forced() {
   // if(running_task != NULL) {
+    schedule_forced = 1;
     asm volatile("int $0xff");
   // }
 
@@ -293,16 +295,22 @@ task_schedule_forced() {
 // __attribute__((interrupt)) void
 void
 task_schedule_handler() {
-  // asm volatile("add $0x1c, %esp");
+
   task_schedule();
 }
 
 void
 task_schedule()
 {
+  if(schedule_forced) {
+    asm volatile("add $0xc, %esp");
+    schedule_forced = 0;
+  } else
+    asm volatile("add $0x10, %esp");
+
 
   if( running_task != NULL ) {
-      asm volatile("add $0x1c, %esp");
+      asm volatile("xchg %bx, %bx");
 
       asm volatile("push %eax");
       asm volatile("push %ebx");
@@ -351,7 +359,7 @@ task_schedule()
   	asm volatile("pop %ebp");
   	asm volatile("pop %edi");
   	asm volatile("pop %esi");
-  	// asm volatile("out %%al, %%dx": :"d"(0x20), "a"(0x20)); // send EoI to master PIC
+  	asm volatile("out %%al, %%dx": :"d"(0x20), "a"(0x20)); // send EoI to master PIC
   	asm volatile("pop %edx");
   	asm volatile("pop %ecx");
   	asm volatile("pop %ebx");

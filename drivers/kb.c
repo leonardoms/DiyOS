@@ -31,7 +31,7 @@ keyboad_task() {
 
   while(1) {
 
-      disable();
+      scheduling(0);
 
       while( ( scode = (uint8_t)queue_remove(&kb_queue) ) != NULL ) {
 
@@ -53,34 +53,23 @@ keyboad_task() {
           task_queue_foreach(&tq_blocked, update_key, (uint32_t*)code);
         }
       }
-      enable();
+      scheduling(1);
+
       task_block(); // block 'keyboard' task
   }
 }
 
-// __attribute__((interrupt))
 void keyboard_handler() {
-#if 1
-disable();
-// asm volatile("leave");  // ignore C code stack trash
-// asm volatile("pusha");
 
-    pic_acknowledge(1);
+    asm volatile("add $0xc, %esp");
+    asm volatile("pusha");
 
     queue_add(&kb_queue, (uint32_t*)inportb(0x60));
-
+    pic_acknowledge(1);
     task_wake(kb_task);
 
-// asm volatile("popa");
-// asm volatile("iret");
-    // task_schedule();
-#else
-  asm volatile("leave");  // ignore C code stack trash
-  asm volatile("pusha");
-  pic_acknowledge(1);
-  asm volatile("popa");
-  asm volatile("iret");
-#endif
+    asm volatile("popa");
+    asm volatile("iret");
 }
 
 void kb() {
