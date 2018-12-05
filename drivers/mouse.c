@@ -1,7 +1,8 @@
 #include <stdio.h>
-#include <queue.h>
+#include <drivers/mouse.h>
 
 queue_t mouse_queue;
+task_t* m_task;
 
 void
 mouse_wait(uint8_t type) {
@@ -41,11 +42,33 @@ mouse_read()
     return inportb(0x60);
 }
 
-struct mouse_packet {
-    uint8_t flags;
-    uint8_t dx;
-    uint8_t dy;
-};
+struct mouse_packet* packet;
+
+void
+mouse_listen(task_t* t, uint32_t* data) {
+  if(t->listen && MOUSE) {
+    message_to(t->id, data, 0); // send mouse packet
+  }
+}
+
+void
+mouse_task(void) {
+  static struct mouse_packet* packet;
+
+  while(1) {
+
+      scheduling(0);
+
+      while( ( packet = (struct mouse_packet*)queue_remove(&mouse_queue) ) != NULL ) {
+
+          task_queue_foreach(&tq_ready, mouse_listen, (uint32_t*)(packet) );
+          task_queue_foreach(&tq_blocked, mouse_listen, (uint32_t*)(packet));
+      }
+      scheduling(1);
+
+      task_block(); // block 'mouse' task
+  }
+}
 
 void
 mouse_handler(void) {
@@ -70,8 +93,13 @@ mouse_handler(void) {
         break;
       case 2:
         pkt.dy = mouse_read();
-        // message_to()
-        printf("mouse packet: flags=0x%x, dx=%d, dy=%d\n", pkt.flags, pkt.dx, pkt.dy);
+
+        packet = (struct mouse_packet*)malloc(sizeof(struct mouse_packet));
+        memcpy(&pkt, packet, sizeof(struct mouse_packet));
+
+        queue_add(&mouse_queue, packet);
+        task_wake(m_task);
+        // printf("mouse packet: flags=0x%x, dx=%d, dy=%d\n", pkt.flags, pkt.dx, pkt.dy);
         cicle = 0;
         break;
       default:
@@ -89,6 +117,8 @@ mouse_handler(void) {
 void
 mouse(void) {
   uint8_t status;
+
+  queue_init(&mouse_queue, 32);
 
   mouse_wait(1);
   outportb(0x64, 0xA8);
@@ -113,6 +143,10 @@ mouse(void) {
   // Enable the mouse
   mouse_write(0xF4);
   mouse_read();  // ACK
+
+  m_task = task_create(mouse_task, "mouse", TS_BLOCKED);
+  m_task->id = MOUSE; // force mouse pid
+  task_add(m_task);
 
   irq_enable(12);
 

@@ -1,5 +1,6 @@
 
 #include <gui.h>
+#include <drivers/mouse.h>
 
 void gui_draw();
 void gui_desktop_create();
@@ -17,6 +18,7 @@ task_t* gui_task;
 void
 gui_main() {
   message_t* msg;
+  struct mouse_packet* pkt;
   window_t*  window;
 
   while(!gfx_is_ready());
@@ -25,7 +27,7 @@ gui_main() {
 
   gui_desktop_create();
 
-  task_listen(KEYBOARD); // listen for Keyboard events
+  task_listen( KEYBOARD | MOUSE ); // listen for events
 
   while(1) {
     disable();
@@ -55,6 +57,9 @@ gui_main() {
 
                 break;
             case MOUSE:
+                pkt = (struct mouse_packet*)msg->data;
+                if( pkt )
+                  printf("GUI SERVER: mouse flags=0x%x, dx=%d, dy=%d\n", pkt->flags, pkt->dx, pkt->dy);
                 break;
             default:
                 break;
