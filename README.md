@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/leonardoms/DiyOS.svg?branch=2019)](https://travis-ci.org/leonardoms/DiyOS)
 # DiyOS - do it yourself
 Small study Operating System
 
