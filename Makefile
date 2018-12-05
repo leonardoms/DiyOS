@@ -17,6 +17,7 @@ OBJFILES := $(patsubst %.c,%.o,$(SRCFILES))
 ASMFILES := $(shell find $(PROJDIRS) -type f -name \*.asm)
 ASMOBJFILES := $(patsubst %.asm,%.o,$(ASMFILES))
 
+# https://wiki.osdev.org/GCC_Cross-Compiler
 CC := i686-elf-gcc
 LD := i686-elf-ld
 AR := i686-elf-ar

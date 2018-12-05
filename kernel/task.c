@@ -262,7 +262,7 @@ task_execute()
 {
   running_task->state = TS_RUNNING;
   // asm volatile("mov %%eax, %%cr3": :"a"(running_task->regs.cr3));
-  asm volatile("xchg %bx, %bx");
+  // asm volatile("xchg %bx, %bx");
 
 	asm volatile("mov %%eax, %%esp": :"a"(running_task->regs.esp));
 	asm volatile("pop %gs");
@@ -310,7 +310,7 @@ task_schedule()
 
 
   if( running_task != NULL ) {
-      asm volatile("xchg %bx, %bx");
+      // asm volatile("xchg %bx, %bx");
 
       asm volatile("push %eax");
       asm volatile("push %ebx");

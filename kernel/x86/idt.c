@@ -53,6 +53,7 @@ extern void isr46();
 extern void isr47();
 extern void timer_handler();
 extern void keyboard_handler();
+extern void mouse_handler();
 extern void task_schedule_handler();
 
 isr_callback_t isr_callbacks[256] __attribute__ ((aligned (8)));
@@ -298,7 +299,7 @@ void idt() {
   setup_idt_entry(41, (uint32_t)isr41, 0);
   setup_idt_entry(42, (uint32_t)isr42, 0);
   setup_idt_entry(43, (uint32_t)isr43, 0);
-  setup_idt_entry(44, (uint32_t)isr44, 0);
+  setup_idt_entry(44, (uint32_t)mouse_handler, 0);
   setup_idt_entry(45, (uint32_t)isr45, 0);
   setup_idt_entry(46, (uint32_t)isr46, 0);
   setup_idt_entry(47, (uint32_t)isr47, 0);
