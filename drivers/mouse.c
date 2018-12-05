@@ -94,11 +94,18 @@ mouse_handler(void) {
       case 2:
         pkt.dy = mouse_read();
 
-        packet = (struct mouse_packet*)malloc(sizeof(struct mouse_packet));
-        memcpy(&pkt, packet, sizeof(struct mouse_packet));
+        if( (pkt.flags & 0x80) || (pkt.flags & 0x40) == 0 ) { // x/y overflow ?
+          packet = (struct mouse_packet*)malloc(sizeof(struct mouse_packet));
 
-        queue_add(&mouse_queue, packet);
-        task_wake(m_task);
+          // if(pkt.flags & 0x20) {  // is dY negative?
+          //   pkt.dy =
+          // }
+
+          memcpy(&pkt, packet, sizeof(struct mouse_packet));
+
+          queue_add(&mouse_queue, packet);
+          task_wake(m_task);
+        } // else { do nothing, discard entire packet :/ }
         // printf("mouse packet: flags=0x%x, dx=%d, dy=%d\n", pkt.flags, pkt.dx, pkt.dy);
         cicle = 0;
         break;

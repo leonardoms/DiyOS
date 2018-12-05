@@ -5,7 +5,7 @@
 void gui_draw();
 void gui_desktop_create();
 void gui_pointer_draw(uint32_t x, uint32_t y);
-uint32_t pointerX, pointerY;
+int32_t pointerX, pointerY;
 
 #define POINTER_H 7
 #define POINTER_W 5
@@ -58,8 +58,22 @@ gui_main() {
                 break;
             case MOUSE:
                 pkt = (struct mouse_packet*)msg->data;
-                if( pkt )
-                  printf("GUI SERVER: mouse flags=0x%x, dx=%d, dy=%d\n", pkt->flags, pkt->dx, pkt->dy);
+                if( pkt ){
+                  // printf("GUI SERVER: mouse flags=0x%x, dx=%d, dy=%d\n", pkt->flags, pkt->dx, pkt->dy);
+                  pointerX += pkt->dx;
+                  pointerY -= pkt->dy;
+
+                  if(pointerX < 0)
+                    pointerX = 0;
+                  if(pointerX > gfx_width())
+                    pointerX = gfx_width();
+                  if(pointerY < 0)
+                    pointerY = 0;
+                  if(pointerY > gfx_height())
+                    pointerY = gfx_height();
+
+                  printf("GUI SERVER: mouse at (%d,%d)\n", pointerX, pointerY);
+                }
                 break;
             default:
                 break;
@@ -140,14 +154,16 @@ gui_widget_root() {
 void
 gui_pointer_draw(uint32_t x, uint32_t y) {
 
-  gfx_rect( x - POINTER_W/2 - 1, y - POINTER_H/2 - 1,
-            x + POINTER_W/2 + 1, y + POINTER_H/2 + 1,
-            (color_t) {64,64,64} );
-
-  gfx_rect( x - POINTER_W/2, y - POINTER_H/2,
-            x + POINTER_W/2, y + POINTER_H/2,
-            (color_t) {255,255,0} );
-
+  // gfx_rect( x - POINTER_W/2 - 1, y - POINTER_H/2 - 1,
+  //           x + POINTER_W/2 + 1, y + POINTER_H/2 + 1,
+  //           (color_t) {64,64,64} );
+  //
+  // gfx_rect( x - POINTER_W/2, y - POINTER_H/2,
+  //           x + POINTER_W/2, y + POINTER_H/2,
+  //           (color_t) {255,255,0} );
+  gfx_rect( x , y ,
+            x + 4, y + 4,
+            (color_t) {255,0,0} );
 }
 
 void
@@ -229,5 +245,5 @@ gui_draw() {
   widget_draw(desktop_window);
   widget_draw(desktop_taskbar);
 
-  // gui_pointer_draw(pointerX, pointerY);
+  gui_pointer_draw((uint32_t)pointerX, (uint32_t)pointerY);
 }
