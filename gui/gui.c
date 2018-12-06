@@ -25,9 +25,8 @@ gui_main() {
 
   printf("GUI started.\n");
 
-  // gui_desktop_create();
-
   bmp_image_from_file("ui/ui-icons.bmp");
+  gui_desktop_create();
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
 
@@ -102,16 +101,29 @@ gui_desktop_create() {
     desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height() - TASK_BAR_HEIGHT - 1, NULL);
     desktop_window->bgcolor = (color_t){96,96,255};
 
+    // the taskbar space
+    widget_set_padding(desktop_window,0,0,0,/*TASK_BAR_HEIGHT*/0); // childs cannot use TaskBar area
+
+    // mouse position
+    pointerX = (gfx_width() - POINTER_W) / 2;
+    pointerY = (gfx_height() - POINTER_H) / 2;
+    if(pointerX < 0) pointerX = 0;
+    if(pointerY < 0) pointerY = 0;
+
 #if 1
     widget_t  *wnd, *wnd1, *lbl, *btn, *edt;
 
-    uint32_t fd = open("hello.txt", 1, 0);
-    static uint8_t buff[32];
-    uint32_t sz = read(fd, buff, 32);
+    uint8_t buff[32];
+    uint32_t sz = 0;
+    int32_t fd = open("hello.txt", 1, 0);
+    if( fd >= 0) {
+      sz = read(fd, &buff[0], 32);
+    }
     buff[sz] = '\0';
 
+
     wnd1 = WIDGET(window_create(400,300));
-    lbl = WIDGET(label_create(buff, wnd1));
+    lbl = WIDGET(label_create(&buff[0], wnd1));
     window_set_name(WINDOW(wnd1), "/ram/hello.txt");
     window_move(WINDOW(wnd1),10,10); // ERROR here!! (WTF)
 
@@ -142,14 +154,6 @@ gui_desktop_create() {
 
 #endif
 
-    // the taskbar space
-    widget_set_padding(desktop_window,0,0,0,/*TASK_BAR_HEIGHT*/0); // childs cannot use TaskBar area
-
-    // mouse position
-    pointerX = (gfx_width() - POINTER_W) / 2;
-    pointerY = (gfx_height() - POINTER_H) / 2;
-    if(pointerX < 0) pointerX = 0;
-    if(pointerY < 0) pointerY = 0;
 }
 
 void

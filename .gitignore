@@ -1,2 +1,6 @@
 *.o
 bin/DiyOS*
+bochsout.txt
+debuggerout.txt
+ne2k-tx*
+parport.out
