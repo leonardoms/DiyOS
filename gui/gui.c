@@ -25,7 +25,9 @@ gui_main() {
 
   printf("GUI started.\n");
 
-  gui_desktop_create();
+  // gui_desktop_create();
+
+  bmp_image_from_file("ui/ui-icons.bmp");
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
 
@@ -101,17 +103,17 @@ gui_desktop_create() {
     desktop_window->bgcolor = (color_t){96,96,255};
 
 #if 1
-
-    uint32_t fd = open("Makefile", 1, 0);
-    static uint8_t buff[1024];
-    uint32_t sz = read(fd, buff, 1024);
-    buff[1024] = '\0';
-
     widget_t  *wnd, *wnd1, *lbl, *btn, *edt;
+
+    uint32_t fd = open("hello.txt", 1, 0);
+    static uint8_t buff[32];
+    uint32_t sz = read(fd, buff, 32);
+    buff[sz] = '\0';
+
     wnd1 = WIDGET(window_create(400,300));
     lbl = WIDGET(label_create(buff, wnd1));
-    window_set_name(WINDOW(wnd1), "/ram/Makefile");
-    // window_move(WINDOW(wnd1),10,10); // ERROR here!! (WTF)
+    window_set_name(WINDOW(wnd1), "/ram/hello.txt");
+    window_move(WINDOW(wnd1),10,10); // ERROR here!! (WTF)
 
     wnd = WIDGET(window_create(150,100));
     lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));

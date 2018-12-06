@@ -41,7 +41,7 @@ void do_it_yourself(uint32_t multiboot_info) {
   timer();  // enable timer
 
   gfx();        // graphical server
-  gfx_bochs();
+  // gfx_bochs();
 
   // if( !gfx_bochs() )  // load bochs vbe
   //   gfx_vga(); // if Bochs VBE not present, run 320x200x8 VGA driver
