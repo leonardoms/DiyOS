@@ -51,6 +51,27 @@ pci_find(uint32_t vendor, uint32_t device, uint8_t* bus,  uint8_t* dev, uint8_t*
   return FALSE;
 }
 
+uint8_t
+pci_find_class(int8_t class, uint8_t subclass, uint8_t* bus,  uint8_t* dev, uint8_t* function) {
+  uint32_t b, d, f;
+  uint16_t my_cls_sub, cls_sub;
+
+  my_cls_sub = class | (subclass << 8);
+
+  for(b = 0; b < 256; b++)
+    for(d = 0; d < 32; d++)
+      for(f = 0; f < 8; f++){
+        cls_sub = pci_read(b,d,f,PCI_CLASS_SUBCLASS) >> 16;
+        if(cls_sub == my_cls_sub) {
+          *bus = b;
+          *dev = d;
+          *function = f;
+          return TRUE;
+        }
+      }
+  return FALSE;
+}
+
 void
 pci_test() {
     uint32_t vend_dev, b, d, f;

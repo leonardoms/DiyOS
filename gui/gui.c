@@ -72,6 +72,9 @@ gui_main() {
                   if(pointerY > gfx_height())
                     pointerY = gfx_height();
 
+                  if( pkt->flags & 1 )
+                    window_move(gui_get_active_window(), pointerX, pointerY);
+
                   printf("GUI SERVER: mouse at (%d,%d)\n", pointerX, pointerY);
                 }
                 break;
@@ -80,8 +83,10 @@ gui_main() {
           }
         message_destroy(msg);
       }
-
+      //TODO: every window has your own video memory buffer,
+      // gui_draw function make a composite for modified area and send to video memory!
       gui_draw();
+      gfx_flip();
       enable();
       task_block();
     }
@@ -94,13 +99,18 @@ gui_desktop_create() {
     // the desktop area
     desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height() - TASK_BAR_HEIGHT - 1, NULL);
     desktop_window->bgcolor = (color_t){96,96,255};
-    desktop_taskbar = widget_create(0, 0, gfx_height() - TASK_BAR_HEIGHT, gfx_width(), TASK_BAR_HEIGHT, NULL);
-    desktop_taskbar->bgcolor = (color_t){224,224,224};
+
 #if 1
+
+    uint32_t fd = open("Makefile", 1, 0);
+    static uint8_t buff[1024];
+    uint32_t sz = read(fd, buff, 1024);
+    buff[1024] = '\0';
+
     widget_t  *wnd, *wnd1, *lbl, *btn, *edt;
     wnd1 = WIDGET(window_create(400,300));
-    lbl = WIDGET(label_create("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam venenatis viverra quam, id pretium mi maximus quis. Vestibulum vestibulum arcu in rutrum sagittis. Etiam interdum nec mi sit amet tincidunt.", wnd1));
-    window_set_name(WINDOW(wnd1), "another window");
+    lbl = WIDGET(label_create(buff, wnd1));
+    window_set_name(WINDOW(wnd1), "/ram/Makefile");
     // window_move(WINDOW(wnd1),10,10); // ERROR here!! (WTF)
 
     wnd = WIDGET(window_create(150,100));
@@ -133,11 +143,11 @@ gui_desktop_create() {
     // the taskbar space
     widget_set_padding(desktop_window,0,0,0,/*TASK_BAR_HEIGHT*/0); // childs cannot use TaskBar area
 
-    // taskbar_create_windows(desktop_taskbar);
-
     // mouse position
     pointerX = (gfx_width() - POINTER_W) / 2;
     pointerY = (gfx_height() - POINTER_H) / 2;
+    if(pointerX < 0) pointerX = 0;
+    if(pointerY < 0) pointerY = 0;
 }
 
 void
@@ -164,29 +174,6 @@ gui_pointer_draw(uint32_t x, uint32_t y) {
   gfx_rect( x , y ,
             x + 4, y + 4,
             (color_t) {255,0,0} );
-}
-
-void
-taskbar_create_windows(widget_t* taskbar) {
-  widget_t* desktop = gui_widget_root();
-  widget_t* child;
-  widget_t* lbl;
-  uint32_t x = 0;
-
-  if(!taskbar || !desktop )
-    return;
-
-  child = desktop->child;
-  while( child ) {
-
-    if(child->class == W_WINDOW) {
-      lbl = WIDGET(label_create(WINDOW(child)->name, taskbar));
-      lbl->x = x;
-      x += lbl->w + lbl->padding_right;
-    }
-
-    child = child->next;
-  }
 }
 
 void
@@ -243,7 +230,6 @@ void
 gui_draw() {
   gui_draw_wallpaper();
   widget_draw(desktop_window);
-  widget_draw(desktop_taskbar);
 
   gui_pointer_draw((uint32_t)pointerX, (uint32_t)pointerY);
 }

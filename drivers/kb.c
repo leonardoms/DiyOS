@@ -7,18 +7,9 @@ static queue_t   kb_queue;
 
 
 void
-update_key(task_t* t, uint32_t* data) {
-  if( t->waitkey == 1 ) {
-    t->waitkey = 0;
-    t->key = (uint8_t)data;
-    t->state = TS_READY;
-  }
-}
-
-void
 keyboard_listen(task_t* t, uint32_t* data) {
   if(t->listen && KEYBOARD) {
-    // printf("message_to %d: '0x%x'\n", t->id, (uint8_t)data);
+    // printf("message_to %d: '0x%x'\n", t->id, (uint16_t)data);
     message_to(t->id, data, 0); // send a fake pointer with value of the key code!
   }
 }
@@ -27,7 +18,7 @@ void
 keyboad_task() {
 
   static uint8_t code, y = 0, scode;
-  uint32_t  packet;
+  static uint32_t  packet;
 
   while(1) {
 
@@ -47,10 +38,7 @@ keyboad_task() {
           packet |= code;
           // printf("%x packet\n", packet);
 
-          task_queue_foreach(&tq_ready, keyboard_listen, (uint32_t*)(packet) );
-          task_queue_foreach(&tq_blocked, keyboard_listen, (uint32_t*)(packet));
-
-          task_queue_foreach(&tq_blocked, update_key, (uint32_t*)code);
+          task_foreach(keyboard_listen, (uint32_t*)(packet) );
         }
       }
       scheduling(1);
@@ -60,7 +48,7 @@ keyboad_task() {
 }
 
 void keyboard_handler() {
-
+    asm volatile("cli");
     asm volatile("add $0xc, %esp");
     asm volatile("pusha");
 

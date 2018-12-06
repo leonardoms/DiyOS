@@ -5,49 +5,24 @@ queue_t mouse_queue;
 task_t* m_task;
 
 void
-mouse_wait(uint8_t type) {
-    uint32_t time_out = 100000;
-
-    if( type == 0 ) {
-        while( time_out-- ) {
-            if( (inportb(0x64) & 1) == 1 )
-                return;
-        }
-        return;
-    } else
-    {
-        while( time_out-- ) {
-            if( (inportb(0x64) & 2) == 0 ) {
-                return;
-            }
-        }
-        return;
-    }
-}
-
-void
 mouse_write(uint8_t write)
 {
-    mouse_wait(1);
     outportb(0x64, 0xD4);
-
-    mouse_wait(1);
     outportb(0x60, write);
 }
 
 uint8_t
 mouse_read()
 {
-    mouse_wait(0);
     return inportb(0x60);
 }
 
 struct mouse_packet* packet;
 
 void
-mouse_listen(task_t* t, uint32_t* data) {
+mouse_listen(task_t* t, void* data) {
   if(t->listen && MOUSE) {
-    message_to(t->id, data, 0); // send mouse packet
+    message_to(t->id, data, sizeof(struct mouse_packet)); // send mouse packet
   }
 }
 
@@ -61,8 +36,7 @@ mouse_task(void) {
 
       while( ( packet = (struct mouse_packet*)queue_remove(&mouse_queue) ) != NULL ) {
 
-          task_queue_foreach(&tq_ready, mouse_listen, (uint32_t*)(packet) );
-          task_queue_foreach(&tq_blocked, mouse_listen, (uint32_t*)(packet));
+          task_foreach( mouse_listen, (packet) );
       }
       scheduling(1);
 
@@ -76,6 +50,7 @@ mouse_handler(void) {
   static uint8_t status, cicle = 0;
   static struct mouse_packet pkt;
 
+  asm volatile("cli");
   asm volatile("add $0xc, %esp");
   asm volatile("pusha");
 
@@ -127,20 +102,15 @@ mouse(void) {
 
   queue_init(&mouse_queue, 32);
 
-  mouse_wait(1);
   outportb(0x64, 0xA8);
 
   //Enable the interrupts
-  mouse_wait(1);
   outportb(0x64, 0x20);
 
-  mouse_wait(0);
   status = (inportb(0x60) | 2);
 
-  mouse_wait(1);
   outportb(0x64, 0x60);
 
-  mouse_wait(1);
   outportb(0x60, status);
 
   // Tell the mouse to use default settings

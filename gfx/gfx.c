@@ -20,6 +20,8 @@ gfx_main() {
 
   gfx_loaded = 1;
 
+  gfx_put_pixel(0,0,(color_t){0,0,255});
+
   while(1) {
     disable();
 
@@ -80,7 +82,7 @@ _gfx_flip() {
 void
 gfx() {
 
-  gfx_task = task_create((uint32_t)gfx_main, "gfx", TS_READY);
+  // gfx_task = task_create((uint32_t)gfx_main, "gfx", TS_READY);
 
   // dummy functions
   gfx_put_pixel = _gfx_put_pixel;
@@ -91,7 +93,9 @@ gfx() {
   gfx_height = _gfx_height;
   gfx_flip = _gfx_flip;
 
+
+  gfx_loaded = 1;
   // term = terminal();
 
-  task_add(gfx_task);
+  // task_add(gfx_task);
 }

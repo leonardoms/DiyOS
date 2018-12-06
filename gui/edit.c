@@ -38,12 +38,18 @@ edit_create(widget_t* parent) {
 
 void edit_keydown(struct widget* widget, uint32_t key) {
 
-  if(EDIT(widget)->cursor_position >= EDIT(widget)->length)
-    return;
-
-  EDIT(widget)->text[EDIT(widget)->cursor_position++] = (uint8_t)key;
-
-  // widget_draw(widget); // redraw the Edit
+  switch ( (uint8_t)key ) {
+    case '\b':
+      if(EDIT(widget)->cursor_position >= 0)
+        EDIT(widget)->cursor_position--;
+        EDIT(widget)->text[EDIT(widget)->cursor_position] = '\0';
+      break;
+    default:
+      if(EDIT(widget)->cursor_position >= EDIT(widget)->length)
+        return;
+      EDIT(widget)->text[EDIT(widget)->cursor_position++] = (uint8_t)key;
+      break;
+  }
 
   if(widget->OnKeyDown_User)
     widget->OnKeyDown_User(widget,key);
@@ -93,4 +99,6 @@ edit_draw(edit_t* edt) {
     x += 8;
     i++;
   }
+
+  //TODO: draw cursor
 }

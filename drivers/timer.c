@@ -14,10 +14,10 @@ update_timeout(task_t* t, uint32_t* data) {
     if( t->timeout <= 0 ) {
       t->state = TS_READY;
       t->timeout = 0;
-      // task_queue_insert(&tq_ready, t);
     }
       // printf("%s (%d) %dms left for timeout.\n", t->name, t->state, t->timeout);
   }
+
 }
 
 void
@@ -25,21 +25,13 @@ scheduling(uint8_t state) {
   _scheduling = (state != 0);
 }
 
-struct interrupt_frame {
-  uint32_t  eip;
-  uint32_t  cs;
-  uint32_t  eflags;
-  uint32_t  esp;
-  uint32_t  ss;
-};
-
 void
 timer_handler(void) {
-
+  asm volatile("cli");
   asm volatile("add $0xc, %esp");
 
   if(_scheduling) {
-    task_queue_foreach(&tq_blocked, update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
+    task_foreach(update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
   	task_schedule();
   } else {
 

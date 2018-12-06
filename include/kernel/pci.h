@@ -5,6 +5,7 @@
 
 // config Offsets
 #define PCI_VENDOR_DEVICE   0x00
+#define PCI_CLASS_SUBCLASS  0x08
 #define PCI_BAR0    0x10
 #define PCI_BAR1    PCI_BAR0 + 4
 #define PCI_BAR2    PCI_BAR1 + 4

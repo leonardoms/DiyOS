@@ -43,13 +43,13 @@ ramfs_readdir(fs_node_t *node, uint32_t index);
 uint32_t
 ramfs_read(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer);
 
+uint32_t
+tar_parse(unsigned int address, uint32_t end);
+
 fs_node_t*
 ramfs_root() {
   return ramfs_root_node;
 }
-
-uint32_t
-tar_parse(unsigned int address, uint32_t end);
 
 fs_node_t*
 ramfs(uint32_t address, uint32_t end) {

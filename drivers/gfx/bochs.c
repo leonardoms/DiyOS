@@ -48,9 +48,6 @@ static uint32_t  update_x1, update_x0, update_y1, update_y0;
 void
 bochs_vbe_putpixel_24(uint32_t x, uint32_t y, color_t c);
 
-//FIXME: testing only (pre-"kmalloc")
-uint32_t page_table[2048] __attribute__((aligned (4096)));   // 8MB
-
 void
 bochs_vbe_write(uint16_t index, uint16_t value) {
     outportw(VBE_DISPI_IOPORT_INDEX, index);
@@ -96,6 +93,7 @@ bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
     bochs_vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, width);
     bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
     bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
+    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, 0);
     bochs_vbe_enable();
   }
 
@@ -105,8 +103,8 @@ bochs_vbe_putpixel_24(uint32_t x, uint32_t y, color_t c) {
     if( x > w || y > h)
         return;
     offset = y * scanline + x * pixel_size;
-    bochs_vbe_fb_double[bochs_vbe_fb_current][offset] = (uint8_t)( c.b );   // set BB
-    *((uint16_t*)&(bochs_vbe_fb_double[bochs_vbe_fb_current][offset+1])) = (uint16_t)(c.g | c.r << 8); // set BBRR
+    bochs_vbe_fb_double[1][offset] = (uint8_t)( c.b );   // set BB
+    *((uint16_t*)&(bochs_vbe_fb_double[1][offset+1])) = (uint16_t)(c.g | c.r << 8); // set BBRR
 
     BOCHS_AREA_GROW(x,y);
 }
@@ -160,8 +158,16 @@ void
 bochs_vbe_flip() {
 
   if( update_x1 > 0 ) { // has something to plot ?
-    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current);
-    bochs_vbe_fb_current = !bochs_vbe_fb_current & 1;
+    // bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current);
+    // bochs_vbe_fb_current = !bochs_vbe_fb_current & 1;
+    // printf("flip {(%d,%d),(%d,%d)}\n", update_x0, update_y0, update_x1, update_y1);
+
+    uint32_t y = update_y0, offset;
+    for( ; y <= update_y1; y++ ) {
+      offset = (y * w + update_x0) * 3;
+      memcpy(&bochs_vbe_fb_double[1][offset], &bochs_vbe_fb_double[0][offset], (update_x1 - update_x0) * 3);
+    }
+
     update_x0 = update_y0 = 0xFFFFFFFF;
     update_x1 = update_y1 = 0x0;
   }
@@ -195,7 +201,7 @@ gfx_bochs() {
     pci_write(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0, (uint32_t)bochs_vbe_fb | aux);
 
     uint32_t i;
-    for(i = 0; i < 1024; i++) {
+    for(i = 0; i < 1024; i++) { // 4MB
       page_map(((uint32_t)bochs_vbe_fb + 0x1000 * i),((uint32_t)bochs_vbe_fb + 0x1000 * i));
     }
 
@@ -216,7 +222,7 @@ gfx_bochs() {
     bochs_vbe_display(640,480,24); // set default resolution 640x480 (24-bits)
 
     // clear screen
-    memset(bochs_vbe_fb, 0, 640 * 480 * 3);
+    memset(bochs_vbe_fb, 0x0, 640 * 480 * 3 * 2);
 
     return 1;
 }

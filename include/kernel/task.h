@@ -30,44 +30,13 @@ typedef struct task {
 
     queue_t     message_queue;
 
-    fs_node_t   files[16];
+    fs_node_t*   files[16];
+    uint32_t     file;
 
     struct task *next;
 } task_t;
 
-#define TASK_MAX 32
-
-typedef struct task_queue {
-  task_t* task[TASK_MAX];
-  int32_t front, rear;
-  uint32_t  count;
-} task_queue_t;
-
-typedef void (*task_queue_callback_t)(task_t*, uint32_t*);
-
-void
-task_queue_init(task_queue_t* q);
-
-// get first task in queue
-task_t*
-task_queue_peek(task_queue_t* q);
-
-// remove first task in queue and returns that
-task_t*
-task_queue_remove(task_queue_t* q);
-
-// get queue size
-uint32_t
-task_queue_size(task_queue_t* q);
-
-void
-task_queue_insert(task_queue_t* q, task_t* t);
-
-// run custom callback on each entry in queue
-void
-task_queue_foreach(task_queue_t* q, task_queue_callback_t c, uint32_t* data);
-
-task_queue_t   tq_blocked, tq_ready;
+typedef void (*task_iterator_t)(task_t*, uint32_t*);
 
 task_t*
 task_create_from_elf(const char* name, uint8_t* runnable);

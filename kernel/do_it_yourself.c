@@ -31,17 +31,20 @@ void do_it_yourself(uint32_t multiboot_info) {
   //   // free(file);
   // } else printf("diyos.txt: file not found.\n");
 
+  // ide();
+
   acpi();   // configure ACPI
   task();   // multitasking
+
   kb();     // enable keyboard
   mouse();  // enable mouse
   timer();  // enable timer
 
-
   gfx();        // graphical server
+  gfx_bochs();
+
   // if( !gfx_bochs() )  // load bochs vbe
   //   gfx_vga(); // if Bochs VBE not present, run 320x200x8 VGA driver
-  gfx_bochs();
   gui();        // graphical user interface server
 
   task_start(); // start multitasking!

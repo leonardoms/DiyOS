@@ -1,59 +1,36 @@
 
 #include <kernel.h>
+#include <list.h>
 
 task_t* running_task, *idle_task;
 static uint32_t  task_id;
 uint32_t num_tasks;
-uint8_t  task_enabled = 0;
+static list_t* tasks = NULL, *tasks_cur;
+static queue_t wake_queue; //test.. priorize task waiting for wakeup
 
-
-__attribute__((interrupt)) void
-task_schedule_handler();
+task_t*
+task_next();
 
 void
 idle() {
     // printf("task_idle ");
     while(1) {
-      __asm__ __volatile__("sti");  // enable interrupts
+      // __asm__ __volatile__("sti");  // enable interrupts
       __asm__ __volatile__("hlt");  // idle the CPU until a interrupt fires
     }
 }
 
-void
-task_enable() {
-  task_enabled = 1;
-}
-
-uint8_t
-task_is_enabled() {
-  return (task_enabled != 0);
-}
-
-void
-task_disable() {
-  task_enabled = 0;
-}
 
 task_t*
 task_get() {
   return running_task;
 }
 
-typedef void (*task_callback_t)(task_t* t, uint8_t* data);
-
-void
-update_wait4pid(task_t* t, uint8_t* data) {
-  if(t->wait4pid == ((task_t*)data)->id) {
-    t->wait4pid = 0;
-    t->state = TS_READY;
-  }
-}
-
 void
 task_destroy() {
     printf("kill: %s (pid: %d)\n", running_task->name, running_task->id);
 
-    task_queue_foreach(&tq_blocked, update_wait4pid, (uint32_t*)running_task);
+    // list_foreach(tasks, update_wait4pid, (uint32_t*)running_task);
 
     running_task = NULL;
     num_tasks--;
@@ -68,7 +45,7 @@ task_create(uint32_t eip, const char* name, task_state_t s) {
   	memset(t, 0, sizeof(struct task));
     t->id = ++task_id;
     t->state = s;
-    t->waitkey = 0;
+    t->file = 0;
     memcpy((void*)name, (void*)t->name, strlen(name) + 1);
   	t->regs.eip = eip;
   	t->regs.esp = (uint32_t)malloc(4096);
@@ -117,57 +94,32 @@ task_on_a_row(task_t* t, uint32_t* data) {
     printf("%s\n", t->name);
 }
 
-void
-task_show_all() {
-
-    printf("==================== TASKS  ====================\n");
-
-    if(running_task)
-      task_on_a_row(running_task, NULL);
-    // printf("tq_ready\n");
-    if(task_queue_size(&tq_ready) > 0)
-      task_queue_foreach(&tq_ready, task_on_a_row, NULL);
-    // printf("tq_blocked\n");
-    if(task_queue_size(&tq_blocked) > 0)
-      task_queue_foreach(&tq_blocked, task_on_a_row, NULL);
-
-    printf("================================================\n");
-
-}
 
 void
 task_add(task_t* t) {
-    switch (t->state) {
-      case TS_READY:
-        task_queue_insert(&tq_ready, t);
-        break;
-      case TS_BLOCKED:
-        task_queue_insert(&tq_blocked, t);
-      default:
-        break;
-    }
+    tasks = list_add(tasks, t);
     num_tasks++;
-    // running_task->next = t;
-    // t->next = running_task;
 }
 
 void
 task() {
     task_id = 1000;
     num_tasks = 0;
-    isr_install_callback(0xFF, task_schedule_handler); // "int 0xff" calls scheduling
+    isr_install_callback(0xFF, task_schedule); // "int 0xff" calls scheduling
 
-    task_queue_init(&tq_ready);
-    task_queue_init(&tq_blocked);
+    tasks = NULL;
+    queue_init(&wake_queue, 16);
 
     idle_task = task_create((uint32_t)idle, "idle", TS_READY);
     task_add(idle_task);
-    // running_task = idle_task;
 }
 
 void
 task_start() {
-  running_task = task_queue_remove(&tq_ready);
+  tasks_cur = tasks;
+
+  running_task = task_next();
+
   scheduling(1);
   task_execute();
 }
@@ -196,28 +148,34 @@ task_wake(task_t* t) {
   t->state = TS_READY;
 
   // task_schedule_forced();
+  queue_add(&wake_queue, t);
 
   return;
 }
 
-void
-_task_get_pid(task_t* t, uint32_t* data) {
-  if(t->id == data[0]) {
-    data[1] = (uint32_t)t;
+uint8_t
+_task_get_pid(list_t* l, void* data) {
+
+  // printf("get_pid: %x == %d ?\n", (uint32_t)data, ((task_t*)(l->data))->id);
+
+  if( ((task_t*)(l->data))->id == (uint32_t)data ) {
+    return FALSE;
   }
+  return TRUE;
 }
+
+static uint32_t  t[2]; // 0: pid; 1: pointer to pid (if found)
 
 task_t*
 task_from_pid(uint32_t pid) {
-  uint32_t  t[2]; // 0: pid; 1: pointer to pid (if found)
+  list_t  *l;
 
-  t[0] = pid;
-  t[1] = NULL;
+  l = list_foreach(tasks, _task_get_pid, (uint32_t*)pid);
 
-  task_queue_foreach(&tq_ready, _task_get_pid, t);
-  task_queue_foreach(&tq_blocked, _task_get_pid, t);
+  if( l )
+    return (task_t*)l->data;
 
-  return t[1];
+  return NULL;
 }
 
 uint32_t
@@ -227,39 +185,12 @@ task_pid() {
   return running_task->id;
 }
 
-void
-task_update_queue() {
-  task_t* t;
-  uint32_t i;
-
-  // update the queues
-  i = task_queue_size(&tq_blocked);
-  if( i > 0 ) {
-    while (i--) {
-      t = task_queue_remove(&tq_blocked);
-      if(t->state == TS_READY) {
-        task_queue_insert(&tq_ready,t);
-      }
-      else
-        task_queue_insert(&tq_blocked,t);
-    }
-  }
-  i = task_queue_size(&tq_ready);
-  if( i > 0 ) {
-    while (i--) {
-      t = task_queue_remove(&tq_ready);
-      if(t->state == TS_READY)
-        task_queue_insert(&tq_ready,t);
-      else
-        task_queue_insert(&tq_blocked,t);
-    }
-  }
-}
-
 // execute current task last state
 void
 task_execute()
 {
+  ASSERT_PANIC( running_task != NULL );
+
   running_task->state = TS_RUNNING;
   // asm volatile("mov %%eax, %%cr3": :"a"(running_task->regs.cr3));
   // asm volatile("xchg %bx, %bx");
@@ -292,11 +223,57 @@ task_schedule_forced() {
   return;
 }
 
-// __attribute__((interrupt)) void
-void
-task_schedule_handler() {
+task_t*
+task_next() {
+  list_t* cur;
+  task_t* wake_me;
 
-  task_schedule();
+  ASSERT_PANIC( tasks != NULL );
+  ASSERT_PANIC( tasks_cur != NULL );
+
+  if( (wake_me = queue_remove(&wake_queue)) != NULL ) // has task waiting for wake up?
+    return wake_me;
+
+  if( tasks_cur->next == NULL )
+    cur = tasks; // points to start of list
+  else
+    cur = tasks_cur->next;
+
+  ASSERT_PANIC( cur != NULL );
+
+  while( ((task_t*)cur->data)->state != TS_READY ) {
+    cur = cur->next;
+    if( cur == NULL ) {
+      // PANIC( "No tasks to run. (where's Idle?)" );
+      // break;
+      cur = tasks;
+    }
+  }
+
+  ASSERT_PANIC( cur != NULL );
+
+  tasks_cur = cur;
+
+  return (task_t*)cur->data;
+}
+
+void
+task_foreach(task_iterator_t it, void* udata) {
+  list_t* item;
+
+  ASSERT_PANIC( tasks != NULL );
+
+  if( it == NULL )
+    return;
+
+  if(tasks->magic != LIST_MAGIC)
+    PANIC("task list is corromped!");
+
+  item = tasks;
+  do {
+    it( (task_t*)item->data, udata);
+  } while( (item = item->next) != NULL );
+
 }
 
 void
@@ -308,48 +285,33 @@ task_schedule()
   } else
     asm volatile("add $0x10, %esp");
 
+    asm volatile("push %eax");
+    asm volatile("push %ebx");
+    asm volatile("push %ecx");
+    asm volatile("push %edx");
+    asm volatile("push %esi");
+    asm volatile("push %edi");
+    asm volatile("push %ebp");
+    // asm volatile("push %ds");
+    // asm volatile("push %es");
+    // asm volatile("push %fs");
+    // asm volatile("push %gs");
+    asm volatile("pushl $0x10");
+    asm volatile("pushl $0x10");
+    asm volatile("pushl $0x10");
+    asm volatile("pushl $0x10");
+    asm volatile("mov %%esp, %%eax":"=a"(running_task->regs.esp));
 
-  if( running_task != NULL ) {
-      // asm volatile("xchg %bx, %bx");
-
-      asm volatile("push %eax");
-      asm volatile("push %ebx");
-      asm volatile("push %ecx");
-      asm volatile("push %edx");
-      asm volatile("push %esi");
-      asm volatile("push %edi");
-      asm volatile("push %ebp");
-      // asm volatile("push %ds");
-      // asm volatile("push %es");
-      // asm volatile("push %fs");
-      // asm volatile("push %gs");
-      asm volatile("pushl $0x10");
-      asm volatile("pushl $0x10");
-      asm volatile("pushl $0x10");
-      asm volatile("pushl $0x10");
-      // BOCHS_BREAKPOINT
-      asm volatile("mov %%esp, %%eax":"=a"(running_task->regs.esp));
-
-      if(running_task->state == TS_RUNNING) {
-          running_task->state = TS_READY;
-          task_queue_insert(&tq_ready, running_task);
-       } else
-      if (running_task->state == TS_BLOCKED) {  // blocked task!
-          task_queue_insert(&tq_blocked, running_task);
-      } else
-          printf("%s with invalid state (%d)\n", running_task->name, running_task->state);
-    } //else task_show_all();
-    task_update_queue();
+    if(running_task->state == TS_RUNNING) {
+        running_task->state = TS_READY;
+     }
 
 
-    // get a ready task
-    running_task = task_queue_remove(&tq_ready);
-    // running_task = running_task->next;
+    running_task = task_next();
 
     ASSERT_PANIC(running_task != NULL);
 
     running_task->state = TS_RUNNING;
-        // task_show_all();
     asm volatile("mov %%eax, %%cr3": :"a"(running_task->regs.cr3));
   	asm volatile("mov %%eax, %%esp": :"a"(running_task->regs.esp));
   	asm volatile("popl %gs");

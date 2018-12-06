@@ -1,6 +1,4 @@
 
-
-
 .PHONY: all clean
 
 KERNEL := DiyOS
