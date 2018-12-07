@@ -25,8 +25,10 @@ gui_main() {
 
   printf("GUI started.\n");
 
-  bmp_image_from_file("ui/ui-icons.bmp");
+  disable();
+
   gui_desktop_create();
+  wallpaper();
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
 
@@ -86,6 +88,7 @@ gui_main() {
       }
       //TODO: every window has your own video memory buffer,
       // gui_draw function make a composite for modified area and send to video memory!
+      wallpaper_draw();
       gui_draw();
       gfx_flip();
       enable();
@@ -99,10 +102,13 @@ gui_desktop_create() {
 
     // the desktop area
     desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height() - TASK_BAR_HEIGHT - 1, NULL);
-    desktop_window->bgcolor = (color_t){96,96,255};
+    // desktop_window->bgcolor = (color_t){96,96,255};
+    desktop_window->visible = W_VIS_HIDDEN;
 
     // the taskbar space
-    widget_set_padding(desktop_window,0,0,0,/*TASK_BAR_HEIGHT*/0); // childs cannot use TaskBar area
+    widget_set_padding(desktop_window,0,0,0,TASK_BAR_HEIGHT); // childs cannot use TaskBar area
+
+    desktop_taskbar = widget_create(0, 0, gfx_height() - TASK_BAR_HEIGHT, gfx_width(), gfx_height(), NULL);
 
     // mouse position
     pointerX = (gfx_width() - POINTER_W) / 2;
@@ -115,17 +121,18 @@ gui_desktop_create() {
 
     uint8_t buff[32];
     uint32_t sz = 0;
+    buff[0] = 0;
     int32_t fd = open("hello.txt", 1, 0);
     if( fd >= 0) {
-      sz = read(fd, &buff[0], 32);
+      sz = read(fd, buff, 32);
+      buff[sz] = '\0';
     }
-    buff[sz] = '\0';
 
 
-    wnd1 = WIDGET(window_create(400,300));
-    lbl = WIDGET(label_create(&buff[0], wnd1));
+
+    wnd1 = WIDGET(window_create(250,200));
+    lbl = WIDGET(label_create(buff, wnd1));
     window_set_name(WINDOW(wnd1), "/ram/hello.txt");
-    window_move(WINDOW(wnd1),10,10); // ERROR here!! (WTF)
 
     wnd = WIDGET(window_create(150,100));
     lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
@@ -223,19 +230,12 @@ gui_get_active_window() {
   return NULL;
 }
 
-void
-gui_draw_wallpaper() {
-  // uint32_t i, j;
-  //
-  // for(j = 0; j < 480; j++)
-  // for(i = 0; i < 640; i++)
-  //   gfx_put_pixel(i,j,(color_t){96,96,255});
-}
 
 void
 gui_draw() {
-  gui_draw_wallpaper();
   widget_draw(desktop_window);
+  widget_draw(desktop_taskbar);
+
 
   gui_pointer_draw((uint32_t)pointerX, (uint32_t)pointerY);
 }

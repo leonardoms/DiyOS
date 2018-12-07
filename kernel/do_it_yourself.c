@@ -21,15 +21,18 @@ void do_it_yourself(uint32_t multiboot_info) {
   if(mbinfo->mods_count > 0) // has ramdisk.tar module?
     ram = ramfs(((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_start, ((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_end);    // start ramdisk at first module location
 
-  // static uint8_t buff[16], sz;
-  // fs_node_t* file = finddir_fs(ram, "diyos.txt"); // will be used in Open
+  // static uint8_t buff[54], sz;
+  // fs_node_t* file = finddir_fs(ram, "ui/wallpaper.bmp"); // will be used in Open
+  // uint8_t* img;
   // if( file ) {
-  //   if( (sz = read_fs(file, 0, 16, &buff)) > 0 ) {
-  //       // buff[sz] = '\0';
-  //       printf("diyos.txt: sz=%d, content=%s\n", sz, buff);
+  //   if( (sz = read_fs(file, 0, 54, &buff)) > 0 ) {
+  //
+  //       img = (uint8_t*)malloc(*(uint32_t*)&buff[2]);
+  //       read_fs(file, 0, *(uint32_t*)&buff[2], img);
+  //       printf("ui/ui-icons.bmp: sz=%d, offset=%d\n", *(uint32_t*)&img[2], *(uint32_t*)&img[10]);
   //   }
   //   // free(file);
-  // } else printf("diyos.txt: file not found.\n");
+  // } else printf("ui/ui-icons.bmp: file not found.\n");
 
   // ide();
 

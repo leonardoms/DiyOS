@@ -44,7 +44,7 @@ endif
 
 run: iso
 	@echo "[RUN  ] ..."
-	@qemu-system-i386 -boot d -cdrom build/$(KERNEL_NAME)-live.iso -vga std -m 64
+	@qemu-system-i386 -boot d -cdrom build/$(KERNEL_NAME)-live.iso -vga std -m 128
 
 iso: all
 	@echo "[ISO  ] build/$(KERNEL_NAME)-live.iso"

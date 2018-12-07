@@ -8,6 +8,7 @@
 #include <gui/label.h>
 #include <gui/button.h>
 #include <gui/edit.h>
+#include <gui/bmp.h>
 
 #define WINDOW_DECORATION_BORDER  1
 #define WINDOW_DECORATION_BAR     12

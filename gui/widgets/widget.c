@@ -63,6 +63,8 @@ widget_draw(struct widget* widget) {
       edit_draw(EDIT(widget));
       break;
     default:
+      if(widget->visible == W_VIS_HIDDEN)
+        break;
       parent = widget->parent;
       if(parent) {
         x0 = widget->x + parent->padding_left;
@@ -129,7 +131,6 @@ widget_set_parent(widget_t* widget, widget_t* parent) {
 
 void
 widget_move(widget_t* widget, uint32_t x, uint32_t y) {
-    widget_t* chld;
 
     if(!widget)
       return;

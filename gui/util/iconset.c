@@ -1,4 +1,4 @@
-
+#include <gui.h>
 
 bmp_image_t* iconset_image;
 

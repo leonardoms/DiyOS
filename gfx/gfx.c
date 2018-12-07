@@ -64,6 +64,15 @@ _gfx_putchar(uint32_t x, uint32_t y, color_t fgcolor, color_t bgcolor, const cha
   // GFX_AREA_GROW(x,y);
 }
 
+// slow generic version
+void
+_gfx_draw_data(uint8_t* data, uint32_t width, uint32_t height, uint32_t x, uint32_t y) {
+  uint32_t i, j;
+  for( j = 0; j < height; j++)
+  for( i = 0; i < width; i++ )
+    gfx_put_pixel(x+i,y+j, (color_t){data[(j*width+i)*3],data[(j*width+i)*3+1],data[(j*width+i)*3+2]});
+}
+
 uint32_t
 _gfx_width() {
   return 0;
@@ -92,7 +101,7 @@ gfx() {
   gfx_width = _gfx_width;
   gfx_height = _gfx_height;
   gfx_flip = _gfx_flip;
-
+  gfx_draw_data = _gfx_draw_data;
 
   gfx_loaded = 1;
   // term = terminal();
