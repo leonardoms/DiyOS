@@ -5,7 +5,7 @@ void
 memcpy(void* src, void* dst, uint32_t size);
 
 void
-memset(void* src, uint8_t value, uint32_t size);
+memset(void* dst, uint8_t value, uint32_t size);
 
 int
 strcmp(char *s1, char *s2);

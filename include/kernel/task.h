@@ -17,6 +17,11 @@ typedef struct {
     uint32_t eax, ebx, ecx, edx, esi, edi, esp, ebp, eip, eflags, cr3;
 } task_regs_t;
 
+typedef struct task_file {
+  fs_node_t*  node;
+  uint32_t    offset;
+} task_file_t;
+
 typedef struct task {
     task_regs_t   regs;
     uint32_t      stacktop;
@@ -30,7 +35,7 @@ typedef struct task {
 
     queue_t     message_queue;
 
-    fs_node_t*   files[16];
+    task_file_t  files[16];
     uint32_t     file;
 
     struct task *next;

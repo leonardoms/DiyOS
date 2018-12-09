@@ -18,21 +18,19 @@ void do_it_yourself(uint32_t multiboot_info) {
   arch();       // configure arch-dependent things
   mm(mbinfo);   // memory manager
 
+  fs_root();  // initialize FS and /dev
   if(mbinfo->mods_count > 0) // has ramdisk.tar module?
     ram = ramfs(((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_start, ((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_end);    // start ramdisk at first module location
 
-  // static uint8_t buff[54], sz;
-  // fs_node_t* file = finddir_fs(ram, "ui/wallpaper.bmp"); // will be used in Open
-  // uint8_t* img;
-  // if( file ) {
-  //   if( (sz = read_fs(file, 0, 54, &buff)) > 0 ) {
-  //
-  //       img = (uint8_t*)malloc(*(uint32_t*)&buff[2]);
-  //       read_fs(file, 0, *(uint32_t*)&buff[2], img);
-  //       printf("ui/ui-icons.bmp: sz=%d, offset=%d\n", *(uint32_t*)&img[2], *(uint32_t*)&img[10]);
-  //   }
-  //   // free(file);
-  // } else printf("ui/ui-icons.bmp: file not found.\n");
+  static uint8_t buff[54], sz;
+  fs_node_t* file = finddir_fs(fs_root_get(), "/dev/rand"); // will be used in Open
+  if( file ) {
+    if( (sz = read_fs(file, 0, 54, &buff)) > 0 ) {
+
+        printf("/dev/rand: sz=%d, data=%d %d %d...\n", sz, buff[0], buff[1], buff[2]);
+    }
+    // free(file);
+  } else printf("/dev/rand: file not found.\n");
 
   // ide();
 
@@ -45,9 +43,9 @@ void do_it_yourself(uint32_t multiboot_info) {
 
   gfx();        // graphical server
   gfx_bochs();
-
-  // if( !gfx_bochs() )  // load bochs vbe
-  //   gfx_vga(); // if Bochs VBE not present, run 320x200x8 VGA driver
+  //
+  // // if( !gfx_bochs() )  // load bochs vbe
+  // //   gfx_vga(); // if Bochs VBE not present, run 320x200x8 VGA driver
   gui();        // graphical user interface server
 
   task_start(); // start multitasking!

@@ -2,8 +2,6 @@
 
 #include <kernel.h>
 
-fs_node_t *fs_root = 0; // The root of the filesystem.
-
 uint32_t
 read_fs(fs_node_t *node, uint32_t offset, uint32_t size, uint8_t *buffer)
 {

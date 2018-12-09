@@ -12,7 +12,7 @@ read(uint32_t fd, void* buffer, uint32_t size) {
   if( fd >= t->files)
     return 0;
 
-  file = t->files[fd];
+  file = t->files[fd].node;
 
   return read_fs(file, offset, size, buffer);
 

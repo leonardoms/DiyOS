@@ -5,7 +5,7 @@ bmp_image_t* wl_image = NULL;
 
 void
 wallpaper() {
-  wl_image = bmp_image_from_file("ui/wallpaper.bmp");
+  wl_image = bmp_image_from_file("/ram/ui/wallpaper.bmp");
 
   if( wl_image == NULL )
     return;

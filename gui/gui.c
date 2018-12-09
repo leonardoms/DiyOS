@@ -12,6 +12,7 @@ int32_t pointerX, pointerY;
 
 widget_t *desktop_window, *desktop_taskbar;
 task_t* gui_task;
+bmp_image_t* cursor_image = NULL;
 
 #define TASK_BAR_HEIGHT 32
 
@@ -28,6 +29,7 @@ gui_main() {
   disable();
 
   gui_desktop_create();
+  gui_cursor_create();
   wallpaper();
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
@@ -90,11 +92,27 @@ gui_main() {
       // gui_draw function make a composite for modified area and send to video memory!
       wallpaper_draw();
       gui_draw();
+      cursor_draw();
       gfx_flip();
       enable();
       task_block();
     }
 
+}
+
+void
+gui_cursor_create() {
+  cursor_image = bmp_image_from_file("/ram/ui/cursor_normal.bmp");
+}
+
+void
+cursor_draw() {
+  if( cursor_image ) {
+    uint32_t i, j;
+    for(j = 0; j < cursor_image->height; j++ )
+    for(i = 0; i < cursor_image->width; i++ )
+      gfx_put_pixel(pointerX+i,pointerY+j, (color_t){cursor_image->data[(j*cursor_image->width+i)*3],cursor_image->data[(j*cursor_image->width+i)*3+1],cursor_image->data[(j*cursor_image->width+i)*3+2]});
+  }
 }
 
 void
@@ -122,7 +140,7 @@ gui_desktop_create() {
     uint8_t buff[32];
     uint32_t sz = 0;
     buff[0] = 0;
-    int32_t fd = open("hello.txt", 1, 0);
+    int32_t fd = open("/ram/hello.txt", 1, 0);
     if( fd >= 0) {
       sz = read(fd, buff, 32);
       buff[sz] = '\0';
@@ -236,6 +254,6 @@ gui_draw() {
   widget_draw(desktop_window);
   widget_draw(desktop_taskbar);
 
-
-  gui_pointer_draw((uint32_t)pointerX, (uint32_t)pointerY);
+  cursor_draw();
+  // gui_pointer_draw((uint32_t)pointerX, (uint32_t)pointerY);
 }
