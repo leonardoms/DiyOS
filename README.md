@@ -5,6 +5,8 @@ This is a very very very experimental code, no warranties, it's for own study. :
 
 Help me with a Star :star:
 
+If want to compile you need a [Cross-Compiler GCC](https://wiki.osdev.org/GCC_Cross-Compiler).
+
 ---
 Latest built ISO @ [build/](build/)
 
