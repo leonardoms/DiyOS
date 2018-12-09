@@ -22,6 +22,7 @@ What is done:
 * [Multitasking](kernel/task.c)
 * [Basic Message System](kernel/message.c) (IPC)
 * [Memory Manager](kernel/memory/mm.c)
+* [ACPI](kernel/devices/acpi.c) Reboot and Shutdown
 * Global Descriptor Table (GDT)
   * Flat memory
 * Interrupt Descriptor Table (IDT)
@@ -35,8 +36,8 @@ What is done:
   * keyboard, Timer, Basic Video, PIC
   * Bochs VBE video
   * Basic VGA
-  * Network Realtek RTL81xx
-  * Network NE2000 (n2k) [working on]
+  * ~~Network Realtek RTL81xx~~
+  * ~~Network NE2000 (n2k) [working on]~~
 
 To  compile:
 ```
