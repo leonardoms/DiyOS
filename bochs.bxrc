@@ -1,7 +1,7 @@
 # You may now use double quotes around pathnames, in case
 # your pathname includes spaces.
 
- magic_break: enabled=1
+ magic_break: enabled=0
 
 #=======================================================================
 # CONFIG_INTERFACE
@@ -443,7 +443,7 @@ debugger_log: ./debuggerout.txt
 #   com3: enabled=1, mode=raw, dev=com1
 #   com3: enabled=1, mode=socket, dev=localhost:8888
 #=======================================================================
-#com1: enabled=1, mode=term, dev=/dev/ttyp9
+com1: enabled=1, mode=file, dev=com1.txt
 
 
 #=======================================================================

@@ -123,9 +123,9 @@ _ramfs_create_path(uint8_t** p) {
 
 fs_node_t*
 ramfs(uint32_t address, uint32_t end) {
-  uint32_t i;
+  uint32_t i, f = 0;
 
-  printf("RAMFS: %d files found.\n", tar_parse(address, end));
+  tar_parse(address, end);
 
   ramfs_root_node = (fs_node_t*)malloc(sizeof(fs_node_t));
   strcpy(ramfs_root_node->name, "ram");
@@ -169,6 +169,8 @@ ramfs(uint32_t address, uint32_t end) {
         node->readdir = 0;
         node->finddir = 0;
 
+        f++;
+
         break;
       case DIRTYPE:
 
@@ -200,6 +202,8 @@ ramfs(uint32_t address, uint32_t end) {
   // ramfs_root_node->inode = (uint32_t)ramfs_nodes;
 
   fs_register(ramfs_root_node, "ram"); // register as /ram
+
+  printf("/ram filled with %d file(s).\n", f);
 
   return ramfs_root_node;
 }

@@ -115,7 +115,5 @@ fs_root() {
 
   devfs();
 
-  printf("filesystem initialized.\n");
-
   return root_node;
 }

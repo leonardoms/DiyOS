@@ -1,7 +1,7 @@
 #include <kernel.h>
 
 uint32_t
-read(uint32_t fd, void* buffer, uint32_t size) {
+write(uint32_t fd, void* buffer, uint32_t size) {
 
   fs_node_t* file;
   task_t*    t;
@@ -9,11 +9,13 @@ read(uint32_t fd, void* buffer, uint32_t size) {
 
   t = task_get();
 
-  if( fd >= t->file)
+  if( fd > t->file) {
+    printf("fd(%d) > t->file(%d)\n", fd, t->file);
     return 0;
+  }
 
   file = t->files[fd].node;
 
-  return read_fs(file, offset, size, buffer);
+  return write_fs(file, offset, size, buffer);
 
 }

@@ -53,6 +53,7 @@ extern void isr46();
 extern void isr47();
 extern void timer_handler();
 extern void keyboard_handler();
+extern void serial_handler();
 extern void mouse_handler();
 extern void task_schedule_handler();
 
@@ -232,8 +233,17 @@ isr_install() {
   isr_install_callback(19, fault_handler);
 }
 
-void irq7_handler(isr_regs_t regs) {
+void irq7_handler(void) {
+  asm volatile("cli");
+  asm volatile("add $0xc, %esp");
+  asm volatile("pusha");
+
   // do nothing
+  printf("irq7\n");
+
+  // pic_acknowledge(7);
+  asm volatile("popa");
+  asm volatile("iret");
 }
 
 void setup_idt_entry(uint8_t intn, uint32_t isr_addr, uint8_t dpl) {
@@ -290,11 +300,11 @@ void idt() {
   setup_idt_entry(32, (uint32_t)timer_handler, 0);
   setup_idt_entry(33, (uint32_t)keyboard_handler, 0);
   setup_idt_entry(34, (uint32_t)isr34, 0);
-  setup_idt_entry(35, (uint32_t)isr35, 0);
-  setup_idt_entry(36, (uint32_t)isr36, 0);
+  setup_idt_entry(35, (uint32_t)serial_handler, 0);
+  setup_idt_entry(36, (uint32_t)serial_handler, 0);
   setup_idt_entry(37, (uint32_t)isr37, 0);
   setup_idt_entry(38, (uint32_t)isr38, 0);
-  setup_idt_entry(39, (uint32_t)isr39, 0);
+  setup_idt_entry(39, (uint32_t)irq7_handler, 0);
   setup_idt_entry(40, (uint32_t)isr40, 0);
   setup_idt_entry(41, (uint32_t)isr41, 0);
   setup_idt_entry(42, (uint32_t)isr42, 0);

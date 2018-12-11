@@ -33,10 +33,12 @@ typedef struct task {
     uint8_t     waitkey, key;
     char        name[1024];
 
+    console_t*  console;
+
     queue_t     message_queue;
 
     task_file_t  files[16];
-    uint32_t     file;
+    int32_t     file;
 
     struct task *next;
 } task_t;

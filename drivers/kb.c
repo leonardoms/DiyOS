@@ -52,7 +52,7 @@ void keyboard_handler() {
     asm volatile("add $0xc, %esp");
     asm volatile("pusha");
 
-    queue_add(&kb_queue, (uint32_t*)inportb(0x60));
+    queue_add(&kb_queue, (uint32_t*)inportb(0x60)); //TODO: add on kb_queue of the active console
     pic_acknowledge(1);
     task_wake(kb_task);
 

@@ -2,6 +2,13 @@
 #define _KERNEL_H_
 
 #include <arch.h>
+#include <ring.h>
+
+
+typedef struct console {
+  ring_t  in, out;
+} console_t;
+
 #include <ctypes.h>
 #include <kernel/aspace.h>
 #include <kernel/bios.h>
@@ -14,6 +21,7 @@
 #include <kernel/pic.h>
 #include <kernel/task.h>
 #include <kernel/terminal.h>
+
 
 void
 sleep(uint32_t ms);

@@ -63,7 +63,7 @@ devfs_register(fs_node_t* node) {
   //TODO: check if node->name ahead exists
 
   dev_nodes = list_add(dev_nodes, node);
-  // printf("devfs: '/dev/%s' created.\n", node->name);
+  printf("devfs: '/dev/%s' created.\n", node->name);
   dev_files++;
 }
 
@@ -83,6 +83,7 @@ devfs() {
   dev_one();
   dev_zero();
   dev_rand();
+  dev_tty();
 
   printf("/dev initialized.\n");
 

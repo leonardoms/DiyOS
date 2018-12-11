@@ -26,5 +26,5 @@ dev_zero() {
   zero->readdir = 0;
   zero->finddir = 0;
 
-  devfs_register(zero, "zero");
+  devfs_register(zero);
 }

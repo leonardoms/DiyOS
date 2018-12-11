@@ -13,7 +13,9 @@ task_next();
 
 void
 idle() {
-    // printf("task_idle ");
+    printf("task_idle ");
+    uint32_t fd = open("/dev/com1", 1, 1);
+    printf("%d bytes written to /dev/com1\n", write(fd,"Hello Serial!", strlen("Hello Serial!")) );
     while(1) {
       // __asm__ __volatile__("sti");  // enable interrupts
       __asm__ __volatile__("hlt");  // idle the CPU until a interrupt fires
@@ -45,7 +47,7 @@ task_create(uint32_t eip, const char* name, task_state_t s) {
   	memset(t, 0, sizeof(struct task));
     t->id = ++task_id;
     t->state = s;
-    t->file = 0;
+    t->file = -1;
     memcpy((void*)name, (void*)t->name, strlen(name) + 1);
   	t->regs.eip = eip;
   	t->regs.esp = (uint32_t)malloc(4096);

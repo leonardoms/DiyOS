@@ -26,5 +26,5 @@ dev_one() {
   one->readdir = 0;
   one->finddir = 0;
 
-  devfs_register(one, "one");
+  devfs_register(one);
 }

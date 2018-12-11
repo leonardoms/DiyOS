@@ -32,5 +32,5 @@ dev_rand() {
   rand->readdir = 0;
   rand->finddir = 0;
 
-  devfs_register(rand, "rand");
+  devfs_register(rand);
 }
