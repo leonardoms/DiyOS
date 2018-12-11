@@ -36,6 +36,7 @@ What is done:
   * 4MB at 0xFFC00000 fixed for Page Tables (physical memory after kernel location)
 * [Drivers](drivers/)
   * keyboard, Timer, Basic Video, PIC
+  * Serial added to /dev/com file (write only)
   * Bochs VBE video
   * Basic VGA
   * ~~Network Realtek RTL81xx~~
