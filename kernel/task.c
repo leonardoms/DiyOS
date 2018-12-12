@@ -13,9 +13,7 @@ task_next();
 
 void
 idle() {
-    printf("task_idle ");
-    uint32_t fd = open("/dev/com1", 1, 1);
-    printf("%d bytes written to /dev/com1\n", write(fd,"Hello Serial!", strlen("Hello Serial!")) );
+    debug_printf("task_idle started.\n");
     while(1) {
       // __asm__ __volatile__("sti");  // enable interrupts
       __asm__ __volatile__("hlt");  // idle the CPU until a interrupt fires
@@ -34,7 +32,7 @@ task_destroy() {
 
     // list_foreach(tasks, update_wait4pid, (uint32_t*)running_task);
 
-    running_task = NULL;
+    running_task = task_next();
     num_tasks--;
     __asm__ __volatile__("int $0xff\n");
 }
@@ -281,10 +279,15 @@ task_foreach(task_iterator_t it, void* udata) {
 void
 task_schedule()
 {
+
+  // ASSERT_PANIC(running_task != NULL);
+
   if(schedule_forced) {
+    debug_printf("schedule_forced: caller \'%s\' (0x%x) to ", running_task->name, (uint32_t)running_task);
     asm volatile("add $0xc, %esp");
     schedule_forced = 0;
   } else
+    debug_printf("schedule: previous \'%s\' (0x%x), next ", running_task->name, (uint32_t)running_task);
     asm volatile("add $0x10, %esp");
 
     asm volatile("push %eax");
@@ -312,6 +315,8 @@ task_schedule()
     running_task = task_next();
 
     ASSERT_PANIC(running_task != NULL);
+
+    debug_printf("\'%s\' (0x%x)\n", running_task->name, (uint32_t)running_task);
 
     running_task->state = TS_RUNNING;
     asm volatile("mov %%eax, %%cr3": :"a"(running_task->regs.cr3));

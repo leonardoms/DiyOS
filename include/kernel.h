@@ -22,6 +22,8 @@ typedef struct console {
 #include <kernel/task.h>
 #include <kernel/terminal.h>
 
+void
+debug_printf (const char *format, ...);
 
 void
 sleep(uint32_t ms);
