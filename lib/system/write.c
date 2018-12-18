@@ -9,8 +9,8 @@ write(uint32_t fd, void* buffer, uint32_t size) {
 
   t = task_get();
 
-  if( fd > t->file) {
-    printf("fd(%d) > t->file(%d)\n", fd, t->file);
+  if( fd > t->file_count) {
+    printf("fd(%d) > t->file(%d)\n", fd, t->file_count);
     return 0;
   }
 

@@ -15,14 +15,14 @@ message_to(uint32_t to, void* data, uint32_t size) {
 
   msg = (message_t*)malloc(sizeof(struct message));
 
-  msg->from = task_pid();
+  msg->from = pid();
   msg->to = to;
   msg->data = data;
   msg->size = size;
 
   queue_add(&t->message_queue, msg);
 
-  task_wake(t);
+  t->status = TS_READY;
 }
 
 message_t*

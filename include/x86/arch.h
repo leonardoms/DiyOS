@@ -11,18 +11,27 @@
 
 uint32_t kernel_stack_addr;
 
-typedef struct
-{
+#pragma pack(1)
+typedef struct {
     uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
     uint32_t gs, fs, es, ds;
     uint32_t intn, err_code;
     uint32_t eip, cs, eflags, useresp, ss;
-} isr_regs_t;
+} int_regs_t;
 
-#define irq_regs_t isr_regs_t
+typedef struct{
+	uint32_t ebx, esi, edi, ebp;  // callee-save
+	uint32_t eip, eflags;	        // CALL/IRET
+} kregs_t;
 
-typedef void (*isr_callback_t)(isr_regs_t);
-typedef void (*irq_callback_t)(isr_regs_t);
+typedef int (*isr_call_t)(int_regs_t*);
+typedef isr_call_t isr_call_vector_t[256];
+
+#pragma pack(1)
+typedef struct {
+    unsigned    gate;
+    isr_call_t  isr_call;
+} isr_vector_t;
 
 struct gdt {
   uint16_t size;
@@ -39,7 +48,6 @@ struct gdt_entry {
     uint32_t high;
 } __attribute__ ((aligned (8)));
 
-// "nothing is created, everything is copied"! Thanks OSDev.org
 typedef struct idt_entry {
     uint16_t  offset_1;   // offset bits 0..15
     uint16_t  selector;   // a code segment selector in GDT or LDT
@@ -92,14 +100,18 @@ void
 syscall_setup();
 
 void
-isr_install();
+isr_init(void);
 
 void
-irq_install_callback(uint8_t irq, isr_callback_t callback);
+isr_set_handler(int num, isr_vector_t *isr_vector);
 
 void
-isr_install_callback(uint8_t irq, isr_callback_t callback);
+isr_get_handler(int num, isr_vector_t *isr_vector);
 
-#define arch() { gdt(); idt(); isr_install(); syscall_setup(); }
+#define IRQ_SET_HANDLER(irq,handler)  { ASSERT_PANIC(irq <= 0xF); isr_vector_t v = { 0x8E, handler }; isr_set_handler(0x20 + irq,&v); }
+#define ISR_SET_HANDLER(n,handler)  { isr_vector_t v = { 0x8E, handler }; isr_set_handler(n,&v); }
+
+
+#define arch() { gdt(); idt(); isr_install(); }
 
 #endif

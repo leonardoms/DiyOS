@@ -7,5 +7,7 @@ sleep(uint32_t ms) {
   ASSERT_PANIC(t != NULL);
 
   t->timeout = ms;
-  task_block();
+  t->status = TS_BLOCKED;
+
+  schedule();
 }

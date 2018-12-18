@@ -16,11 +16,6 @@ load_gdt:
     mov  ss, ax
     ret
 
-load_idt:
-    mov   eax, [esp + 4]
-    lidt  [eax]
-    ret
-
 load_tss:
     mov   ax, 0x2B
     ltr   ax

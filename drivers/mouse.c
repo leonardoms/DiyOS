@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <drivers/mouse.h>
 
-queue_t mouse_queue;
+queue_t mouse_queue, mouse_wait;
 task_t* m_task;
 
 void
@@ -19,40 +19,35 @@ mouse_read()
 
 struct mouse_packet* packet;
 
-void
+uint8_t
 mouse_listen(task_t* t, void* data) {
   if(t->listen && MOUSE) {
-    message_to(t->id, data, sizeof(struct mouse_packet)); // send mouse packet
+    message_to(t->pid, data, sizeof(struct mouse_packet)); // send mouse packet
   }
+
+  return 0;
 }
 
-void
+static void
 mouse_task(void) {
   static struct mouse_packet* packet;
 
   while(1) {
 
-      scheduling(0);
-
       while( ( packet = (struct mouse_packet*)queue_remove(&mouse_queue) ) != NULL ) {
 
           task_foreach( mouse_listen, (packet) );
       }
-      scheduling(1);
 
-      task_block(); // block 'mouse' task
+      sleep_on(&mouse_wait, NULL); // block 'mouse' thread
   }
 }
 
-void
-mouse_handler(void) {
+uint32_t
+mouse_handler(int_regs_t* regs) {
 
   static uint8_t status, cicle = 0;
   static struct mouse_packet pkt;
-
-  asm volatile("cli");
-  asm volatile("add $0xc, %esp");
-  asm volatile("pusha");
 
   status = inportb(0x64);
 
@@ -63,11 +58,19 @@ mouse_handler(void) {
         cicle++;
         break;
       case 1:
-        pkt.dx = mouse_read();
+        if(pkt.flags & 0x10)  // is dY negative?
+          pkt.dx = (int32_t) mouse_read() | 0xFFFFFF00;
+        else
+          pkt.dx = (int32_t) mouse_read();
+
         cicle++;
         break;
       case 2:
-        pkt.dy = mouse_read();
+
+        if(pkt.flags & 0x20)  // is dY negative?
+          pkt.dy = (int32_t) mouse_read() | 0xFFFFFF00;
+        else
+          pkt.dy = (int32_t) mouse_read();
 
         if( (pkt.flags & 0x80) || (pkt.flags & 0x40) == 0 ) { // x/y overflow ?
           packet = (struct mouse_packet*)malloc(sizeof(struct mouse_packet));
@@ -79,7 +82,7 @@ mouse_handler(void) {
           memcpy(&pkt, packet, sizeof(struct mouse_packet));
 
           queue_add(&mouse_queue, packet);
-          task_wake(m_task);
+          wake_up(&mouse_wait);
         } // else { do nothing, discard entire packet :/ }
         // printf("mouse packet: flags=0x%x, dx=%d, dy=%d\n", pkt.flags, pkt.dx, pkt.dy);
         cicle = 0;
@@ -92,8 +95,6 @@ mouse_handler(void) {
 
   pic_acknowledge(12);
 
-  asm volatile("popa");
-  asm volatile("iret");
 }
 
 void
@@ -101,6 +102,7 @@ mouse(void) {
   uint8_t status;
 
   queue_init(&mouse_queue, 32);
+  queue_init(&mouse_wait, 8);
 
   outportb(0x64, 0xA8);
 
@@ -121,10 +123,11 @@ mouse(void) {
   mouse_write(0xF4);
   mouse_read();  // ACK
 
-  m_task = task_create(mouse_task, "mouse", TS_BLOCKED);
-  m_task->id = MOUSE; // force mouse pid
+  m_task = thread_create((uint32_t)mouse_task, 1, 100, "mouse");
+  m_task->pid = MOUSE; // force mouse pid
   task_add(m_task);
 
+  IRQ_SET_HANDLER(12, mouse_handler);
   irq_enable(12);
 
 }

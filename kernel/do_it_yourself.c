@@ -39,20 +39,20 @@ void do_it_yourself(uint32_t multiboot_info) {
   // ide();
 
   acpi();   // configure ACPI
-  task();   // multitasking
+  tasking();   // multitasking
 
   kb();     // enable keyboard
   mouse();  // enable mouse
   timer();  // enable timer
 
   gfx();        // graphical server
-  // gfx_bochs();
+  gfx_bochs();
   //
   // // if( !gfx_bochs() )  // load bochs vbe
   // //   gfx_vga(); // if Bochs VBE not present, run 320x200x8 VGA driver
   gui();        // graphical user interface server
 
-  task_start(); // start multitasking!
+  schedule();   // run a kernel thread
 
   PANIC("end of main loop."); // if something goes wrong...
 }

@@ -3,15 +3,17 @@
 #include <kernel.h>
 
 task_t* kb_task;
-static queue_t   kb_queue;
+static queue_t   kb_queue, kb_wait;
 
 
-void
+uint8_t
 keyboard_listen(task_t* t, uint32_t* data) {
   if(t->listen && KEYBOARD) {
-    // printf("message_to %d: '0x%x'\n", t->id, (uint16_t)data);
-    message_to(t->id, data, 0); // send a fake pointer with value of the key code!
+    // printf("message_to %d: '0x%x'\n", t->pid, (uint16_t)data);
+    message_to(t->pid, data, 0); // send a fake pointer with value of the key code!
   }
+
+  return 0;
 }
 
 void
@@ -21,8 +23,6 @@ keyboad_task() {
   static uint32_t  packet;
 
   while(1) {
-
-      scheduling(0);
 
       while( ( scode = (uint8_t)queue_remove(&kb_queue) ) != NULL ) {
 
@@ -41,35 +41,35 @@ keyboad_task() {
           task_foreach(keyboard_listen, (uint32_t*)(packet) );
         }
       }
-      scheduling(1);
 
-      task_block(); // block 'keyboard' task
+      sleep_on(&kb_wait, NULL); // block 'keyboard' thread
   }
 }
 
-void keyboard_handler() {
-    asm volatile("cli");
-    asm volatile("add $0xc, %esp");
-    asm volatile("pusha");
+uint32_t
+keyboard_handler(int_regs_t* regs) {
+
+    pic_acknowledge(1);
 
     queue_add(&kb_queue, (uint32_t*)inportb(0x60)); //TODO: add on kb_queue of the active console
-    pic_acknowledge(1);
-    task_wake(kb_task);
 
-    asm volatile("popa");
-    asm volatile("iret");
+    // printf("#");
+    wake_up(&kb_wait);
+
 }
 
 void kb() {
 
-    kb_task = task_create(keyboad_task, "keyboard", TS_BLOCKED);
+    kb_task = thread_create(keyboad_task, 1, 100, "keyboard");
     ASSERT_PANIC(kb_task != NULL);
 
     queue_init(&kb_queue, 16);
+    queue_init(&kb_wait, 8);
 
-    kb_task->id = KEYBOARD; // force keyboard pid
+    kb_task->pid = KEYBOARD; // force keyboard pid
     task_add(kb_task);
 
+    IRQ_SET_HANDLER(1, keyboard_handler);
     irq_enable(1);
 }
 

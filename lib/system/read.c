@@ -9,7 +9,7 @@ read(uint32_t fd, void* buffer, uint32_t size) {
 
   t = task_get();
 
-  if( fd >= t->file)
+  if( fd >= t->file_count)
     return 0;
 
   file = t->files[fd].node;

@@ -27,18 +27,10 @@ write_serial(uint8_t id, uint8_t c) {
 }
 
 void
-serial_handler() {
-  asm volatile("cli");
-  asm volatile("add $0xc, %esp");
-  asm volatile("pusha");
+serial_handler(int_regs_t* regs) {
 
   serial_lock = 0; // used in read_fs
 
-  pic_acknowledge(3);
-  pic_acknowledge(4);
-
-  asm volatile("popa");
-  asm volatile("iret");
 }
 
 

@@ -4,42 +4,28 @@
 
 #define HZ_FREQUENCY  100
 
-uint32_t current_tick;
-static uint8_t _scheduling = 0;
-
-void
+uint8_t
 update_timeout(task_t* t, uint32_t* data) {
   if(t->timeout > 0) {
     t->timeout -= (int32_t)data;
     if( t->timeout <= 0 ) {
-      t->state = TS_READY;
+      t->status = TS_READY;
       t->timeout = 0;
     }
       // printf("%s (%d) %dms left for timeout.\n", t->name, t->state, t->timeout);
   }
-
+  return 0;
 }
 
-void
-scheduling(uint8_t state) {
-  _scheduling = (state != 0);
-}
+uint32_t
+timer_handler(int_regs_t* regs) {
+  pic_acknowledge(0);
 
-void
-timer_handler(void) {
-  asm volatile("cli");
-  asm volatile("add $0xc, %esp");
+  task_foreach(update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
 
-  if(_scheduling) {
-    task_foreach(update_timeout, (uint32_t*)(1000/HZ_FREQUENCY));
-  	task_schedule();
-  } else {
+	schedule();
 
-    asm volatile("pusha");
-    pic_acknowledge(0);
-    asm volatile("popa");
-    asm volatile("iret");
-  }
+  debug_printf("return from timer_handler\n");
 }
 
 void
@@ -49,6 +35,6 @@ timer(){
   outportb(0x40, f & 0xFF);
   outportb(0x40, f >> 8);
 
+  IRQ_SET_HANDLER(0, timer_handler);
   irq_enable(0);
-  scheduling(0);
 }

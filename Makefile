@@ -3,7 +3,7 @@
 
 KERNEL := DiyOS
 ARCH := x86
-WARNING := yes
+WARNING := no
 KERNEL_NAME := $(KERNEL)_$(ARCH)
 
 AUXFILES := Makefile Readme.md

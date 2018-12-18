@@ -22,6 +22,8 @@ gui_main() {
   struct mouse_packet* pkt;
   window_t*  window;
 
+  debug_printf("GUI Task.\n");
+
   while(!gfx_is_ready());
 
   printf("GUI started.\n");
@@ -29,7 +31,7 @@ gui_main() {
   disable();
 
   gui_desktop_create();
-  gui_cursor_create();
+  // gui_cursor_create();
   wallpaper();
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
@@ -64,7 +66,7 @@ gui_main() {
             case MOUSE:
                 pkt = (struct mouse_packet*)msg->data;
                 if( pkt ){
-                  // printf("GUI SERVER: mouse flags=0x%x, dx=%d, dy=%d\n", pkt->flags, pkt->dx, pkt->dy);
+                  // debug_printf("GUI SERVER: mouse flags=0x%x, dx=%x, dy=%x\n", pkt->flags, pkt->dx, pkt->dy);
                   pointerX += pkt->dx;
                   pointerY -= pkt->dy;
 
@@ -92,10 +94,9 @@ gui_main() {
       // gui_draw function make a composite for modified area and send to video memory!
       wallpaper_draw();
       gui_draw();
-      cursor_draw();
+      // cursor_draw();
       gfx_flip();
       enable();
-      task_block();
     }
 
 }
@@ -183,7 +184,7 @@ gui_desktop_create() {
 
 void
 gui() {
-    gui_task = task_create((uint32_t)gui_main, "gui", TS_READY );
+    gui_task = thread_create((uint32_t)gui_main, 1, 100, "gui");
     task_add(gui_task);
 }
 

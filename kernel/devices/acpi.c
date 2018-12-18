@@ -28,11 +28,6 @@ _page_map(uint32_t p_addr, uint32_t v_addr, uint32_t length) {
 
 }
 
-void
-acpi_handler(isr_regs_t regs) {
-  printf("ACPI interrupt!\n");
-}
-
 struct RSDPDescriptor {
  char Signature[8];
  uint8_t Checksum;
@@ -182,6 +177,11 @@ acpi_checksum(void* ptr, uint32_t size, uint8_t checksum) {
   return sum == 0;
 }
 
+uint32_t
+acpi_handler(int_regs_t* regs) {
+  debug_printf("acpi interrupt!\n");
+}
+
 #define return_val_if_fail(test,val) if(!test) return val;
 
 uint32_t
@@ -250,7 +250,7 @@ acpi() {
             // printf("[+FACP] ");
             facp = (struct FADT*)sdt;
 
-            irq_install_callback(facp->SCI_Interrupt, acpi_handler); // install ACPI IRQ handler
+            IRQ_SET_HANDLER(facp->SCI_Interrupt, acpi_handler); // install ACPI IRQ handler
 
             // printf("Profile=%d ", facp->PreferredPowerManagementProfile);
             // printf("ResetReg=0x%x(0x%x)\n", facp->ResetReg.Address, facp->ResetValue);

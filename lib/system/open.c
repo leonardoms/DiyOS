@@ -11,9 +11,9 @@ open(uint8_t* name, uint8_t r, uint8_t w) {
   t = task_get();
 
   if( (file = finddir_fs(root,name)) != NULL ) {
-      t->file++;
-      t->files[t->file].node = file;
-      return (t->file);
+      t->file_count++;
+      t->files[t->file_count].node = file;
+      return (t->file_count);
   } else
       return -1;
 }
