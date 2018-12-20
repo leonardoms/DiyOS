@@ -211,6 +211,5 @@ idt_ptr:
         add ebx, byte 8
         add edx, byte (isr1 - isr0)
         loop build_idt
-        xchg bx, bx
         lidt [idt_ptr]
         ret

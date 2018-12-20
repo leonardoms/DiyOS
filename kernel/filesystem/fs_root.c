@@ -25,6 +25,9 @@ root_fs_finddir(fs_node_t *node, char *name) {
   if( name == NULL )
     return NULL;
 
+  if( !strcmp(name,"/") )
+    return root_node;
+
   if( node == root_node ) {
     i_node = node;
     i = 0;
@@ -65,24 +68,28 @@ root_fs_finddir(fs_node_t *node, char *name) {
 struct dirent*
 root_fs_readdir(fs_node_t *node, uint32_t index) {
     struct dirent* d = NULL;
-    // fs_node_t* root_node;
-    // list_t* entry;
-    //
-    // if( index >= root_files)
-    //   return NULL;
-    //
-    // entry = list_get(root_nodes, index);
-    // root_node = (fs_node_t*)entry->data;
-    //
-    // if( root_node ) {
-    //   d = (struct dirent*)malloc(sizeof(struct dirent));
-    //
-    //   if( d == NULL )
-    //     return NULL;
-    //
-    //   strcpy(d->name,root_node->name);
-    //   d->inode = (uint32_t)root_node;
-    // }
+
+    fs_node_t* rnode;
+    list_t* entry;
+
+    if( index >= root_files)
+      return NULL;
+
+    entry = list_get(root_nodes, index);
+    rnode = (fs_node_t*)entry->data;
+
+    if( rnode ) {
+      // debug_printf("[%s]\n", rnode->name);
+
+      d = (struct dirent*)malloc(sizeof(struct dirent));
+
+      if( d == NULL )
+        return NULL;
+
+      strcpy(d->name,rnode->name);
+      d->inode = (uint32_t)rnode;
+      d->offset = index;
+    }
 
     return d;
 }

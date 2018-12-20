@@ -15,5 +15,4 @@ read(uint32_t fd, void* buffer, uint32_t size) {
   file = t->files[fd].node;
 
   return read_fs(file, offset, size, buffer);
-
 }

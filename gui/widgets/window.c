@@ -1,6 +1,11 @@
 
 #include <gui.h>
 
+void window_mouse_move(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+void window_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+void window_key_down(struct widget* widget, uint32_t key);
+void window_key_up(struct widget* widget, uint32_t key);
+
 window_t*
 window_create(uint32_t w, uint32_t h) {
   window_t* wnd = (window_t*)malloc(sizeof(struct window));
@@ -19,8 +24,10 @@ window_create(uint32_t w, uint32_t h) {
   WIDGET(wnd)->bgcolor = (color_t){ 224, 224, 224 };
   widget_set_padding(WIDGET(wnd),2,2,2,2);
   WIDGET(wnd)->OnPaint = NULL;
-  WIDGET(wnd)->OnKeyUp = NULL;
-  WIDGET(wnd)->OnKeyDown = NULL;
+  WIDGET(wnd)->OnKeyUp = window_key_up;
+  WIDGET(wnd)->OnKeyDown = window_key_down;
+  WIDGET(wnd)->OnMouseMove = window_mouse_move;
+  WIDGET(wnd)->OnMouseEvent = window_mouse_event;
   wnd->name = NULL;
   wnd->active = 0;
 
@@ -38,6 +45,53 @@ window_create(uint32_t w, uint32_t h) {
 
 
   return wnd;
+}
+
+void
+window_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
+  widget_t* chld;
+
+  if( flags & 1)
+    gui_set_active_window(WINDOW(widget));
+
+  chld = widget->child;
+  while(chld) {
+    if( point_is_inside(chld, x, y) ) {
+        if(chld->OnMouseEvent)
+          chld->OnMouseEvent(chld, x - chld->x, y - chld->y, flags);
+        break;
+    }
+    chld = chld->next;
+  }
+}
+
+void
+window_mouse_move(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
+  widget_t* chld;
+
+  chld = widget->child;
+  while(chld) {
+    if( point_is_inside(chld, x, y) ) {
+        if(chld->OnMouseMove)
+          chld->OnMouseMove(chld, x - chld->x, y - chld->y, flags);
+        break;
+    }
+    chld = chld->next;
+  }
+}
+
+void
+window_key_down(struct widget* widget, uint32_t key) {
+  if( WINDOW(widget)->focus ) { // propagate to focused child
+    WINDOW(widget)->focus->OnKeyDown(WINDOW(widget)->focus, key);
+  }
+}
+
+void
+window_key_up(struct widget* widget, uint32_t key) {
+  if( WINDOW(widget)->focus ) { // propagate to focused child
+    WINDOW(widget)->focus->OnKeyDown(WINDOW(widget)->focus, key);
+  }
 }
 
 void

@@ -33,11 +33,15 @@ typedef struct widget {
   uint8_t (*OnPaint)(struct widget* widget);
   void (*OnKeyDown)(struct widget* widget, uint32_t key);
   void (*OnKeyUp)(struct widget* widget, uint32_t key);
+  void (*OnMouseMove)(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+  void (*OnMouseEvent)(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+  void (*OnClick)(struct widget* widget);
 
   // user callbacks
   uint8_t (*OnPaint_User)(struct widget* widget);
   void (*OnKeyDown_User)(struct widget* widget, uint32_t key);
   void (*OnKeyUp_User)(struct widget* widget, uint32_t key);
+  void (*OnMouseMove_User)(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
 
   struct widget* focus;
   uint8_t   has_focus;
@@ -48,6 +52,7 @@ typedef struct widget {
 typedef uint8_t (*Paint)(struct widget* widget);  // if return FALSE stops drawing
 typedef void (*KeyDown)(struct widget* widget, uint32_t key);
 typedef void (*KeyUp)(struct widget* widget, uint32_t key);
+typedef void (*MouseMove)(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
 
 widget_t*
 widget_create(uint32_t class, int32_t x, int32_t y, uint32_t w, uint32_t h,

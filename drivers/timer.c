@@ -25,7 +25,7 @@ timer_handler(int_regs_t* regs) {
 
 	schedule();
 
-  debug_printf("return from timer_handler\n");
+  // debug_printf("return from timer_handler\n");
 }
 
 void

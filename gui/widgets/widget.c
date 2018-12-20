@@ -63,27 +63,27 @@ widget_draw(struct widget* widget) {
       edit_draw(EDIT(widget));
       break;
     default:
-      if(widget->visible == W_VIS_HIDDEN)
-        break;
-      parent = widget->parent;
-      if(parent) {
-        x0 = widget->x + parent->padding_left;
-        x1 = x0 + widget->w;
-        y0 = widget->y + parent->padding_top;
-        y1 = y0 + widget->h;
+      if(widget->visible == W_VIS_PARENT) {
+        parent = widget->parent;
+        if(parent) {
+          x0 = widget->x + parent->padding_left;
+          x1 = x0 + widget->w;
+          y0 = widget->y + parent->padding_top;
+          y1 = y0 + widget->h;
 
-        if( x1 > (parent->w - parent->padding_right) ) { // fits on parent width ?
-            x1 -= x1 - (parent->w - parent->padding_right);
+          if( x1 > (parent->w - parent->padding_right) ) { // fits on parent width ?
+              x1 -= x1 - (parent->w - parent->padding_right);
+          }
+
+          if( y1 > (parent->h - parent->padding_bottom) ) { // fits on parent height ?
+              y1 -= y1 - (parent->w - parent->padding_bottom);
+          }
+
+          gfx_rect(x0 + parent->x, y0 + parent->y, x1 + parent->x, y1 + parent->y, widget->bgcolor);
+
+        } else {
+          gfx_rect(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, widget->bgcolor);
         }
-
-        if( y1 > (parent->h - parent->padding_bottom) ) { // fits on parent height ?
-            y1 -= y1 - (parent->w - parent->padding_bottom);
-        }
-
-        gfx_rect(x0 + parent->x, y0 + parent->y, x1 + parent->x, y1 + parent->y, widget->bgcolor);
-
-      } else {
-        gfx_rect(widget->x, widget->y, widget->x + widget->w, widget->y + widget->h, widget->bgcolor);
       }
       break;
   }

@@ -25,6 +25,9 @@ thread_create(uint32_t init_ip, int32_t priority, uint32_t ppid, uint8_t *name) 
 	t->priority = priority;
 	t->magic = THREAD_MAGIC;
 
+	__asm__ __volatile__("movl %%cr3, %%eax; movl %%eax, %0;":"=m"(t->pagedir)::"%eax");
+
+
 	/* Coloca o primeiro contexto(kregs) na pilha para ser restaurando pelo primeiro switch_to(). */
 	t->kstack = t->kstack_mem + KERNEL_STACK_SIZE - sizeof(kregs_t);
 	kregs = (kregs_t *)t->kstack;
@@ -33,6 +36,8 @@ thread_create(uint32_t init_ip, int32_t priority, uint32_t ppid, uint8_t *name) 
 	kregs->eflags = 0x200;
 
 	queue_init(&t->message_queue,32);
+
+	t->file_count = 0;
 
 	return t;
 }

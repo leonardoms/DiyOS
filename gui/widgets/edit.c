@@ -40,9 +40,10 @@ void edit_keydown(struct widget* widget, uint32_t key) {
 
   switch ( (uint8_t)key ) {
     case '\b':
-      if(EDIT(widget)->cursor_position >= 0)
+      if(EDIT(widget)->cursor_position > 0) {
         EDIT(widget)->cursor_position--;
         EDIT(widget)->text[EDIT(widget)->cursor_position] = '\0';
+      }
       break;
     default:
       if(EDIT(widget)->cursor_position >= EDIT(widget)->length)

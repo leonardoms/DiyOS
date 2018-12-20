@@ -135,6 +135,7 @@ label_set_text(label_t* lbl, const char* text) {
 
   if(text == NULL) {
     lbl->text = NULL;
+    label_size_request(lbl);
     return;
   }
 

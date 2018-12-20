@@ -12,7 +12,7 @@ page_map(uint32_t p_addr, uint32_t v_addr) {
 
   table = (uint32_t*) (pd[t_idx] & 0xFFFFF000);
   p_idx = ( v_addr >> 12 ) & 0x3FF;
-  table[p_idx] = (p_addr & 0xFFFFF000) | PAGE_FLAG_PRESENT | PAGE_FLAG_RW | PAGE_FLAG_BITMAP_END | PAGE_FLAG_BITMAP_START;
+  table[p_idx] = (p_addr & 0xFFFFF000) | PAGE_FLAG_PRESENT | PAGE_FLAG_RW;
 
 }
 
@@ -93,7 +93,7 @@ page_free_above(uint32_t limit) {
 
   new_page_limit = (limit & 0xFFFFF000) + 0x1000;
   page_limit = page_upper();
-  // printf("page_free_above: 0x%x - 0x%x\n", page_limit, new_page_limit);
+  // debug_printf("page_free_above: 0x%x - 0x%x\n", page_limit, new_page_limit);
 
   while( new_page_limit <= page_limit ) {
     page_unmap(new_page_limit);

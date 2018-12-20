@@ -13,27 +13,7 @@
 // } gfx_t;
 
 uint8_t  gfx_loaded = 0;
-
-void
-gfx_main() {
-  printf("GFX started.\n");
-
-  gfx_loaded = 1;
-
-  gfx_put_pixel(0,0,(color_t){0,0,255});
-
-  while(1) {
-    disable();
-
-    gfx_flip();
-
-    enable();
-    sleep(50); // 20 frames/s
-  }
-
-}
-
-task_t* gfx_task;
+fs_node_t* lfb;
 
 uint8_t
 gfx_is_ready() {
@@ -70,7 +50,8 @@ _gfx_draw_data(uint8_t* data, uint32_t width, uint32_t height, uint32_t x, uint3
   uint32_t i, j;
   for( j = 0; j < height; j++)
   for( i = 0; i < width; i++ )
-    gfx_put_pixel(x+i,y+j, (color_t){data[(j*width+i)*3],data[(j*width+i)*3+1],data[(j*width+i)*3+2]});
+    if( (data[(j*width+i)*3] != 255) && (data[(j*width+i)*3+2] != 255) )
+      gfx_put_pixel(x+i,y+j, (color_t){data[(j*width+i)*3],data[(j*width+i)*3+1],data[(j*width+i)*3+2]});
 }
 
 uint32_t
@@ -92,6 +73,19 @@ void
 gfx() {
 
   // gfx_task = task_create((uint32_t)gfx_main, "gfx", TS_READY);
+
+  // lfb = open("/dev/lfb", 0, 0);
+  //
+  // uint8_t buf[640*10*3];
+  //
+  // memset(buf, 0xFF, 640*10*3);
+  //
+  // if( !lfb ) {
+  //   debug_printf("[GFX] could not open /dev/lfb. (aborted)\n");
+  //   return;
+  // }
+  //
+  // write(lfb,&buf,640*10*3);
 
   // dummy functions
   gfx_put_pixel = _gfx_put_pixel;

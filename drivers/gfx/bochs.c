@@ -90,11 +90,12 @@ bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
 
     bochs_vbe_disable();
     bochs_vbe_write(VBE_DISPI_INDEX_XRES, width);
-    bochs_vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, width);
     bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
     bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
-    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, 0);
     bochs_vbe_enable();
+    bochs_vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, width);
+    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, 10);
+
   }
 
 void
@@ -158,8 +159,8 @@ void
 bochs_vbe_flip() {
 
   if( update_x1 > 0 ) { // has something to plot ?
-    // bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current);
-    // bochs_vbe_fb_current = !bochs_vbe_fb_current & 1;
+    // bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current + 10);
+
     // printf("flip {(%d,%d),(%d,%d)}\n", update_x0, update_y0, update_x1, update_y1);
 
     uint32_t y = update_y0, offset;
@@ -168,6 +169,8 @@ bochs_vbe_flip() {
       memcpy(&bochs_vbe_fb_double[1][offset], &bochs_vbe_fb_double[0][offset], (update_x1 - update_x0) * 3);
     }
 
+    // bochs_vbe_fb_current = (bochs_vbe_fb_current == 0);
+    //
     update_x0 = update_y0 = 0xFFFFFFFF;
     update_x1 = update_y1 = 0x0;
   }
@@ -197,7 +200,7 @@ gfx_bochs() {
     aux = pci_read(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0);
 
     aux = aux & 0xF;
-    bochs_vbe_fb = (uint8_t*)0xE0000000; //(aux & ~0xF);
+    bochs_vbe_fb = (uint8_t*)0xE0004B00; // skip 10 lines. 0xE0000000 is unmaped after switch_to (bug?)
     pci_write(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0, (uint32_t)bochs_vbe_fb | aux);
 
     uint32_t i;
@@ -206,8 +209,8 @@ gfx_bochs() {
     }
 
     bochs_vbe_fb_current = 0;
-    bochs_vbe_fb_double[0] = (uint8_t*)0xE0000000;
-    bochs_vbe_fb_double[1] = (uint8_t*)(0xE0000000 + 640 * 480 * 3);
+    bochs_vbe_fb_double[0] = (uint8_t*)bochs_vbe_fb;
+    bochs_vbe_fb_double[1] = (uint8_t*)(bochs_vbe_fb + 640 * 480 * 3);
 
     update_x0 = update_y0 = 0xFFFFFFFF;
     update_x1 = update_y1 = 0x0;

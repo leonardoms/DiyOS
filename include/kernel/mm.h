@@ -9,7 +9,7 @@
 #define USER_STACK_SIZE           0x1000
 #define USER_BASE                 0x01000000
 #define KERNEL_BASE               0xC0000000
-#define KERNEL_LIMIT              0xE0000000  // used for video memory
+#define KERNEL_LIMIT              0xDFFF0000  // used for video memory
 
 #define FRAME_SIZE                0x1000
 

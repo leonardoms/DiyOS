@@ -4,6 +4,7 @@ global switch_to
 extern running_task
 
 switch_to:
+
     pop     eax		; convert CALL stack frame (EIP only)...
     pushf		      ; ...to partial IRET (EIP, EFLAGS)
     push    eax
@@ -12,12 +13,13 @@ switch_to:
     push    edi	  ; pushing these creates kregs_t stack frame
     push    esi
     push    ebx
-
     cli
     mov     eax, [running_task]
+    xchg bx, bx
 
     ; store current kernel ESP in thread_t struct of current thread/task
     mov     [eax], esp
+    xchg bx, bx
 
     ; get pointer (thread_t t) to new task/thread to run
     mov     eax,  [esp + 24]

@@ -65,6 +65,24 @@ isr_fault(int_regs_t* regs) {
     printf("*\tCS:EIP=0x%x:0x%x\tSS:ESP=0x%x:0x%x\n", regs->cs, regs->eip, regs->ss, regs->useresp );
     printf("********************************************************************\n");
 
+#if 1
+
+    t = task_get();
+    debug_printf("********************************************************************\n");
+    if(t) {
+      debug_printf("*\tPID: %d\tNAME: %s\n", t->pid, t->name );
+    } else {
+      debug_printf("*\tPID: -\tNAME: -\n" );
+    }
+
+    __asm__ __volatile__("mov %%cr2, %%eax; mov %%eax, %0":"=m"(cr2)::"%eax");
+    debug_printf("*\tError! %s (error: 0x%x)\n", fault_names[regs->intn].name, regs->err_code);
+    debug_printf("*\tEAX=0x%x\tEBX=0x%x\tECX=0x%x\tEDX=0x%x\n", regs->eax, regs->ebx, regs->ecx, regs->edx );
+    debug_printf("*\tCS:EIP=0x%x:0x%x\tSS:ESP=0x%x:0x%x\n", regs->cs, regs->eip, regs->ss, regs->useresp );
+    debug_printf("********************************************************************\n");
+
+#endif
+
     if(t)
       task_exit(1);
     //
@@ -100,6 +118,32 @@ page_fault_handler(int_regs_t* regs) {
       printf("********************************************************************\n");
       PANIC("kernel fault.");
     }
+
+  #if 1
+
+  if(t) {
+    debug_printf("********************************************************************\n");
+    debug_printf("*\tPID: %d\tNAME: %s\n", t->pid, t->name );
+    debug_printf("*\tPAGEFAULT on address 0x%x (%s %s %s) !\n", cr2, (regs->err_code&1)?"Prot.":" ",
+                                                  (regs->err_code&2)?"Write":"Read",
+                                                  (regs->err_code&5)?"User":"Super" );
+    debug_printf("*\tEAX=0x%x\tEBX=0x%x\tECX=0x%x\tEDX=0x%x\n", regs->eax, regs->ebx, regs->ecx, regs->edx );
+    debug_printf("*\tCS:EIP=0x%x:0x%x\tSS:ESP=0x%x:0x%x\n", regs->cs, regs->eip, regs->ss, regs->useresp );
+    debug_printf("********************************************************************\n");
+    // task_destroy();
+  } else {
+    debug_printf("********************************************************************\n");
+    debug_printf("*\tPID: -\tNAME: (null)\n" );
+    debug_printf("*\tPAGEFAULT on address 0x%x (%s %s %s) !\n", cr2, (regs->err_code&1)?"Prot.":" ",
+                                                  (regs->err_code&2)?"Write":"Read",
+                                                  (regs->err_code&5)?"User":"Super" );
+    debug_printf("*\tEAX=0x%x\tEBX=0x%x\tECX=0x%x\tEDX=0x%x\n", regs->eax, regs->ebx, regs->ecx, regs->edx );
+    debug_printf("*\tCS:EIP=0x%x:0x%x\tSS:ESP=0x%x:0x%x\n", regs->cs, regs->eip, regs->ss, regs->useresp );
+    debug_printf("********************************************************************\n");
+    PANIC("kernel fault.");
+  }
+
+  #endif
 
     while(1)
       __asm__ __volatile__("cli\n");

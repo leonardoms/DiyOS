@@ -47,7 +47,7 @@ list_get(list_t* l, uint32_t idx) {
 
   cur = l;
   i = 0;
-  while( (i <= idx) && (cur != NULL) ) {
+  while( (i < idx) && (cur != NULL) ) {
     cur = cur->next;
     i++;
   }

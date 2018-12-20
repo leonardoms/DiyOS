@@ -31,10 +31,14 @@ gui_main() {
   disable();
 
   gui_desktop_create();
-  // gui_cursor_create();
+  gui_cursor_create();
   wallpaper();
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
+
+  wallpaper_draw_all();
+  gui_draw();
+  gfx_flip();
 
   while(1) {
     disable();
@@ -52,15 +56,18 @@ gui_main() {
                 if( window == NULL )
                   break;
 
-                if(window->focus) {
+                // if(window->focus) {
                   if((((uint32_t)msg->data >> 8) & 1)) {
-                    if(window->focus->OnKeyDown)
-                      window->focus->OnKeyDown(window->focus,((uint32_t)msg->data & 0xFF));
+                    WIDGET(window)->OnKeyDown(WIDGET(window),((uint32_t)msg->data & 0xFF));
+                    //
+                    // if(window->focus->OnKeyDown)
+                    //   window->focus->OnKeyDown(window->focus,((uint32_t)msg->data & 0xFF));
                   } else {
-                    if(window->focus->OnKeyUp)
-                      window->focus->OnKeyUp(window->focus,((uint32_t)msg->data & 0xFF));
+                    WIDGET(window)->OnKeyUp(WIDGET(window),((uint32_t)msg->data & 0xFF));
+                    // if(window->focus->OnKeyUp)
+                    //   window->focus->OnKeyUp(window->focus,((uint32_t)msg->data & 0xFF));
                   }
-                }
+                // }
 
                 break;
             case MOUSE:
@@ -79,8 +86,30 @@ gui_main() {
                   if(pointerY > gfx_height())
                     pointerY = gfx_height();
 
-                  if( pkt->flags & 1 )
-                    window_move(gui_get_active_window(), pointerX, pointerY);
+                  // if( pkt->flags & 1 )
+                  //   window_move(gui_get_active_window(), pointerX, pointerY);
+                  window = gui_get_active_window();
+                  if( window == NULL )
+                    break;
+
+                  if( point_is_inside(WIDGET(window), pointerX, pointerY) ) {
+                      if( pkt->dx || pkt->dy )
+                        WIDGET(window)->OnMouseMove(WIDGET(window), pointerX - WIDGET(window)->x, pointerY - WIDGET(window)->y, pkt->flags);
+
+                      WIDGET(window)->OnMouseEvent(WIDGET(window), pointerX - WIDGET(window)->x, pointerY - WIDGET(window)->y, pkt->flags);
+                  } else {
+                    // check if has clicked on other non-active window
+                    widget_t* chld = desktop_window->child;
+                    while(chld) {
+                      if(chld != WIDGET(window) )
+                      if( point_is_inside(chld, pointerX, pointerY) ) {
+                          if(chld->OnMouseEvent)
+                            chld->OnMouseEvent(chld, pointerX - chld->x, pointerY - chld->y, pkt->flags);
+                          break;
+                      }
+                      chld = chld->next;
+                    }
+                  }
 
                   printf("GUI SERVER: mouse at (%d,%d)\n", pointerX, pointerY);
                 }
@@ -92,11 +121,11 @@ gui_main() {
       }
       //TODO: every window has your own video memory buffer,
       // gui_draw function make a composite for modified area and send to video memory!
-      wallpaper_draw();
+      wallpaper_draw_area(0,0,100,150);
       gui_draw();
-      // cursor_draw();
       gfx_flip();
       enable();
+      task_block();
     }
 
 }
@@ -104,16 +133,13 @@ gui_main() {
 void
 gui_cursor_create() {
   cursor_image = bmp_image_from_file("/ram/ui/cursor_normal.bmp");
+  debug_printf("cursor %dx%dx%d", cursor_image->width, cursor_image->height, cursor_image->bpp);
 }
 
 void
 cursor_draw() {
-  if( cursor_image ) {
-    uint32_t i, j;
-    for(j = 0; j < cursor_image->height; j++ )
-    for(i = 0; i < cursor_image->width; i++ )
-      gfx_put_pixel(pointerX+i,pointerY+j, (color_t){cursor_image->data[(j*cursor_image->width+i)*3],cursor_image->data[(j*cursor_image->width+i)*3+1],cursor_image->data[(j*cursor_image->width+i)*3+2]});
-  }
+  if( cursor_image )
+      gfx_draw_data(cursor_image->data, cursor_image->width, cursor_image->height, pointerX, pointerY);
 }
 
 void
@@ -194,21 +220,6 @@ gui_widget_root() {
 }
 
 void
-gui_pointer_draw(uint32_t x, uint32_t y) {
-
-  // gfx_rect( x - POINTER_W/2 - 1, y - POINTER_H/2 - 1,
-  //           x + POINTER_W/2 + 1, y + POINTER_H/2 + 1,
-  //           (color_t) {64,64,64} );
-  //
-  // gfx_rect( x - POINTER_W/2, y - POINTER_H/2,
-  //           x + POINTER_W/2, y + POINTER_H/2,
-  //           (color_t) {255,255,0} );
-  gfx_rect( x , y ,
-            x + 4, y + 4,
-            (color_t) {255,0,0} );
-}
-
-void
 gui_set_active_window(window_t* window) {
   widget_t* child, *root;
 
@@ -253,8 +264,8 @@ gui_get_active_window() {
 void
 gui_draw() {
   widget_draw(desktop_window);
+  widget_draw(WIDGET(gui_get_active_window()));
   widget_draw(desktop_taskbar);
-
+  // gfx_put_pixel(pointerX, pointerY, (color_t){255,0,0});
   cursor_draw();
-  // gui_pointer_draw((uint32_t)pointerX, (uint32_t)pointerY);
 }

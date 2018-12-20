@@ -2,6 +2,9 @@
 
 void button_keydown(struct widget* widget, uint32_t key);
 void button_keyup(struct widget* widget, uint32_t key);
+void button_mouse_move(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+void button_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+void button_click(struct widget* widget);
 
 button_t*
 button_create(const char* caption, widget_t* parent) {
@@ -26,6 +29,9 @@ button_create(const char* caption, widget_t* parent) {
   WIDGET(btn)->OnPaint = NULL;
   WIDGET(btn)->OnKeyUp = button_keyup;
   WIDGET(btn)->OnKeyDown = button_keydown;
+  WIDGET(btn)->OnMouseMove = button_mouse_move;
+  WIDGET(btn)->OnMouseEvent = button_mouse_event;
+  WIDGET(btn)->OnClick = button_click;
   btn->pressed = 0;
 
   widget_set_parent(WIDGET(btn), parent);
@@ -33,9 +39,36 @@ button_create(const char* caption, widget_t* parent) {
   btn->label = label_create(caption, WIDGET(btn));
   WIDGET(btn->label)->bgcolor = WIDGET(btn)->bgcolor;
 
-  WIDGET(btn->label)->x = 12; //(uint32_t)(WIDGET(btn->label)->w / 2);
+  WIDGET(btn->label)->x = (WIDGET(btn)->w) / 2;
+  // debug_printf("%d %d label->x = %d", WIDGET(btn->label)->w, WIDGET(btn)->w, WIDGET(btn->label)->x);
 
   return btn;
+}
+
+void
+button_click(struct widget* widget) {
+  debug_printf("cliked!");
+}
+
+void
+button_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
+  if( flags & 1)
+    BUTTON(widget)->pressed = 1;
+  else {
+    if( BUTTON(widget)->pressed == 1 ) {
+      BUTTON(widget)->pressed = 0;
+      widget->OnClick(widget);
+    }
+  }
+
+}
+
+void
+button_mouse_move(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
+
+
+    // debug_printf("button mouse move (%d,%d)", x, y);
+
 }
 
 void

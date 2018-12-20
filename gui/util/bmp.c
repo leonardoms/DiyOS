@@ -17,7 +17,7 @@ bmp_image_from_file(uint8_t* file) {
     if( sz != sizeof(struct bmp_image) )
       return NULL;
 
-    // printf("%s: %dkB %dx%dpx (%dbits), data @ +%d\n", file, hdr.total_size, hdr.width, hdr.height, hdr.bpp, hdr.offset);
+    // debug_printf("%s: %dkB %dx%dpx (%dbits), data @ +%d\n", file, hdr.total_size, hdr.width, hdr.height, hdr.bpp, hdr.offset);
     bmp = (bmp_image_t*)malloc(hdr.total_size);
 
     if( bmp == NULL ) {

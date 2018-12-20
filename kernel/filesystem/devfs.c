@@ -3,7 +3,7 @@
 
 static list_t* dev_nodes = NULL;
 static uint32_t dev_files = 0;
-fs_node_t* devfs_root_node = NULL;
+static fs_node_t* devfs_root_node = NULL;
 
 static uint8_t
 _devfs_find(list_t* entry, void* udata) {
@@ -53,6 +53,7 @@ devfs_readdir(fs_node_t *node, uint32_t index) {
 
       strcpy(d->name,dev_node->name);
       d->inode = (uint32_t)dev_node;
+      d->offset = index;
     }
 
     return d;
