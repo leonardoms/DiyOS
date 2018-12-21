@@ -1,5 +1,8 @@
 #include <gui.h>
 
+void file_navigator_keydown(struct widget* widget, uint32_t key);
+void file_navigator_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+
 file_navigator_t*
 file_navigator_create(uint8_t* directory, widget_t* parent) {
     file_navigator_t* fn;
@@ -22,11 +25,14 @@ file_navigator_create(uint8_t* directory, widget_t* parent) {
     widget_set_padding(WIDGET(fn),0,0,0,0);
     WIDGET(fn)->OnPaint = NULL;
     WIDGET(fn)->OnKeyUp = NULL;
-    WIDGET(fn)->OnKeyDown = NULL;
+    WIDGET(fn)->OnKeyDown = file_navigator_keydown;
+    WIDGET(fn)->OnMouseEvent = file_navigator_mouse_event;
 
     fn->directory = NULL;
     fn->files = NULL;
 
+    fn->count = 0;
+    fn->selected = -1;
     widget_set_parent(WIDGET(fn), parent);
 
     if( directory )
@@ -36,19 +42,89 @@ file_navigator_create(uint8_t* directory, widget_t* parent) {
 }
 
 void
+file_navigator_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
+  if( flags & 1 )
+    widget_set_focus(widget);
+}
+
+void
+file_navigator_keydown(struct widget* widget, uint32_t key) {
+    int32_t i = 0;
+
+    switch (key) {
+      case '\n':
+        if( FILE_NAVIGATOR(widget)->selected >= 0 ) {
+          list_t *l = list_get(FILE_NAVIGATOR(widget)->files, FILE_NAVIGATOR(widget)->selected);
+          if( l ) {
+            if( ((struct dirent*)l->data)->flags & FS_DIRECTORY ) {
+              // open dir
+              debug_printf("opendir");
+              if( !strcmp(((struct dirent*)l->data)->name,"..") ) {
+                i = strlen(FILE_NAVIGATOR(widget)->directory);
+                while( FILE_NAVIGATOR(widget)->directory[i] != '/' || i > 0)
+                  i--;
+                FILE_NAVIGATOR(widget)->directory[i+1] = 0;
+                debug_printf(" %s\n", FILE_NAVIGATOR(widget)->directory);
+                file_navigator_set(FILE_NAVIGATOR(widget), strdup(FILE_NAVIGATOR(widget)->directory));
+              } else {
+                debug_printf(" %s\n", strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),((struct dirent*)l->data)->name));
+                if( FILE_NAVIGATOR(widget)->directory[strlen(FILE_NAVIGATOR(widget)->directory)-1] != '/')
+                  file_navigator_set(FILE_NAVIGATOR(widget), strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),((struct dirent*)l->data)->name));
+                else
+                  file_navigator_set(FILE_NAVIGATOR(widget), strcat(FILE_NAVIGATOR(widget)->directory,((struct dirent*)l->data)->name) );
+
+              }
+            } else {
+              // do open file
+            }
+          }
+        }
+        break;
+      case KEY_DOWN:
+      case KEY_RIGHT:
+        FILE_NAVIGATOR(widget)->selected++;
+        if(FILE_NAVIGATOR(widget)->selected >= FILE_NAVIGATOR(widget)->count)
+          FILE_NAVIGATOR(widget)->selected--;
+        break;
+      case KEY_UP:
+      case KEY_LEFT:
+      FILE_NAVIGATOR(widget)->selected--;
+      if(FILE_NAVIGATOR(widget)->selected < 0)
+        FILE_NAVIGATOR(widget)->selected = 0;
+        break;
+      default:
+        break;
+    }
+}
+
+void
 file_navigator_set(file_navigator_t* fn, uint8_t* directory) {
+
+  debug_printf("file_navigator_set(): %s\n", directory);
 
   if( fn->directory ) {
     free(fn->directory);
     // list_destroy(fn->files);
     fn->files = NULL;
+    fn->count = 0;
+    fn->selected = -1;
   }
 
   if( directory ) {
     struct dirent* d = NULL;
+
+    d = (struct dirent*)malloc(sizeof(struct dirent));
+    strcpy(d->name,"..");
+    d->flags = FS_DIRECTORY;
+    fn->files = list_add(fn->files, d);
+    fn->count++;
+
     while( (d = readdir(directory, d)) != NULL ) {
       fn->files = list_add(fn->files, d);
+      fn->count++;
     }
+
+    fn->directory = strdup(directory);
   }
 
 }
@@ -72,7 +148,7 @@ file_navigator_draw(file_navigator_t* fn) {
   y0 += WIDGET(fn)->padding_top;
 
   list_t* l;
-  while( (l = list_get(fn->files, f++)) ) {
+  while( (l = list_get(fn->files, f)) ) {
     uint8_t* text = ((struct dirent*)l->data)->name;
 
     if(((struct dirent*)l->data)->flags & FS_DIRECTORY )
@@ -93,7 +169,7 @@ file_navigator_draw(file_navigator_t* fn) {
 
         gfx_putchar(x0 + x*8 + 4, y0 + y + 6,
                     WIDGET(fn)->fgcolor,
-                    WIDGET(fn)->bgcolor,
+                    (fn->selected == f) ? (color_t){0xFFDEAD} : WIDGET(fn)->bgcolor,
                     text[i]);
       i++;
       x++;
@@ -101,5 +177,6 @@ file_navigator_draw(file_navigator_t* fn) {
     y += 16;
     x = 0;
     i = 0;
+    f++;
   }
 }
