@@ -62,6 +62,9 @@ widget_draw(struct widget* widget) {
     case W_EDIT:
       edit_draw(EDIT(widget));
       break;
+    case W_FILE_NAVIGATOR:
+      file_navigator_draw(FILE_NAVIGATOR(widget));
+      break;
     default:
       if(widget->visible == W_VIS_PARENT) {
         parent = widget->parent;

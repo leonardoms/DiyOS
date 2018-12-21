@@ -7,6 +7,7 @@
 #include <gui/window.h>
 #include <gui/label.h>
 #include <gui/button.h>
+#include <gui/file_navigator.h>
 #include <gui/edit.h>
 #include <gui/bmp.h>
 

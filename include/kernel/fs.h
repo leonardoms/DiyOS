@@ -37,6 +37,7 @@ struct dirent {
   uint8_t   name[128];  // the filename
   uint32_t  inode; // internal FS number
   uint32_t  offset;
+  uint32_t  flags;
 };
 
 uint32_t

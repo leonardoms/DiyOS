@@ -33,6 +33,7 @@ gui_main() {
   gui_desktop_create();
   gui_cursor_create();
   wallpaper();
+  iconset("/ram/ui/ui-icons.bmp", 16, 16);
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
 
@@ -124,6 +125,7 @@ gui_main() {
       // wallpaper_draw_area(0,0,100,150);
       // wallpaper_draw_all();
       gui_draw();
+      iconset_draw(6,1,0,0);
       gfx_flip();
       enable();
       task_block();
@@ -162,7 +164,7 @@ gui_desktop_create() {
     if(pointerY < 0) pointerY = 0;
 
 #if 1
-    widget_t  *wnd, *wnd1, *lbl, *btn, *edt;
+    widget_t  *wnd, *wnd1, *lbl, *btn, *edt, *fn;
 
     uint8_t buff[32];
     uint32_t sz = 0;
@@ -178,31 +180,43 @@ gui_desktop_create() {
     wnd1 = WIDGET(window_create(250,200));
     lbl = WIDGET(label_create(buff, wnd1));
     window_set_name(WINDOW(wnd1), "/ram/hello.txt");
-    wnd = WIDGET(window_create(150,100));
 
-    lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
+    // wnd = WIDGET(window_create(150,100));
+    // lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
+    //
+    // btn = button_create("OK", wnd);
+    // button_size( BUTTON(btn), (wnd->w - 40) / 2, (wnd->h - 12 - 10), 40, 12 );
+    //
+    // lbl = label_create("User:",wnd);
+    // edt = edit_create(wnd);
+    // WIDGET(lbl)->x = (wnd->w - 75) / 2 - 19;
+    // WIDGET(lbl)->y = (wnd->h - 60);
+    // WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
+    // WIDGET(edt)->y = (wnd->h - 60);
+    //
+    // lbl = label_create("Passwd:",wnd);
+    // edt = edit_create(wnd);
+    // edit_set_mask(EDIT(edt), '*');
+    // WIDGET(lbl)->x = (wnd->w - 75) / 2 - 35;
+    // WIDGET(lbl)->y = (wnd->h - 45);
+    // WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
+    // WIDGET(edt)->y = (wnd->h - 45);
 
-    btn = button_create("OK", wnd);
-    button_size( BUTTON(btn), (wnd->w - 40) / 2, (wnd->h - 12 - 10), 40, 12 );
+    wnd1 = WIDGET(window_create(300,300));
+    window_set_name(WINDOW(wnd1), "File Navigator");
+    edt = edit_create(wnd1);
+    WIDGET(edt)->x = 0;
+    WIDGET(edt)->y = 0;
+    WIDGET(edt)->w = wnd1->w - wnd1->padding_left - wnd1->padding_right;
+    EDIT(edt)->text = "/ram/";
+    fn = file_navigator_create("/ram", WIDGET(wnd1));
+    WIDGET(fn)->y = edt->h;
+    WIDGET(fn)->h -= edt->h;
 
-    lbl = label_create("User:",wnd);
-    edt = edit_create(wnd);
-    WIDGET(lbl)->x = (wnd->w - 75) / 2 - 19;
-    WIDGET(lbl)->y = (wnd->h - 60);
-    WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
-    WIDGET(edt)->y = (wnd->h - 60);
-
-    lbl = label_create("Passwd:",wnd);
-    edt = edit_create(wnd);
-    edit_set_mask(EDIT(edt), '*');
-    WIDGET(lbl)->x = (wnd->w - 75) / 2 - 35;
-    WIDGET(lbl)->y = (wnd->h - 45);
-    WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
-    WIDGET(edt)->y = (wnd->h - 45);
-
-    window_set_name(WINDOW(wnd), "Welcome Message!");
-    gui_set_active_window(wnd);
-    gui_center_window(WINDOW(wnd));
+    // window_set_name(WINDOW(wnd), "Welcome Message!");
+    gui_set_active_window(wnd1);
+    // gui_center_window(WINDOW(wnd1));
+    window_move(WINDOW(wnd1), 30, 100);
 
 #endif
 

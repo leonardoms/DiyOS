@@ -54,6 +54,7 @@ devfs_readdir(fs_node_t *node, uint32_t index) {
       strcpy(d->name,dev_node->name);
       d->inode = (uint32_t)dev_node;
       d->offset = index;
+      d->flags = dev_node->flags;
     }
 
     return d;

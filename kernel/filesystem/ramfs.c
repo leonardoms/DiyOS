@@ -255,6 +255,7 @@ ramfs_readdir(fs_node_t *node, uint32_t index) {
       strcpy(d->name,i_node->name);
       d->inode = i_node->inode;
       d->offset = index;
+      d->flags = i_node->flags;
 
       return d;
     }

@@ -3,7 +3,7 @@
 
 #define WIDGET(w) ((struct widget*)w)
 
-enum { W_WIDGET = 0, W_WINDOW, W_LABEL, W_BUTTON, W_EDIT };
+enum { W_WIDGET = 0, W_WINDOW, W_LABEL, W_BUTTON, W_EDIT, W_FILE_NAVIGATOR };
 
 enum { ON_PAINT = 1, ON_KEYUP };
 
@@ -37,7 +37,7 @@ typedef struct widget {
   void (*OnMouseEvent)(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
   void (*OnClick)(struct widget* widget);
   void (*OnFocus)(struct widget* widget);
-  void (*OnLooseFocus)(struct widget* widget);  
+  void (*OnLooseFocus)(struct widget* widget);
 
   // user callbacks
   uint8_t (*OnPaint_User)(struct widget* widget);

@@ -89,6 +89,7 @@ root_fs_readdir(fs_node_t *node, uint32_t index) {
       strcpy(d->name,rnode->name);
       d->inode = (uint32_t)rnode;
       d->offset = index;
+      d->flags = rnode->flags;
     }
 
     return d;
