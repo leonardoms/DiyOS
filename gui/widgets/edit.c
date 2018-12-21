@@ -1,6 +1,9 @@
 #include <gui.h>
 
 void edit_keydown(struct widget* widget, uint32_t key);
+void edit_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+void edit_focus(struct widget* widget);
+void edit_loose_focus(struct widget* widget);
 
 edit_t*
 edit_create(widget_t* parent) {
@@ -25,8 +28,12 @@ edit_create(widget_t* parent) {
   WIDGET(edt)->OnPaint = NULL;
   WIDGET(edt)->OnKeyUp = NULL;
   WIDGET(edt)->OnKeyDown = edit_keydown;
-  edt->length = 32; // default number of max chars
+  WIDGET(edt)->OnLooseFocus = edit_loose_focus;
+  WIDGET(edt)->OnFocus = edit_focus;
+  WIDGET(edt)->OnMouseEvent = edit_mouse_event;
 
+  edt->length = 32; // default number of max chars
+  edt->mask = 0;
   edt->text = (uint8_t*)malloc(edt->length + 1);
 
   edt->cursor_position = 0;
@@ -34,6 +41,22 @@ edit_create(widget_t* parent) {
   widget_set_parent(WIDGET(edt), parent);
 
   return edt;
+}
+
+void
+edit_focus(struct widget* widget) {
+    widget->bgcolor = (color_t){ 255, 255, 224 };
+}
+
+void
+edit_loose_focus(struct widget* widget) {
+    widget->bgcolor = (color_t){ 255, 255, 255 };
+}
+
+void
+edit_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
+  if( flags & 1 )
+    widget_set_focus(widget);
 }
 
 void edit_keydown(struct widget* widget, uint32_t key) {
@@ -54,6 +77,11 @@ void edit_keydown(struct widget* widget, uint32_t key) {
 
   if(widget->OnKeyDown_User)
     widget->OnKeyDown_User(widget,key);
+}
+
+void
+edit_set_mask(edit_t* edt, uint8_t mask) {
+  edt->mask = mask;
 }
 
 void
@@ -96,7 +124,12 @@ edit_draw(edit_t* edt) {
   while( edt->text[i] ) {
     if( (x + 8) > WIDGET(edt)->w )
       break;
-    gfx_putchar(x0 + x + 2, y0 + 2, WIDGET(edt)->fgcolor, WIDGET(edt)->bgcolor, edt->text[i]);
+
+    if( edt->mask == 0 )
+      gfx_putchar(x0 + x + 2, y0 + 2, WIDGET(edt)->fgcolor, WIDGET(edt)->bgcolor, edt->text[i]);
+    else
+      gfx_putchar(x0 + x + 2, y0 + 2, WIDGET(edt)->fgcolor, WIDGET(edt)->bgcolor, edt->mask);
+
     x += 8;
     i++;
   }

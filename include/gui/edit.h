@@ -6,9 +6,10 @@
 typedef struct edit {
   struct widget widget;
 
-  uint8_t* text;
-  uint8_t length;
-  uint8_t cursor_position;
+  uint8_t*  text;
+  uint8_t   mask;
+  uint8_t   length;
+  uint8_t   cursor_position;
 } edit_t;
 
 #define EDIT(b) ((edit_t*)b)

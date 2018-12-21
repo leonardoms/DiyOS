@@ -39,7 +39,7 @@ button_create(const char* caption, widget_t* parent) {
   btn->label = label_create(caption, WIDGET(btn));
   WIDGET(btn->label)->bgcolor = WIDGET(btn)->bgcolor;
 
-  WIDGET(btn->label)->x = (WIDGET(btn)->w) / 2;
+  WIDGET(btn->label)->x = 12;//(WIDGET(btn)->w) / 2;
   // debug_printf("%d %d label->x = %d", WIDGET(btn->label)->w, WIDGET(btn)->w, WIDGET(btn->label)->x);
 
   return btn;

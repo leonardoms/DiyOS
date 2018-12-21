@@ -140,20 +140,33 @@ widget_move(widget_t* widget, uint32_t x, uint32_t y) {
 
 }
 
+window_t*
+widget_get_window(struct widget* widget) {
+  widget_t* parent;
+
+  while( (parent = widget->parent) != NULL ) {
+    if( parent->class == W_WINDOW )
+      return WINDOW(parent);
+  }
+}
+
 void
 widget_set_focus(widget_t* widget) {
     widget_t* w, *tmp;
 
-    //TODO: erase previous focus (find toplevel widget, roll widget->focus until has_focus, and ... make it 0)
-    widget->has_focus = 1;
-    tmp = widget;
+    window_t* wnd = widget_get_window(widget);
 
-    w = widget->parent;
-    while(w) {
-      w->focus = tmp;
-      tmp = w;
-      w = w->parent;
+    if( wnd ) {
+      if( wnd->focus ) {
+        if(wnd->focus->OnLooseFocus)
+          wnd->focus->OnLooseFocus(wnd->focus);
+      }
+      wnd->focus = widget;
+      if( widget->OnFocus )
+        widget->OnFocus(widget);
     }
+
+
 }
 
 void

@@ -48,9 +48,9 @@ gui_main() {
                 // keyboard packet: byte1 = status; byte0 = key;
                 // byte1: 0 = Press(1)/Release(0);
                 //
-                printf("GUI SERVER: key %s (0x%x).\n",
-                              (((uint32_t)msg->data >> 8) & 1) ? "pressed" : "released",
-                              (uint8_t)msg->data );
+                // printf("GUI SERVER: key %s (0x%x).\n",
+                //               (((uint32_t)msg->data >> 8) & 1) ? "pressed" : "released",
+                //               (uint8_t)msg->data );
 
                 window = gui_get_active_window();
                 if( window == NULL )
@@ -111,7 +111,7 @@ gui_main() {
                     }
                   }
 
-                  printf("GUI SERVER: mouse at (%d,%d)\n", pointerX, pointerY);
+                  // printf("GUI SERVER: mouse at (%d,%d)\n", pointerX, pointerY);
                 }
                 break;
             default:
@@ -121,7 +121,8 @@ gui_main() {
       }
       //TODO: every window has your own video memory buffer,
       // gui_draw function make a composite for modified area and send to video memory!
-      wallpaper_draw_area(0,0,100,150);
+      // wallpaper_draw_area(0,0,100,150);
+      wallpaper_draw_all();
       gui_draw();
       gfx_flip();
       enable();
@@ -133,7 +134,6 @@ gui_main() {
 void
 gui_cursor_create() {
   cursor_image = bmp_image_from_file("/ram/ui/cursor_normal.bmp");
-  debug_printf("cursor %dx%dx%d", cursor_image->width, cursor_image->height, cursor_image->bpp);
 }
 
 void
@@ -178,9 +178,10 @@ gui_desktop_create() {
     wnd1 = WIDGET(window_create(250,200));
     lbl = WIDGET(label_create(buff, wnd1));
     window_set_name(WINDOW(wnd1), "/ram/hello.txt");
-
     wnd = WIDGET(window_create(150,100));
+
     lbl = WIDGET(label_create("Welcome to the DiyOS basic GUI!", wnd));
+
     btn = button_create("OK", wnd);
     button_size( BUTTON(btn), (wnd->w - 40) / 2, (wnd->h - 12 - 10), 40, 12 );
 
@@ -190,11 +191,10 @@ gui_desktop_create() {
     WIDGET(lbl)->y = (wnd->h - 60);
     WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
     WIDGET(edt)->y = (wnd->h - 60);
-    WINDOW(wnd)->focus = edt;
 
     lbl = label_create("Passwd:",wnd);
     edt = edit_create(wnd);
-    EDIT(edt)->text = "******";
+    edit_set_mask(EDIT(edt), '*');
     WIDGET(lbl)->x = (wnd->w - 75) / 2 - 35;
     WIDGET(lbl)->y = (wnd->h - 45);
     WIDGET(edt)->x = (wnd->w - 75) / 2 + 20;
@@ -202,7 +202,7 @@ gui_desktop_create() {
 
     window_set_name(WINDOW(wnd), "Welcome Message!");
     gui_set_active_window(wnd);
-    window_move(WINDOW(wnd),50,70);
+    window_move(WINDOW(wnd),65,70);
 
 #endif
 

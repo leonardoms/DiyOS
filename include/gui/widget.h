@@ -36,6 +36,8 @@ typedef struct widget {
   void (*OnMouseMove)(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
   void (*OnMouseEvent)(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
   void (*OnClick)(struct widget* widget);
+  void (*OnFocus)(struct widget* widget);
+  void (*OnLooseFocus)(struct widget* widget);  
 
   // user callbacks
   uint8_t (*OnPaint_User)(struct widget* widget);

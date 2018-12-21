@@ -28,6 +28,7 @@ window_create(uint32_t w, uint32_t h) {
   WIDGET(wnd)->OnKeyDown = window_key_down;
   WIDGET(wnd)->OnMouseMove = window_mouse_move;
   WIDGET(wnd)->OnMouseEvent = window_mouse_event;
+
   wnd->name = NULL;
   wnd->active = 0;
 
@@ -83,14 +84,16 @@ window_mouse_move(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
 void
 window_key_down(struct widget* widget, uint32_t key) {
   if( WINDOW(widget)->focus ) { // propagate to focused child
-    WINDOW(widget)->focus->OnKeyDown(WINDOW(widget)->focus, key);
+    if(WINDOW(widget)->focus->OnKeyDown)
+      WINDOW(widget)->focus->OnKeyDown(WINDOW(widget)->focus, key);
   }
 }
 
 void
 window_key_up(struct widget* widget, uint32_t key) {
   if( WINDOW(widget)->focus ) { // propagate to focused child
-    WINDOW(widget)->focus->OnKeyDown(WINDOW(widget)->focus, key);
+    if(WINDOW(widget)->focus->OnKeyUp)
+      WINDOW(widget)->focus->OnKeyUp(WINDOW(widget)->focus, key);
   }
 }
 
