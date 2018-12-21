@@ -36,7 +36,7 @@ gui_main() {
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
 
-  wallpaper_draw_all();
+  // wallpaper_draw_all();
   gui_draw();
   gfx_flip();
 
@@ -122,7 +122,7 @@ gui_main() {
       //TODO: every window has your own video memory buffer,
       // gui_draw function make a composite for modified area and send to video memory!
       // wallpaper_draw_area(0,0,100,150);
-      wallpaper_draw_all();
+      // wallpaper_draw_all();
       gui_draw();
       gfx_flip();
       enable();
@@ -139,7 +139,7 @@ gui_cursor_create() {
 void
 cursor_draw() {
   if( cursor_image )
-      gfx_draw_data(cursor_image->data, cursor_image->width, cursor_image->height, pointerX, pointerY);
+      gfx_draw_data_with_alfa(cursor_image->data, cursor_image->width, cursor_image->height, pointerX, pointerY);
 }
 
 void
@@ -202,7 +202,7 @@ gui_desktop_create() {
 
     window_set_name(WINDOW(wnd), "Welcome Message!");
     gui_set_active_window(wnd);
-    window_move(WINDOW(wnd),65,70);
+    gui_center_window(WINDOW(wnd));
 
 #endif
 
@@ -217,6 +217,11 @@ gui() {
 widget_t*
 gui_widget_root() {
     return desktop_window;
+}
+
+void
+gui_center_window(window_t* wnd) {
+  window_move(wnd, (gfx_width() - WIDGET(wnd)->w) / 2, (gfx_height() - WIDGET(wnd)->h) / 2);
 }
 
 void

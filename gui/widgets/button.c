@@ -23,8 +23,8 @@ button_create(const char* caption, widget_t* parent) {
   WIDGET(btn)->h = 12;
   WIDGET(btn)->parent = parent;
   WIDGET(btn)->visible = W_VIS_PARENT;
-  WIDGET(btn)->fgcolor = (color_t){ 0, 0, 0 };
-  WIDGET(btn)->bgcolor = (color_t){ 196, 196, 196 };
+  WIDGET(btn)->fgcolor = (color_t){ 0x0 };
+  WIDGET(btn)->bgcolor = (color_t){ 0xD4D4D4 };
   widget_set_padding(WIDGET(btn),0,0,0,0);
   WIDGET(btn)->OnPaint = NULL;
   WIDGET(btn)->OnKeyUp = button_keyup;
@@ -117,7 +117,7 @@ button_draw(button_t* btn) {
               y0 + 1,
               x0 + WIDGET(btn)->w,
               y0 + WIDGET(btn)->h,
-              (color_t){64,64,64});
+              (color_t){0x404040});
   }
 
 

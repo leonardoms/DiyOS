@@ -23,7 +23,7 @@ widget_create(uint32_t class, int32_t x, int32_t y, uint32_t w, uint32_t h,
     widget->h = h;
     widget->visible = W_VIS_PARENT;
     widget->fgcolor = (color_t){ 0, 0, 0 };
-    widget->bgcolor = (color_t){ 224, 224, 224 };
+    widget->bgcolor = (color_t){ 0xE0E0E0 };
     widget->focus = NULL;
     widget->has_focus = 0;
 

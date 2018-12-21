@@ -22,8 +22,8 @@ edit_create(widget_t* parent) {
   WIDGET(edt)->h = 12;
   WIDGET(edt)->parent = parent;
   WIDGET(edt)->visible = W_VIS_PARENT;
-  WIDGET(edt)->fgcolor = (color_t){ 64, 64, 64 };
-  WIDGET(edt)->bgcolor = (color_t){ 255, 255, 255 };
+  WIDGET(edt)->fgcolor = (color_t){ 0x404040 };
+  WIDGET(edt)->bgcolor = (color_t){ 0xFFFFFF };
   widget_set_padding(WIDGET(edt),0,0,0,0);
   WIDGET(edt)->OnPaint = NULL;
   WIDGET(edt)->OnKeyUp = NULL;
@@ -45,12 +45,12 @@ edit_create(widget_t* parent) {
 
 void
 edit_focus(struct widget* widget) {
-    widget->bgcolor = (color_t){ 255, 255, 224 };
+    widget->bgcolor = (color_t){ 0xFFFFE0 };
 }
 
 void
 edit_loose_focus(struct widget* widget) {
-    widget->bgcolor = (color_t){ 255, 255, 255 };
+    widget->bgcolor = (color_t){ 0xFFFFFF };
 }
 
 void
@@ -109,7 +109,7 @@ edit_draw(edit_t* edt) {
             y0,
             x0 + WIDGET(edt)->w,
             y0 + WIDGET(edt)->h,
-            (color_t){64,64,64});
+            (color_t){0x404040});
 
   // edit
   gfx_rect( x0 + 1,

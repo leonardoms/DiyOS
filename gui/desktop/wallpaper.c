@@ -11,7 +11,7 @@ wallpaper() {
     return;
   }
 
-  if(wl_image->bpp != 24) {
+  if(wl_image->bpp != 32) {
     printf("wallpaper(): %d bpp not suported.", wl_image->bpp);
     free(wl_image);
   }
