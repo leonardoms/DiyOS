@@ -2,6 +2,9 @@
 
 void file_navigator_keydown(struct widget* widget, uint32_t key);
 void file_navigator_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags);
+void file_navigator_focus(struct widget* widget);
+void file_navigator_loose_focus(struct widget* widget);
+void file_navigator_choose(struct widget* widget);
 
 file_navigator_t*
 file_navigator_create(uint8_t* directory, widget_t* parent) {
@@ -21,12 +24,15 @@ file_navigator_create(uint8_t* directory, widget_t* parent) {
     WIDGET(fn)->h = (parent == NULL) ? 0 : parent->h - parent->padding_top - parent->padding_bottom;;
     WIDGET(fn)->visible = W_VIS_PARENT;
     WIDGET(fn)->fgcolor = (color_t){ 0x606060 };
-    WIDGET(fn)->bgcolor = (color_t){ 0xF8F8E0 };
+    WIDGET(fn)->bgcolor = (color_t){ 0xF0F0F0 };
     widget_set_padding(WIDGET(fn),0,0,0,0);
     WIDGET(fn)->OnPaint = NULL;
     WIDGET(fn)->OnKeyUp = NULL;
     WIDGET(fn)->OnKeyDown = file_navigator_keydown;
     WIDGET(fn)->OnMouseEvent = file_navigator_mouse_event;
+    WIDGET(fn)->OnFocus = file_navigator_focus;
+    WIDGET(fn)->OnLooseFocus = file_navigator_loose_focus;
+    fn->OnChoose = file_navigator_choose;
 
     fn->directory = NULL;
     fn->files = NULL;
@@ -48,36 +54,48 @@ file_navigator_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t
 }
 
 void
+file_navigator_choose(struct widget* widget) {
+  uint32_t i = 0;
+
+  list_t *l = list_get(FILE_NAVIGATOR(widget)->files, FILE_NAVIGATOR(widget)->selected);
+
+  if( l ) {
+    if( ((struct dirent*)l->data)->flags & FS_DIRECTORY ) {
+      // open dir
+      if( !strcmp(((struct dirent*)l->data)->name,"..") ) {
+
+        i = strlen(FILE_NAVIGATOR(widget)->directory);
+
+        while( FILE_NAVIGATOR(widget)->directory[i] != '/' || i > 0)
+          i--;
+        FILE_NAVIGATOR(widget)->directory[i+1] = 0;
+
+        file_navigator_set(FILE_NAVIGATOR(widget), strdup(FILE_NAVIGATOR(widget)->directory));
+
+      } else {
+
+        if( FILE_NAVIGATOR(widget)->directory[strlen(FILE_NAVIGATOR(widget)->directory)-1] != '/')
+          file_navigator_set(FILE_NAVIGATOR(widget), strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),((struct dirent*)l->data)->name));
+        else
+          file_navigator_set(FILE_NAVIGATOR(widget), strcat(FILE_NAVIGATOR(widget)->directory,((struct dirent*)l->data)->name) );
+
+      }
+
+    } else {
+      // do open file
+    }
+
+  }
+}
+
+void
 file_navigator_keydown(struct widget* widget, uint32_t key) {
     int32_t i = 0;
 
     switch (key) {
       case '\n':
         if( FILE_NAVIGATOR(widget)->selected >= 0 ) {
-          list_t *l = list_get(FILE_NAVIGATOR(widget)->files, FILE_NAVIGATOR(widget)->selected);
-          if( l ) {
-            if( ((struct dirent*)l->data)->flags & FS_DIRECTORY ) {
-              // open dir
-              debug_printf("opendir");
-              if( !strcmp(((struct dirent*)l->data)->name,"..") ) {
-                i = strlen(FILE_NAVIGATOR(widget)->directory);
-                while( FILE_NAVIGATOR(widget)->directory[i] != '/' || i > 0)
-                  i--;
-                FILE_NAVIGATOR(widget)->directory[i+1] = 0;
-                debug_printf(" %s\n", FILE_NAVIGATOR(widget)->directory);
-                file_navigator_set(FILE_NAVIGATOR(widget), strdup(FILE_NAVIGATOR(widget)->directory));
-              } else {
-                debug_printf(" %s\n", strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),((struct dirent*)l->data)->name));
-                if( FILE_NAVIGATOR(widget)->directory[strlen(FILE_NAVIGATOR(widget)->directory)-1] != '/')
-                  file_navigator_set(FILE_NAVIGATOR(widget), strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),((struct dirent*)l->data)->name));
-                else
-                  file_navigator_set(FILE_NAVIGATOR(widget), strcat(FILE_NAVIGATOR(widget)->directory,((struct dirent*)l->data)->name) );
-
-              }
-            } else {
-              // do open file
-            }
-          }
+          FILE_NAVIGATOR(widget)->OnChoose(widget);
         }
         break;
       case KEY_DOWN:
@@ -98,9 +116,17 @@ file_navigator_keydown(struct widget* widget, uint32_t key) {
 }
 
 void
-file_navigator_set(file_navigator_t* fn, uint8_t* directory) {
+file_navigator_focus(struct widget* widget) {
+    widget->bgcolor = (color_t){ 0xF8F8E0 };
+}
 
-  debug_printf("file_navigator_set(): %s\n", directory);
+void
+file_navigator_loose_focus(struct widget* widget) {
+    widget->bgcolor = (color_t){ 0xF0F0F0 };
+}
+
+void
+file_navigator_set(file_navigator_t* fn, uint8_t* directory) {
 
   if( fn->directory ) {
     free(fn->directory);
@@ -125,6 +151,9 @@ file_navigator_set(file_navigator_t* fn, uint8_t* directory) {
     }
 
     fn->directory = strdup(directory);
+
+    if( fn->OnChoose_user )
+      fn->OnChoose_user(WIDGET(fn));
   }
 
 }

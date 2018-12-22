@@ -7,6 +7,9 @@
 typedef struct file_navigator {
   struct widget widget;
 
+  void  (*OnChoose)(widget_t* widget);
+  void  (*OnChoose_user)(widget_t* widget);
+
   struct {
     uint32_t x, y, w, h; // file entry relative position on widget
   } geometry[64];
