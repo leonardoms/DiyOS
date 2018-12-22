@@ -5,9 +5,14 @@ window_t* wnd;
 edit_t* edtPath;
 
 void
-file_explorer_on_choose_cb(widget_t* widget) {
+file_explorer_on_change_dir_cb(widget_t* widget) {
   edit_set_text(edtPath,FILE_NAVIGATOR(widget)->directory);
 }
+
+// void
+// file_explorer_on_choose_file(widget_t* widget, uint8_t* file) {
+//   text_view(strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),file);
+// }
 
 widget_t*
 file_explorer() {
@@ -24,7 +29,7 @@ file_explorer() {
   WIDGET(fn)->y = WIDGET(edtPath)->h;
   WIDGET(fn)->h -= WIDGET(edtPath)->h;
 
-  fn->OnChoose_user = file_explorer_on_choose_cb;
+  fn->OnChoose_user = file_explorer_on_change_dir_cb;
 
   gui_set_active_window(wnd);
 

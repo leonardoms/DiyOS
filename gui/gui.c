@@ -164,25 +164,7 @@ gui_desktop_create() {
     if(pointerY < 0) pointerY = 0;
 
 #if 1
-    // widget_t  *wnd, *wnd1, *lbl, *btn, *edt, *fn;
-    //
-    // uint8_t buff[32];
-    // uint32_t sz = 0;
-    // buff[0] = 0;
-    // int32_t fd = open("/ram/hello.txt", 1, 0);
-    // if( fd >= 0) {
-    //   sz = read(fd, buff, 32);
-    //   buff[sz] = '\0';
-    // }
-    //
-    //
-    //
-    // wnd1 = WIDGET(window_create(250,200));
-    // lbl = WIDGET(label_create(buff, wnd1));
-    // window_set_name(WINDOW(wnd1), "/ram/hello.txt");
     file_explorer();
-
-
 #endif
 
 }

@@ -83,6 +83,7 @@ file_navigator_choose(struct widget* widget) {
 
     } else {
       // do open file
+      text_view(strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),((struct dirent*)l->data)->name));
     }
 
   }
