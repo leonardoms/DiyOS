@@ -85,7 +85,7 @@ devfs() {
   dev_one();
   dev_zero();
   dev_rand();
-  dev_tty();
+  //dev_tty();
 
   printf("/dev initialized.\n");
 
