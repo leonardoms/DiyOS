@@ -1,8 +1,6 @@
 # DiyOS - do it yourself
 Small study Operating System
 
-__*paused until DEC2019*__
-
 This is a very very very experimental code, no warranties, it's for own study. :rage3:
 
 If want to compile you need a [Cross-Compiler GCC](https://wiki.osdev.org/GCC_Cross-Compiler).
