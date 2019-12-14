@@ -25,7 +25,7 @@ button_create(const char* caption, widget_t* parent) {
   WIDGET(btn)->visible = W_VIS_PARENT;
   WIDGET(btn)->fgcolor = (color_t){ 0x0 };
   WIDGET(btn)->bgcolor = (color_t){ 0xD4D4D4 };
-  widget_set_padding(WIDGET(btn),0,0,0,0);
+  widget_set_padding(WIDGET(btn),0,2,2,0);
   WIDGET(btn)->OnPaint = NULL;
   WIDGET(btn)->OnKeyUp = button_keyup;
   WIDGET(btn)->OnKeyDown = button_keydown;
@@ -39,7 +39,7 @@ button_create(const char* caption, widget_t* parent) {
   btn->label = label_create(caption, WIDGET(btn));
   WIDGET(btn->label)->bgcolor = WIDGET(btn)->bgcolor;
 
-  WIDGET(btn->label)->x = 12;//(WIDGET(btn)->w) / 2;
+  WIDGET(btn->label)->x = 0;//(WIDGET(btn)->w) / 2;
   // debug_printf("%d %d label->x = %d", WIDGET(btn->label)->w, WIDGET(btn)->w, WIDGET(btn->label)->x);
 
   return btn;
@@ -47,7 +47,7 @@ button_create(const char* caption, widget_t* parent) {
 
 void
 button_click(struct widget* widget) {
-  debug_printf("cliked!");
+  debug_printf("clicked!");
 }
 
 void

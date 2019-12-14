@@ -7,6 +7,7 @@ bmp_image_from_file(uint8_t* file) {
     struct bmp_image hdr;
     bmp_image_t* bmp;
 
+    debug_printf("bmp_image_from_file(): '%s' ... ", file);
     fd = open(file,1,0);
 
     if( fd < 0 )
@@ -33,6 +34,8 @@ bmp_image_from_file(uint8_t* file) {
     }
 
     bmp->data = (uint8_t*)((uint32_t)bmp + bmp->offset);
+
+    debug_printf("done(0x%x)\n", (uint32_t)bmp);
 
     return bmp;
 }

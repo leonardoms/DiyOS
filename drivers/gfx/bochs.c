@@ -92,9 +92,9 @@ bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
     bochs_vbe_write(VBE_DISPI_INDEX_XRES, width);
     bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
     bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
-    bochs_vbe_enable();
     bochs_vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, width);
     bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, 10);
+    bochs_vbe_enable();
 
   }
 
@@ -168,11 +168,12 @@ bochs_vbe_flip() {
   if( update_x1 > 0 ) { // has something to plot ?
     // bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current + 10);
 
-    // printf("flip {(%d,%d),(%d,%d)}\n", update_x0, update_y0, update_x1, update_y1);
+    // debug_printf("flip {(%d,%d),(%d,%d)}\n", update_x0, update_y0, update_x1, update_y1);
 
     uint32_t y = update_y0, offset;
     for( ; y <= update_y1; y++ ) {
       offset = (y * w + update_x0);
+      // debug_printf("#0x%x,", offset);
       memcpy(&bochs_vbe_fb_double[1][offset], &bochs_vbe_fb_double[0][offset], (update_x1 - update_x0) * 4);
     }
 
@@ -205,17 +206,18 @@ gfx_bochs() {
     font_ysize = 8;
 
     aux = pci_read(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0);
-
-    aux = aux & 0xF;
-    bochs_vbe_fb = (uint8_t*)0xE0000000;
-    pci_write(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0, (uint32_t)bochs_vbe_fb | aux);
-
+    debug_printf("VBE BAR0 = 0x%x\n", aux);
+    // aux = aux & 0xF;
+    bochs_vbe_fb = (uint8_t*)0xD0000000;//(aux & 0xFFFFFFF0);
+    // pci_write(bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function, PCI_BAR0, (uint32_t)bochs_vbe_fb | 0x8 );
+    // debug_printf("bochs_vbe_fb @ 0x%x\n", (aux & 0xFFFFFFF0));
     uint32_t i;
-    for(i = 0; i < 1024; i++) { // 4MB
-      page_map(((uint32_t)(bochs_vbe_fb) + 0x1000 * i),((uint32_t)bochs_vbe_fb + 0x1000 * i));
+    for(i = 0; i < 0x400000; i += 0x1000) { // 4MB
+      // page_map((uint32_t)frame_get(),((uint32_t)bochs_vbe_fb + i));
+      page_map((uint32_t)((aux & 0xFFFFFFF0) + i),((uint32_t)bochs_vbe_fb + i));
     }
 
-    bochs_vbe_fb = (uint8_t*)0xE0000000 + 10 * 640 * 4 ; // skip 10 lines. 0xE0000000 is unmaped after switch_to (bug?)
+    bochs_vbe_fb = (uint8_t*)bochs_vbe_fb;// + 10 * 640 * 4 ; // skip 10 lines. 0xE0000000 is unmaped after switch_to (bug?)
 
     bochs_vbe_fb_current = 0;
     bochs_vbe_fb_double[0] = (uint32_t*)bochs_vbe_fb;
@@ -235,7 +237,7 @@ gfx_bochs() {
     bochs_vbe_display(640,480,32); // set default resolution 640x480 (32-bits)
 
     // clear screen
-    memset(bochs_vbe_fb, 0x0, 640 * 480 * 4 * 2);
+    memset(bochs_vbe_fb, 0xF0, 640 * 480 * 4 * 2);
 
     return 1;
 }

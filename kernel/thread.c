@@ -33,7 +33,7 @@ thread_create(uint32_t init_ip, int32_t priority, uint32_t ppid, uint8_t *name) 
 	kregs = (kregs_t *)t->kstack;
 
 	kregs->eip 	= init_ip;
-	kregs->eflags = 0x200;
+	kregs->eflags = 0x202;
 
 	queue_init(&t->message_queue,32);
 

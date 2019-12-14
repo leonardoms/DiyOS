@@ -1,0 +1,23 @@
+
+*** Debugging started ***
+
+/dev
+/ram
+/ram/hello.txt
+/ram/shared
+/ram/ui
+/ram/ui/ui-icons.bmp
+/ram/ui/cursor_normal.bmp
+/ram/ui/wallpaper.bmp
+/dev/one
+/dev/zero
+/dev/random
+/dev/com1
+/dev/com2
+/dev/com3
+/dev/com4
+VBE BAR0 = 0xfd000008
+bmp_image_from_file(): '/ram/ui/cursor_normal.bmp' ... done(0xc01e1889)
+bmp_image_from_file(): '/ram/ui/ui-icons.bmp' ... done(0xc01e1bec)
+gui_main() infinite loop.
+task_idle started.

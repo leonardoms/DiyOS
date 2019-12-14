@@ -26,7 +26,7 @@ void do_it_yourself(uint32_t multiboot_info) {
   if(mbinfo->mods_count > 0) // has ramdisk.tar module?
     ram = ramfs(((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_start, ((multiboot_module_t*)(mbinfo->mods_addr))[0].mod_end);    // start ramdisk at first module location
 
-#if 0
+#if 1
   struct dirent* d = NULL;
   while( (d = readdir("/", d)) != NULL )
     debug_printf("/%s\n", d->name);
@@ -38,21 +38,23 @@ void do_it_yourself(uint32_t multiboot_info) {
     debug_printf("/dev/%s\n", d->name);
 #endif
 
+  tasking();   // multitasking
+
   // ide();
 
-  acpi();   // configure ACPI
-  tasking();   // multitasking
+  gfx();        // graphical server
+  gfx_bochs();
+
+  // acpi();   // configure ACPI
 
   kb();     // enable keyboard
   mouse();  // enable mouse
   timer();  // enable timer
-
-  gfx();        // graphical server
-  gfx_bochs();
   //
   // // if( !gfx_bochs() )  // load bochs vbe
   // //   gfx_vga(); // if Bochs VBE not present, run 320x200x8 VGA driver
   gui();        // graphical user interface server
+
   schedule();   // run a kernel thread
 
   PANIC("end of main loop."); // if something goes wrong...

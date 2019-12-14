@@ -20,5 +20,9 @@ text_view(uint8_t* file) {
   lbl = WIDGET(label_create(buff, wnd1));
   window_set_name(WINDOW(wnd1), file);
 
+  widget_t* awnd = WIDGET(gui_get_active_window());
+
+  window_move(wnd1, awnd->x + 60, awnd->y + 60);
+
   gui_set_active_window(wnd1);
 }

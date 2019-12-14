@@ -65,12 +65,12 @@ _gfx_draw_data_with_alfa(uint32_t* data, uint32_t width, uint32_t height, uint32
 
 uint32_t
 _gfx_width() {
-  return 0;
+  return 640;
 }
 
 uint32_t
 _gfx_height() {
-  return 0;
+  return 480;
 }
 
 void
@@ -106,6 +106,7 @@ gfx() {
   gfx_flip = _gfx_flip;
   gfx_draw_data = _gfx_draw_data;
   gfx_draw_data_with_alfa = _gfx_draw_data_with_alfa;
+
   gfx_loaded = 1;
   // term = terminal();
 

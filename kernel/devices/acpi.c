@@ -215,6 +215,7 @@ acpi() {
                       rsdp->Revision );
 
       rsdt = (struct RSDT*)rsdp->RsdtAddress;
+      printf("RsdtAddr: 0x%x\n", rsdp->RsdtAddress);
       _page_map(rsdp->RsdtAddress, rsdp->RsdtAddress, 0x1000); // make rsdt header accessible
       _page_map(rsdp->RsdtAddress, rsdp->RsdtAddress, rsdt->h.Length);
       i_max = (rsdt->h.Length - sizeof(struct ACPISDTHeader)) / 4;
@@ -294,7 +295,7 @@ acpi() {
 
       }
 
-      acpi_power_button_enable();
+      // acpi_power_button_enable();
       printf("SCI_Interrupt=%d SMI_CommandPort=0x%x ShutDown=%c\n", facp->SCI_Interrupt, facp->SMI_CommandPort, (S5Block==NULL)?'N':'Y');
       return ptr;
     }

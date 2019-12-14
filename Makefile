@@ -16,10 +16,10 @@ ASMFILES := $(shell find $(PROJDIRS) -type f -name \*.asm)
 ASMOBJFILES := $(patsubst %.asm,%.o,$(ASMFILES))
 
 # https://wiki.osdev.org/GCC_Cross-Compiler
-CC := i686-elf-gcc
-LD := i686-elf-ld
-AR := i686-elf-ar
-AS := i686-elf-as
+CC := gcc
+LD := ld
+AR := ar
+AS := as
 
 ifeq ($(WARNING),yes)
 	WARNINGS := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
@@ -44,7 +44,7 @@ endif
 
 run: iso
 	@echo "[RUN  ] ..."
-	@qemu-system-i386 -boot d -cdrom build/$(KERNEL_NAME)-live.iso -vga std -m 128 -serial file:serial_out.txt
+	@qemu-system-i386 -boot d -cdrom build/$(KERNEL_NAME)-live.iso -vga std -m 128 -serial file:serial_out.txt -no-acpi
 
 iso: all
 	@echo "[ISO  ] build/$(KERNEL_NAME)-live.iso"

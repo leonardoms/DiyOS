@@ -7,7 +7,7 @@
 #define PAGE_FLAG_BITMAP_START  (0x2 << 9)
 
 #define PAGE_TABLE_SIZE   0x1000
-#define PAGE_TABLE_ADDR   0xFFC00000    // page tables at end of linear address
+#define PAGE_TABLE_ADDR   0xFFC00000  // page tables at end of linear address
 #define PAGE_TABLE_ENTRY  (PAGE_TABLE_ADDR >> 22)
 
 #define PAGE_FLAG_PRESENT    (1 << 0)

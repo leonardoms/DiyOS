@@ -509,7 +509,7 @@ parport1: enabled=1, file="parport.out"
 # Examples:
 #   vga_update_interval: 250000
 #=======================================================================
-vga_update_interval: 300000
+#vga_update_interval: 300000
 
 # using for Winstone '98 tests
 #vga_update_interval:  100000
@@ -521,7 +521,7 @@ vga_update_interval: 300000
 # Examples:
 #   keyboard_serial_delay: 200
 #=======================================================================
-keyboard_serial_delay: 250
+#keyboard_serial_delay: 250
 
 #=======================================================================
 # KEYBOARD_PASTE_DELAY:
@@ -538,7 +538,7 @@ keyboard_serial_delay: 250
 # Examples:
 #   keyboard_paste_delay: 100000
 #=======================================================================
-keyboard_paste_delay: 100000
+#keyboard_paste_delay: 100000
 
 #=======================================================================
 # MOUSE:
@@ -647,7 +647,7 @@ ne2k: ioaddr=0x300, irq=10, mac=b0:c4:20:10:42:11, ethdev=eth0
 # Examples:
 #   keyboard_mapping: enabled=1, map=gui/keymaps/x11-pc-de.map
 #=======================================================================
-keyboard_mapping: enabled=0, map=
+#keyboard_mapping: enabled=0, map=
 
 #=======================================================================
 # KEYBOARD_TYPE:
@@ -689,7 +689,7 @@ keyboard_mapping: enabled=0, map=
 # Example:
 #   i440fxsupport: enabled=1, slot1=pcivga, slot2=ne2k
 #=======================================================================
-i440fxsupport: enabled=1,  slot1=pcivga, slot2=ne2k
+#i440fxsupport: enabled=1,  slot1=pcivga, slot2=ne2k
 
 #=======================================================================
 # USB1:

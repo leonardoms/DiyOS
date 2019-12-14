@@ -22,17 +22,17 @@ gui_main() {
   struct mouse_packet* pkt;
   window_t*  window;
 
-  debug_printf("GUI Task.\n");
-
-  while(!gfx_is_ready());
+  // while(!gfx_is_ready());
 
   printf("GUI started.\n");
 
   disable();
 
   gui_desktop_create();
+
   gui_cursor_create();
-  wallpaper();
+
+  // wallpaper();
   iconset("/ram/ui/ui-icons.bmp", 16, 16);
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
@@ -41,6 +41,9 @@ gui_main() {
   gui_draw();
   gfx_flip();
 
+  enable();
+
+  debug_printf("gui_main() infinite loop.\n");
   while(1) {
     disable();
     while( (msg = message()) != NULL ) { // read all messages
@@ -125,7 +128,7 @@ gui_main() {
       // wallpaper_draw_area(0,0,100,150);
       // wallpaper_draw_all();
       gui_draw();
-      iconset_draw(6,1,0,0);
+      // iconset_draw(6,1,0,0);
       gfx_flip();
       enable();
       task_block();

@@ -36,6 +36,8 @@ edit_create(widget_t* parent) {
   edt->mask = 0;
   edt->text = (uint8_t*)malloc(edt->length + 1);
 
+  edt->text[0] = '\0';
+
   edt->cursor_position = 0;
 
   widget_set_parent(WIDGET(edt), parent);
@@ -91,7 +93,9 @@ edit_set_text(edit_t* edt, uint8_t* text) {
   edt->cursor_position = 0;
 
   while(text[i]) {
-    edt->text[edt->cursor_position++] = text[i++];
+    edt->text[edt->cursor_position] = text[i];
+    edt->cursor_position++;
+    i++;
     if(edt->cursor_position > edt->length) {
         edt->text[edt->cursor_position] = 0;
         return;

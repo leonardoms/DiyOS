@@ -8,6 +8,10 @@ page_map(uint32_t p_addr, uint32_t v_addr) {
   pd = (uint32_t*)( (uint32_t)pd & 0xFFFFF000 );
 
   t_idx = v_addr >> 22;
+  
+  if( (pd[t_idx] & 0xFFFFF000) == 0) // if empty, alloc new physical space for the current page table
+    pd[t_idx] = frame_get();
+
   pd[t_idx] = pd[t_idx] | PAGE_FLAG_PRESENT | PAGE_FLAG_RW; // map the table
 
   table = (uint32_t*) (pd[t_idx] & 0xFFFFF000);
