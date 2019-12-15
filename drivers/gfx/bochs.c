@@ -93,7 +93,7 @@ bochs_vbe_display(uint16_t width, uint16_t height, uint16_t depth) {
     bochs_vbe_write(VBE_DISPI_INDEX_YRES, height);
     bochs_vbe_write(VBE_DISPI_INDEX_BPP, depth);
     bochs_vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, width);
-    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, 10);
+    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, 0);
     bochs_vbe_enable();
 
   }
@@ -104,7 +104,7 @@ bochs_vbe_putpixel_32(uint32_t x, uint32_t y, color_t c) {
     if( x > w || y > h)
         return;
     offset = y * w + x;
-    bochs_vbe_fb_double[1][offset] = c.value;
+    bochs_vbe_fb_double[bochs_vbe_fb_current][offset] = c.value;
 
     BOCHS_AREA_GROW(x,y);
 }
@@ -158,7 +158,7 @@ void
 bochs_vbe_draw_data(uint8_t* data, uint32_t width, uint32_t height, uint32_t x, uint32_t y) {
   uint32_t _y = 0;
   for( ; _y <= height; _y++, y++ ) {
-    memcpy(&((uint32_t*)data)[_y * width], &bochs_vbe_fb_double[1][y*w+x], width * 4);
+    memcpy(&((uint32_t*)data)[_y * width], &bochs_vbe_fb_double[bochs_vbe_fb_current][y*w+x], width * 4);
   }
 }
 
@@ -166,21 +166,21 @@ void
 bochs_vbe_flip() {
 
   if( update_x1 > 0 ) { // has something to plot ?
-    // bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current + 10);
+    bochs_vbe_write(VBE_DISPI_INDEX_Y_OFFSET, h * bochs_vbe_fb_current);
 
     // debug_printf("flip {(%d,%d),(%d,%d)}\n", update_x0, update_y0, update_x1, update_y1);
 
-    uint32_t y = update_y0, offset;
-    for( ; y <= update_y1; y++ ) {
-      offset = (y * w + update_x0);
-      // debug_printf("#0x%x,", offset);
-      memcpy(&bochs_vbe_fb_double[1][offset], &bochs_vbe_fb_double[0][offset], (update_x1 - update_x0) * 4);
-    }
+    // uint32_t y = update_y0, offset;
+    // for( ; y <= update_y1; y++ ) {
+    //   offset = (y * w + update_x0);
+    //   // debug_printf("#0x%x,", offset);
+    //   memcpy(&bochs_vbe_fb_double[1][offset], &bochs_vbe_fb_double[0][offset], (update_x1 - update_x0) * 4);
+    // }
 
-    // bochs_vbe_fb_current = (bochs_vbe_fb_current == 0);
+    bochs_vbe_fb_current = (bochs_vbe_fb_current == 0);
     //
-    update_x0 = update_y0 = 0xFFFFFFFF;
-    update_x1 = update_y1 = 0x0;
+    // update_x0 = update_y0 = 0xFFFFFFFF;
+    // update_x1 = update_y1 = 0x0;
   }
 
 }
