@@ -1,4 +1,4 @@
-# DiyOS - do it yourself
+# DiyOS - do it yourself [![Build Status](https://travis-ci.org/leonardoms/DiyOS.svg?branch=2019)](https://travis-ci.org/leonardoms/DiyOS)
 Small study Operating System
 
 This is a very very very experimental code, no warranties, it's for own study. :rage3:
