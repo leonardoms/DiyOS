@@ -88,20 +88,25 @@ edit_set_mask(edit_t* edt, uint8_t mask) {
 
 void
 edit_set_text(edit_t* edt, uint8_t* text) {
-  uint32_t i = 0;
+  // uint32_t i = 0;
+
+  debug_printf("edit_set_text(): '%s' ... ", text);
 
   edt->cursor_position = 0;
 
-  while(text[i]) {
-    edt->text[edt->cursor_position] = text[i];
+  while(text[edt->cursor_position]) {
+    edt->text[edt->cursor_position] = text[edt->cursor_position];
     edt->cursor_position++;
-    i++;
+    // i++;
     if(edt->cursor_position > edt->length) {
         edt->text[edt->cursor_position] = 0;
         return;
     }
 
   }
+  edt->text[edt->cursor_position] = 0;
+  debug_printf("'%s'\n", edt->text);
+  // edit_draw(edt);
 }
 
 void

@@ -35,6 +35,24 @@ bmp_image_from_file(uint8_t* file) {
 
     bmp->data = (uint8_t*)((uint32_t)bmp + bmp->offset);
 
+    // if( hdr.height > 0 ) {  // upside down image
+    //
+    //   uint8_t* tmp = (uint8_t*)malloc(hdr.width * hdr.bpp >> 3);
+    //
+    //   if( tmp == NULL ) {
+    //     printf("bmp_image_from_file(): out of memory\n");
+    //     free(bmp);
+    //     return NULL;
+    //   }
+    // 
+    //   uint32_t i;
+    //   for( i = 0; i < (hdr.height - 1); i++ )
+    //   memcpy( &bmp->data[(hdr.width * hdr.bpp >> 3) + i + 1]),
+    //           &bmp->data[(hdr.width * hdr.bpp >> 3) + i]),
+    //           (hdr.width * hdr.bpp >> 3) );
+    //
+    // }
+
     debug_printf("done(0x%x)\n", (uint32_t)bmp);
 
     return bmp;

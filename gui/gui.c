@@ -32,12 +32,12 @@ gui_main() {
 
   gui_cursor_create();
 
-  // wallpaper();
+  wallpaper();
   iconset("/ram/ui/ui-icons.bmp", 16, 16);
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
 
-  // wallpaper_draw_all();
+  wallpaper_draw_all();
   gui_draw();
   gfx_flip();
 
@@ -77,7 +77,7 @@ gui_main() {
             case MOUSE:
                 pkt = (struct mouse_packet*)msg->data;
                 if( pkt ){
-                  // debug_printf("GUI SERVER: mouse flags=0x%x, dx=%x, dy=%x\n", pkt->flags, pkt->dx, pkt->dy);
+                  debug_printf("GUI SERVER: mouse flags=0x%x, dx=%x, dy=%x\n", pkt->flags, pkt->dx, pkt->dy);
                   pointerX += pkt->dx;
                   pointerY -= pkt->dy;
 
@@ -126,7 +126,7 @@ gui_main() {
       //TODO: every window has your own video memory buffer,
       // gui_draw function make a composite for modified area and send to video memory!
       // wallpaper_draw_area(0,0,100,150);
-      // wallpaper_draw_all();
+      wallpaper_draw_all();
       gui_draw();
       // iconset_draw(6,1,0,0);
       gfx_flip();

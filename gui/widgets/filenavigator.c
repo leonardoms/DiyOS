@@ -64,11 +64,15 @@ file_navigator_choose(struct widget* widget) {
       // open dir
       if( !strcmp(((struct dirent*)l->data)->name,"..") ) {
 
-        i = strlen(FILE_NAVIGATOR(widget)->directory);
+        // debug_printf("from '%s' -> '..' choosen, going to ", FILE_NAVIGATOR(widget)->directory );
 
-        while( FILE_NAVIGATOR(widget)->directory[i] != '/' || i > 0)
+        i = strlen(FILE_NAVIGATOR(widget)->directory) - 2;
+
+        while( FILE_NAVIGATOR(widget)->directory[i] != '/' && i > 0)
           i--;
         FILE_NAVIGATOR(widget)->directory[i+1] = 0;
+
+        // debug_printf("'%s'\n",FILE_NAVIGATOR(widget)->directory);
 
         file_navigator_set(FILE_NAVIGATOR(widget), strdup(FILE_NAVIGATOR(widget)->directory));
 
@@ -85,6 +89,9 @@ file_navigator_choose(struct widget* widget) {
       // do open file
       text_view(strcat(strcat(FILE_NAVIGATOR(widget)->directory,"/"),((struct dirent*)l->data)->name));
     }
+
+    if( FILE_NAVIGATOR(widget)->OnChoose_user )
+      FILE_NAVIGATOR(widget)->OnChoose_user(widget);
 
   }
 }
@@ -153,8 +160,11 @@ file_navigator_set(file_navigator_t* fn, uint8_t* directory) {
 
     fn->directory = strdup(directory);
 
-    if( fn->OnChoose_user )
-      fn->OnChoose_user(WIDGET(fn));
+    fn->OnChoose(WIDGET(fn));
+
+    if(fn->count)
+      fn->selected = 0;
+
   }
 
 }

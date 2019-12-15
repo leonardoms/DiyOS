@@ -11,8 +11,8 @@ typedef struct bmp_image {
   uint16_t  reserved2;
   uint32_t  offset;
   uint32_t  hdr_size;
-  uint32_t  width;
-  uint32_t  height;
+  int32_t  width;
+  int32_t  height;
   uint16_t  planes;
   uint16_t  bpp;
   uint32_t  compression;

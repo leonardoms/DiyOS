@@ -7,6 +7,7 @@ edit_t* edtPath;
 void
 file_explorer_on_change_dir_cb(widget_t* widget) {
   edit_set_text(edtPath,FILE_NAVIGATOR(widget)->directory);
+  // debug_printf("file_explorer_on_change_dir_cb(): '%s'\n", FILE_NAVIGATOR(widget)->directory);
 }
 
 // void
