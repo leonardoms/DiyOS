@@ -1,43 +1,83 @@
 
 *** Debugging started ***
 
-/dev
-/ram
-/ram/hello.txt
-/ram/shared
-/ram/ui
-/ram/ui/ui-icons.bmp
-/ram/ui/cursor_normal.bmp
-/ram/ui/wallpaper.bmp
-/dev/one
-/dev/zero
-/dev/random
-/dev/com1
-/dev/com2
-/dev/com3
-/dev/com4
 VBE BAR0 = 0xfd000008
+mouse_id=0
+start scheduling...
 edit_set_text(): '/' ... '/'
-bmp_image_from_file(): '/ram/ui/cursor_normal.bmp' ... done(0xc01e1889)
-bmp_image_from_file(): '/ram/ui/wallpaper.bmp' ... done(0xc01e1bed)
-bmp_image_from_file(): '/ram/ui/ui-icons.bmp' ... done(0xc030dc90)
+bmp_image_from_file(): '/ram/ui/cursor_normal.bmp' ... done(0xc01e1d68)
+bmp_image_from_file(): '/ram/ui/ui-icons.bmp' ... done(0xc01e20cb)
 gui_main() infinite loop.
 task_idle started.
-GUI SERVER: mouse flags=0x8, dx=0, dy=0
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=1, dy=1
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=3, dy=2
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
 GUI SERVER: mouse flags=0x8, dx=0, dy=1
+GUI SERVER: mouse flags=0x8, dx=1, dy=1
 GUI SERVER: mouse flags=0x8, dx=0, dy=1
-GUI SERVER: mouse flags=0x8, dx=0, dy=2
+GUI SERVER: mouse flags=0x8, dx=2, dy=1
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=2, dy=1
+GUI SERVER: mouse flags=0x8, dx=2, dy=1
+GUI SERVER: mouse flags=0x8, dx=a, dy=2
+GUI SERVER: mouse flags=0x8, dx=3, dy=1
+GUI SERVER: mouse flags=0x8, dx=5, dy=1
+GUI SERVER: mouse flags=0x8, dx=2, dy=0
+GUI SERVER: mouse flags=0x8, dx=3, dy=1
+GUI SERVER: mouse flags=0x8, dx=b, dy=3
+GUI SERVER: mouse flags=0x8, dx=3, dy=1
+GUI SERVER: mouse flags=0x8, dx=3, dy=1
+GUI SERVER: mouse flags=0x8, dx=2, dy=1
+GUI SERVER: mouse flags=0x8, dx=2, dy=1
+GUI SERVER: mouse flags=0x8, dx=4, dy=4
 GUI SERVER: mouse flags=0x8, dx=0, dy=1
-GUI SERVER: mouse flags=0x8, dx=0, dy=3
+GUI SERVER: mouse flags=0x8, dx=1, dy=2
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
 GUI SERVER: mouse flags=0x8, dx=0, dy=1
-GUI SERVER: mouse flags=0x8, dx=18, dy=fd
-GUI SERVER: mouse flags=0x13, dx=ffffff08, dy=0
-GUI SERVER: mouse flags=0x1, dx=18, dy=ff
-GUI SERVER: mouse flags=0x1, dx=8, dy=0
-GUI SERVER: mouse flags=0x2, dx=8, dy=0
-GUI SERVER: mouse flags=0x1, dx=8, dy=0
-GUI SERVER: mouse flags=0x0, dx=8, dy=0
-GUI SERVER: mouse flags=0x1, dx=8, dy=0
-GUI SERVER: mouse flags=0x2, dx=8, dy=0
-GUI SERVER: mouse flags=0x1, dx=8, dy=1
-GUI SERVER: mouse flags=0x0, dx=28, dy=0
+GUI SERVER: mouse flags=0x8, dx=1, dy=1
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+GUI SERVER: mouse flags=0x8, dx=2, dy=0
+GUI SERVER: mouse flags=0x8, dx=1, dy=0
+edit_set_text(): '/ram' ... '/ram'
+edit_set_text(): '/ram' ... '/ram'
+GUI SERVER: mouse flags=0x8, dx=0, dy=1
+GUI SERVER: mouse flags=0x18, dx=ffffffff, dy=1
+GUI SERVER: mouse flags=0x18, dx=fffffffd, dy=3
+GUI SERVER: mouse flags=0x18, dx=fffffff8, dy=4
+GUI SERVER: mouse flags=0x18, dx=fffffff7, dy=6
+GUI SERVER: mouse flags=0x18, dx=fffffff3, dy=8
+GUI SERVER: mouse flags=0x18, dx=ffffffd2, dy=19
+GUI SERVER: mouse flags=0x18, dx=fffffffe, dy=2
+GUI SERVER: mouse flags=0x18, dx=fffffffd, dy=2
+GUI SERVER: mouse flags=0x18, dx=fffffff7, dy=5
+GUI SERVER: mouse flags=0x18, dx=fffffffd, dy=2
+GUI SERVER: mouse flags=0x18, dx=fffffff4, dy=6
+GUI SERVER: mouse flags=0x18, dx=fffffffe, dy=2
+GUI SERVER: mouse flags=0x18, dx=fffffffe, dy=1
+GUI SERVER: mouse flags=0x18, dx=fffffffe, dy=1
+GUI SERVER: mouse flags=0x18, dx=fffffffe, dy=2
+GUI SERVER: mouse flags=0x18, dx=fffffff8, dy=9
+GUI SERVER: mouse flags=0x18, dx=ffffffff, dy=1
+GUI SERVER: mouse flags=0x18, dx=ffffffff, dy=2
+GUI SERVER: mouse flags=0x18, dx=ffffffff, dy=1
+GUI SERVER: mouse flags=0x18, dx=ffffffff, dy=1
+GUI SERVER: mouse flags=0x18, dx=ffffffff, dy=0
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x38, dx=ffffffff, dy=fffffffe
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x18, dx=ffffffff, dy=0
+GUI SERVER: mouse flags=0x28, dx=0, dy=ffffffff
+GUI SERVER: mouse flags=0x38, dx=ffffffff, dy=ffffffff
