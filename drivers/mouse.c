@@ -4,17 +4,65 @@
 queue_t mouse_queue, mouse_wait;
 task_t* m_task;
 
+int32_t mouse_id;
+
+void
+_mouse_wait(uint8_t type) {
+    uint32_t time_out = 100000;
+
+    if( type == 0 ) {
+        while( time_out-- ) {
+            if( (inportb(0x64) & 1) == 1 )
+                return;
+        }
+        return;
+    } else
+    {
+        while( time_out-- ) {
+            if( (inportb(0x64) & 2) == 0 ) {
+                return;
+            }
+        }
+        debug_printf("mouse timed out!\n");
+        return;
+    }
+}
+
 void
 mouse_write(uint8_t write)
 {
+    _mouse_wait(1);
     outportb(0x64, 0xD4);
+    _mouse_wait(1);
     outportb(0x60, write);
 }
 
 uint8_t
 mouse_read()
 {
-    return inportb(0x60);
+    _mouse_wait(0);
+    char c = inportb(0x60);
+    return c;
+}
+
+void
+mouse_start() {
+  uint8_t status;
+
+  _mouse_wait(1);
+	outportb(0x64, 0xA8);
+	_mouse_wait(1);
+	outportb(0x64, 0x20);
+	_mouse_wait(0);
+	status = inportb(0x60) | 2;
+	_mouse_wait(1);
+	outportb(0x64, 0x60);
+	_mouse_wait(1);
+	outportb(0x60, status);
+	mouse_write(0xF6);
+	mouse_read();
+	mouse_write(0xF4);
+	mouse_read();
 }
 
 struct mouse_packet* packet;
@@ -43,85 +91,73 @@ mouse_task(void) {
   }
 }
 
+struct mouse_packet* pkt;
+
 uint32_t
 mouse_handler(int_regs_t* regs) {
 
-  static uint8_t status, cicle = 0;
-  static struct mouse_packet pkt;
+  uint8_t status, cicle;
+  // static struct mouse_packet pkt;
 
   status = inportb(0x64);
+  cicle = 0;
 
-  if ( (status & 0x01) && (status & 0x20) ) {
-    switch (cicle) {
-      case 0:
-        pkt.flags = mouse_read();
-        cicle++;
-        break;
-      case 1:
-        if(pkt.flags & 0x10)  // is dY negative?
-          pkt.dx = (int32_t) mouse_read() | 0xFFFFFF00;
-        else
-          pkt.dx = (int32_t) mouse_read();
+  while(status & 0x01) {
 
-        cicle++;
-        break;
-      case 2:
+    int8_t mouse_in = inportb(0x60);
 
-        if(pkt.flags & 0x20)  // is dY negative?
-          pkt.dy = (int32_t) mouse_read() | 0xFFFFFF00;
-        else
-          pkt.dy = (int32_t) mouse_read();
+    if ( status & 0x20 ) {
+      switch (cicle) {
+        case 0:
+          pkt->flags = mouse_in;
+          if (!(mouse_in & 0x08)) return;
+          ++cicle;
+          break;
+        case 1:
+          pkt->dx = mouse_in;// (int32_t)mouse_read() - (int32_t)((pkt->flags << 27) & 0x80000000);
+          ++cicle;
+          break;
+        case 2:
+          pkt->dy = mouse_in;
 
-        if( (pkt.flags & 0x80) || (pkt.flags & 0x40) == 0 ) { // x/y overflow ?
-          packet = (struct mouse_packet*)malloc(sizeof(struct mouse_packet));
+          if( (pkt->flags & 0x80) || (pkt->flags & 0x40) )  // x/y overflow ?
+            goto read_next;
 
-          // if(pkt.flags & 0x20) {  // is dY negative?
-          //   pkt.dy =
-          // }
 
-          memcpy(&pkt, packet, sizeof(struct mouse_packet));
+          packet = (struct mouse_packet*)malloc(sizeof(struct mouse_packet)+4);
+
+          memcpy(pkt, packet, sizeof(struct mouse_packet));
 
           queue_add(&mouse_queue, packet);
-          wake_up(&mouse_wait);
-        } // else { do nothing, discard entire packet :/ }
-        // printf("mouse packet: flags=0x%x, dx=%d, dy=%d\n", pkt.flags, pkt.dx, pkt.dy);
-        cicle = 0;
-        break;
-      default:
-        cicle = 0;
-        break;
+          // debug_printf("irq -> mouse packet: flags=0x%x, dx=%d, dy=%d, dz=%d\n", packet->flags, packet->dx, packet->dy, packet->dz);
+
+          cicle = 0;
+          break;
+        }
+      }
+      read_next:
+      status = inportb(0x64);
     }
-  }
 
+  wake_up(&mouse_wait);
   pic_acknowledge(12);
-
 }
 
 void
 mouse(void) {
   uint8_t status;
 
+
+  pkt = (struct mouse_packet*)malloc(sizeof(struct mouse_packet)+4);
   queue_init(&mouse_queue, 32);
   queue_init(&mouse_wait, 8);
 
-  outportb(0x64, 0xA8);
+  mouse_start();
 
-  //Enable the interrupts
-  outportb(0x64, 0x20);
-
-  status = (inportb(0x60) | 2);
-
-  outportb(0x64, 0x60);
-
-  outportb(0x60, status);
-
-  // Tell the mouse to use default settings
-  mouse_write(0xF6);
+  mouse_write(0xF2);
   mouse_read();  // ACK
-
-  // Enable the mouse
-  mouse_write(0xF4);
-  mouse_read();  // ACK
+  mouse_id = mouse_read();
+  debug_printf("mouse_id=%x\n",mouse_id);
 
   m_task = thread_create((uint32_t)mouse_task, 1, 100, "mouse");
   m_task->pid = MOUSE; // force mouse pid

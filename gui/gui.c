@@ -10,11 +10,9 @@ int32_t pointerX, pointerY;
 #define POINTER_H 7
 #define POINTER_W 5
 
-widget_t *desktop_window, *desktop_taskbar;
+widget_t *desktop_window;
 task_t* gui_task;
 bmp_image_t* cursor_image = NULL;
-
-#define TASK_BAR_HEIGHT 32
 
 void
 gui_main() {
@@ -32,12 +30,12 @@ gui_main() {
 
   gui_cursor_create();
 
-  wallpaper();
+  // wallpaper();
   iconset("/ram/ui/ui-icons.bmp", 16, 16);
 
   task_listen( KEYBOARD | MOUSE ); // listen for events
 
-  wallpaper_draw_all();
+  // wallpaper_draw_all();
   gui_draw();
   gfx_flip();
 
@@ -76,10 +74,18 @@ gui_main() {
                 break;
             case MOUSE:
                 pkt = (struct mouse_packet*)msg->data;
-                if( pkt ){
+                if( pkt ) {
                   debug_printf("GUI SERVER: mouse flags=0x%x, dx=%x, dy=%x\n", pkt->flags, pkt->dx, pkt->dy);
-                  pointerX += pkt->dx;
-                  pointerY -= pkt->dy;
+
+                  if( (pkt->flags & 0x10) == 0 )
+                    pointerX += pkt->dx;
+                  else
+                    pointerX -= pkt->dx  * -1;
+
+                  if(pkt->flags & 0x20)
+                    pointerY += pkt->dy * -1;
+                  else
+                    pointerY -= pkt->dy;
 
                   if(pointerX < 0)
                     pointerX = 0;
@@ -126,7 +132,7 @@ gui_main() {
       //TODO: every window has your own video memory buffer,
       // gui_draw function make a composite for modified area and send to video memory!
       // wallpaper_draw_area(0,0,100,150);
-      wallpaper_draw_all();
+      // wallpaper_draw_all();
       gui_draw();
       // iconset_draw(6,1,0,0);
       gfx_flip();
@@ -151,14 +157,15 @@ void
 gui_desktop_create() {
 
     // the desktop area
-    desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height() - TASK_BAR_HEIGHT - 1, NULL);
-    // desktop_window->bgcolor = (color_t){96,96,255};
-    desktop_window->visible = W_VIS_HIDDEN;
+    desktop_window = widget_create(0, 0, 0, gfx_width(), gfx_height() - taskbar_height() - 1, NULL);
+    desktop_window->bgcolor = (color_t){96,96,200};
+    // desktop_window->visible = W_VIS_HIDDEN;
+
+    create_taskbar();
 
     // the taskbar space
-    widget_set_padding(desktop_window,0,0,0,TASK_BAR_HEIGHT); // childs cannot use TaskBar area
+    widget_set_padding(desktop_window,0,0,0,taskbar_height()); // childs cannot use TaskBar area
 
-    desktop_taskbar = widget_create(0, 0, gfx_height() - TASK_BAR_HEIGHT, gfx_width(), gfx_height(), NULL);
 
     // mouse position
     pointerX = (gfx_width() - POINTER_W) / 2;
@@ -234,7 +241,7 @@ void
 gui_draw() {
   widget_draw(desktop_window);
   widget_draw(WIDGET(gui_get_active_window()));
-  widget_draw(desktop_taskbar);
-  // gfx_put_pixel(pointerX, pointerY, (color_t){255,0,0});
+  taskbar_draw();
+  gfx_put_pixel(pointerX, pointerY, (color_t){255,0,0});
   cursor_draw();
 }

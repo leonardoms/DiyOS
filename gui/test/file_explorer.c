@@ -37,6 +37,8 @@ file_explorer() {
 
   fn->OnChoose_user = file_explorer_on_change_dir_cb;
 
+  widget_set_focus(WIDGET(fn));
+
   gui_set_active_window(wnd);
 
   return WIDGET(wnd);

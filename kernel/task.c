@@ -32,12 +32,13 @@ task_add(task_t* t) {
 void
 tasking() {
   task_add(thread_create(idle, -1, 100, "idle"));
+  // create_user_task_test();
 }
 
 void
 task_block() {
   running_task->status = TS_BLOCKED;
-  // schedule();
+  schedule();
 }
 
 void

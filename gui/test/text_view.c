@@ -2,6 +2,12 @@
 
 uint8_t buff[256];
 
+
+void key_up(struct widget* widget, uint32_t key) {
+  if( key == '\n' )
+    window_destroy(WINDOW(widget));
+}
+
 void
 text_view(uint8_t* file) {
   widget_t  *wnd1, *lbl;
@@ -20,9 +26,14 @@ text_view(uint8_t* file) {
   lbl = WIDGET(label_create(buff, wnd1));
   window_set_name(WINDOW(wnd1), file);
 
+  wnd1->bgcolor = (color_t){ 0xFAFAFA };
+  lbl->bgcolor = (color_t){ 0xFAFAFA };
+
   widget_t* awnd = WIDGET(gui_get_active_window());
 
   window_move(wnd1, awnd->x + 60, awnd->y + 60);
+
+  widget_set_callback(wnd1, ON_KEYUP, key_up);
 
   gui_set_active_window(wnd1);
 }

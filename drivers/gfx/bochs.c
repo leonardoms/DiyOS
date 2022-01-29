@@ -185,10 +185,12 @@ gfx_bochs() {
 
     printf("Bochs VGA: ");
     if(!pci_find(BOCHS_VBE_VENDOR, BOCHS_VBE_DEVICE, &bochs_vbe_bus,
+                &bochs_vbe_dev, &bochs_vbe_function))
+		if(!pci_find(0x80EE, 0xBEEF, &bochs_vbe_bus,		// VirtualBox basic suport
                 &bochs_vbe_dev, &bochs_vbe_function)) {
-      printf("not found\n");
-      return 0;
-    }
+			printf("not found\n");
+      	return 0;
+	 	}
     printf("found @ pci/%d:%d.%d\n", bochs_vbe_bus, bochs_vbe_dev, bochs_vbe_function);
 
     // if( bochs_vbe_version() < 0xB0C5) {

@@ -102,7 +102,7 @@ frame_get() {
 
   uint32_t i_byte, i_bit, i;
 
-  // printf("frame_get().frame_idx = %d\n", frame_idx);
+  printf("frame_get().frame_idx = %d\n", frame_idx);
 
   if( frames_free == 0 ) {
       return 0;
@@ -118,7 +118,7 @@ frame_get() {
 
     frame_set(i);
     frame_idx++;
-    // printf("frame_get(): 0x%x\n", (uint32_t)((i_byte * 8 + i_bit) * FRAME_SIZE));
+    printf("frame_get(): 0x%x\n", (uint32_t)((i_byte * 8 + i_bit) * FRAME_SIZE));
     return (uint32_t)((i_byte * 8 + i_bit) * FRAME_SIZE) ;
   }
 

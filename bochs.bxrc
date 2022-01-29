@@ -1,7 +1,7 @@
 # You may now use double quotes around pathnames, in case
 # your pathname includes spaces.
 
- magic_break: enabled=0
+ magic_break: enabled=1
 
 #=======================================================================
 # CONFIG_INTERFACE
@@ -561,7 +561,7 @@ parport1: enabled=1, file="parport.out"
 #   mouse: enabled=1, type=serial
 #   mouse: enabled=0
 #=======================================================================
-mouse: enabled=0, type=imps2
+mouse: enabled=1, type=imps2
 
 #=======================================================================
 # private_colormap: Request that the GUI create and use it's own

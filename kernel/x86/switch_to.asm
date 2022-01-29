@@ -15,20 +15,20 @@ switch_to:
     push    ebx
     cli
     mov     eax, [running_task]
-    xchg bx, bx
+    ; xchg bx, bx
 
     ; store current kernel ESP in thread_t struct of current thread/task
     mov     [eax], esp
-    xchg bx, bx
 
     ; get pointer (thread_t t) to new task/thread to run
     mov     eax,  [esp + 24]
 
     mov     ebx, [eax + 8]
-    cmp     ebx, dword 0
-    je      no_cr3
+    ; cmp     ebx, dword 0
+    ; je      no_cr3
 
     ; Carregando o novo pagedir
+    xchg bx, bx
     mov     cr3, ebx
 
 no_cr3:

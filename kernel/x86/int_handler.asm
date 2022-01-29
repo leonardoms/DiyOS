@@ -6,7 +6,7 @@ extern isr_call_ptr_vector
 extern isr_fault
 
 isr_handler:
-    xchg    bx, bx
+    ; xchg    bx, bx
     push    gs
     push    fs
     push    es

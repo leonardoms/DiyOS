@@ -133,6 +133,12 @@ widget_set_parent(widget_t* widget, widget_t* parent) {
 }
 
 void
+widget_unset_parent(widget_t* widget) {
+  widget_t* chld;
+
+}
+
+void
 widget_move(widget_t* widget, uint32_t x, uint32_t y) {
 
     if(!widget)

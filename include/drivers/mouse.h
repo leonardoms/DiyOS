@@ -11,9 +11,11 @@
 
 struct mouse_packet {
     uint8_t flags;
-    int32_t dx;
-    int32_t dy;
-} __attribute__ ((packed));
+    int8_t dx;
+    int8_t dy;
+    int8_t dz;
+    // uint8_t res;
+};//__attribute__ ((packed));
 
 void
 mouse(void);

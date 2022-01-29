@@ -49,6 +49,12 @@ window_create(uint32_t w, uint32_t h) {
 }
 
 void
+window_destroy(window_t* wnd) {
+  //TODO
+  widget_unset_parent(wnd);
+}
+
+void
 window_mouse_event(struct widget* widget, int32_t x, int32_t y, uint32_t flags) {
   widget_t* chld;
 
