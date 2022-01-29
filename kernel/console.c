@@ -23,4 +23,19 @@ console_create() {
 
   ring_init(&con->out, 2* (80 * 25 * 2)); // 80x25 text mode x2
   ring_init(&con->in, 64);
+
+  // int i = 0;
+  //
+  // while( ring_is_full(&con->out) == FALSE ) {
+  //   ring_push(&con->out, '0' + (uint8_t)i++);
+  //   if( i > 32 ) i = 0;
+  // }
+  //
+  // uint8_t c;
+  // while(!ring_is_empty(&con->out)) {
+  //   ring_pop(&con->out, &c);
+  //   printf("%c",c);
+  // }
+
+  return con;
 }
