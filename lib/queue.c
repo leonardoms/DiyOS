@@ -56,16 +56,19 @@ queue_remove(queue_t* q) {
 
 void
 queue_foreach(queue_t* q, queue_callback_t c, void* data) {
-  int32_t i, i_max;
+  uint16_t i, count;
 
-  if( q->rear > q->front )
-    i = q->front;
-  else
-    i = q->rear;
+  if (!q || !c || q->count == 0)
+    return;
 
-  i_max = i + queue_size(q);
+  i = q->front;
+  count = q->count;
 
-  for( ; i < i_max; i++ ) {
+  while (count--) {
     c(q->data[i], data);
+
+    i++;
+    if (i == q->size)
+      i = 0;
   }
 }
